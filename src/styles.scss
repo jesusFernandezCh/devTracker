@@ -6,15 +6,30 @@
 
   --color-surface: #ffffff;
 
-  --color-status-desarrollo-dot: #EAB308;
-  --color-status-desarrollo-bg: #FEF9C3;
-  --color-status-desarrollo-text: #A16207;
-  --color-status-calidad-dot: #3B82F6;
-  --color-status-calidad-bg: #DBEAFE;
-  --color-status-calidad-text: #1D4ED8;
-  --color-status-produccion-dot: #22C55E;
-  --color-status-produccion-bg: #DCFCE7;
-  --color-status-produccion-text: #15803D;
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-track: transparent;
+}
+[data-theme="dark"] {
+  --scrollbar-thumb: #4b5563;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 3px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
 
   --color-priority-baja-bg: #F3F4F6;
   --color-priority-baja-text: #374151;
@@ -52,16 +67,6 @@
 
   --color-surface: #1E293B;
 
-  --color-status-desarrollo-dot: #FACC15;
-  --color-status-desarrollo-bg: #422006;
-  --color-status-desarrollo-text: #FDE047;
-  --color-status-calidad-dot: #60A5FA;
-  --color-status-calidad-bg: #1E3A5F;
-  --color-status-calidad-text: #93C5FD;
-  --color-status-produccion-dot: #4ADE80;
-  --color-status-produccion-bg: #14532D;
-  --color-status-produccion-text: #86EFAC;
-
   --color-priority-baja-bg: #334155;
   --color-priority-baja-text: #CBD5E1;
   --color-priority-media-bg: #1E3A5F;
@@ -74,23 +79,6 @@
 
 [data-theme="dark"] .bg-white {
   background-color: var(--color-surface);
-}
-
-.dot-desarrollo { background-color: var(--color-status-desarrollo-dot); }
-.dot-calidad { background-color: var(--color-status-calidad-dot); }
-.dot-produccion { background-color: var(--color-status-produccion-dot); }
-
-.badge-desarrollo {
-  background-color: var(--color-status-desarrollo-bg);
-  color: var(--color-status-desarrollo-text);
-}
-.badge-calidad {
-  background-color: var(--color-status-calidad-bg);
-  color: var(--color-status-calidad-text);
-}
-.badge-produccion {
-  background-color: var(--color-status-produccion-bg);
-  color: var(--color-status-produccion-text);
 }
 
 .badge-priority-baja {

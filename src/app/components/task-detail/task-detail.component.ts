@@ -1,7 +1,9 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {TaskService} from '../../services/task.service';
-import {PRIORITY_LABELS, PRIORITY_COLORS, STATUS_LABELS} from '../../models/task.model';
+import {ColumnService} from '../../services/column.service';
+import {PRIORITY_LABELS, PRIORITY_COLORS} from '../../models/task.model';
+import {hexToRgba} from '../../models/columna.model';
 
 @Component({
   selector: 'app-task-detail',
@@ -38,8 +40,10 @@ import {PRIORITY_LABELS, PRIORITY_COLORS, STATUS_LABELS} from '../../models/task
             <span class="text-xs font-semibold px-2 py-1 rounded-full {{priorityColor}}">
               {{ PRIORITY_LABELS[tarea.prioridad] }}
             </span>
-            <span class="text-xs font-semibold px-2 py-1 rounded-full {{statusBg}}">
-              {{ STATUS_LABELS[tarea.estado] }}
+            <span class="text-xs font-semibold px-2 py-1 rounded-full"
+                  [style.background-color]="statusBg"
+                  [style.color]="statusColor">
+              {{ statusNombre }}
             </span>
             @for (tag of tarea.etiquetas; track tag) {
               <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">{{ tag }}</span>
@@ -107,10 +111,14 @@ export class TaskDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly taskService = inject(TaskService);
+  private readonly columnService = inject(ColumnService);
 
   protected tarea!: import('../../models/task.model').Task;
   protected readonly PRIORITY_LABELS = PRIORITY_LABELS;
-  protected readonly STATUS_LABELS = STATUS_LABELS;
+
+  protected statusNombre = '';
+  protected statusColor = '';
+  protected statusBg = '';
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -118,20 +126,16 @@ export class TaskDetailComponent implements OnInit {
       const found = this.taskService.obtenerTareaPorId(id);
       if (found) {
         this.tarea = found;
+        const col = this.columnService.columnas().find((c) => c.id === found.estado);
+        this.statusNombre = col?.nombre ?? '';
+        this.statusColor = col?.color ?? '#6B7280';
+        this.statusBg = hexToRgba(this.statusColor, 0.15);
       }
     }
   }
 
   protected get priorityColor(): string {
     return PRIORITY_COLORS[this.tarea.prioridad];
-  }
-
-  protected get statusBg(): string {
-    switch (this.tarea.estado) {
-      case 'desarrollo': return 'badge-desarrollo';
-      case 'calidad': return 'badge-calidad';
-      case 'produccion': return 'badge-produccion';
-    }
   }
 
   protected volver(): void {

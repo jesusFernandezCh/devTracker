@@ -1,6 +1,7 @@
 import {Component, input, output} from '@angular/core';
 import {trigger, transition, style, animate} from '@angular/animations';
-import {Task, TaskStatus, STATUS_LABELS} from '../../models/task.model';
+import {Task} from '../../models/task.model';
+import {Columna} from '../../models/columna.model';
 import {TaskCardComponent} from '../task-card/task-card.component';
 import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 
@@ -17,18 +18,10 @@ import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} f
     ]),
   ],
   template: `
-    <div class="flex flex-col h-full">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 rounded-full {{headerColor()}}"></div>
-          <h2 class="text-lg font-semibold text-gray-800">{{ STATUS_LABELS[status()] }}</h2>
-          <span class="bg-gray-200 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full">{{ tasks().length }}</span>
-        </div>
-      </div>
-
-      <div cdkDropList
-           [id]="status()"
+    <div cdkDropList
+           [id]="columna().id"
            [cdkDropListData]="tasks()"
+           [cdkDropListConnectedTo]="connectedDropIds()"
            class="flex-1 space-y-3 overflow-y-auto min-h-[200px] p-1"
            (cdkDropListDropped)="onDrop($event)">
         @for (task of tasks(); track task.id) {
@@ -45,28 +38,18 @@ import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} f
           </div>
         }
       </div>
-    </div>
   `,
   styles: [`
-    :host { display: block; height: 100%; }
+    :host { display: flex; flex-direction: column; height: 100%; }
   `]
 })
 export class ColumnComponent {
-  status = input.required<TaskStatus>();
+  columna = input.required<Columna>();
   tasks = input.required<Task[]>();
-  moveTask = output<{ taskId: string; newStatus: TaskStatus }>();
+  connectedDropIds = input<string[]>([]);
+  moveTask = output<{ taskId: string; newStatus: string }>();
   viewDetail = output<string>();
   deleteTask = output<string>();
-
-  protected readonly STATUS_LABELS = STATUS_LABELS;
-
-  protected headerColor(): string {
-    switch (this.status()) {
-      case 'desarrollo': return 'dot-desarrollo';
-      case 'calidad': return 'dot-calidad';
-      case 'produccion': return 'dot-produccion';
-    }
-  }
 
   onDrop(event: CdkDragDrop<Task[]>): void {
     if (event.previousContainer === event.container) {
@@ -79,7 +62,7 @@ export class ColumnComponent {
         event.currentIndex,
       );
       const taskId = event.item.data.id;
-      this.moveTask.emit({ taskId, newStatus: this.status() });
+      this.moveTask.emit({ taskId, newStatus: this.columna().id });
     }
   }
 }

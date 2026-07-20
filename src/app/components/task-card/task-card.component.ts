@@ -1,5 +1,7 @@
-import {Component, input, output} from '@angular/core';
-import {Task, PRIORITY_COLORS, PRIORITY_LABELS, STATUS_LABELS, TaskStatus} from '../../models/task.model';
+import {Component, input, output, inject, computed} from '@angular/core';
+import {Task, PRIORITY_COLORS, PRIORITY_LABELS} from '../../models/task.model';
+import {hexToRgba} from '../../models/columna.model';
+import {ColumnService} from '../../services/column.service';
 
 @Component({
   selector: 'app-task-card',
@@ -33,8 +35,10 @@ import {Task, PRIORITY_COLORS, PRIORITY_LABELS, STATUS_LABELS, TaskStatus} from 
       </div>
       <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
         <span class="text-xs text-gray-400">{{ tarea().comentarios.length }} comentarios</span>
-        <span class="text-xs font-medium px-2 py-0.5 rounded-full {{statusBgClass()}}">
-          {{ STATUS_LABELS[tarea().estado] }}
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+              [style.background-color]="statusBg()"
+              [style.color]="statusColor()">
+          {{ statusNombre() }}
         </span>
       </div>
     </div>
@@ -48,19 +52,20 @@ export class TaskCardComponent {
   viewDetail = output<string>();
   deleteTask = output<string>();
 
+  private readonly columnService = inject(ColumnService);
+
   protected readonly PRIORITY_LABELS = PRIORITY_LABELS;
-  protected readonly STATUS_LABELS = STATUS_LABELS;
+
+  private readonly columna = computed(() =>
+    this.columnService.columnas().find((c) => c.id === this.tarea().estado),
+  );
+
+  protected statusNombre = computed(() => this.columna()?.nombre ?? '');
+  protected statusColor = computed(() => this.columna()?.color ?? '#6B7280');
+  protected statusBg = computed(() => hexToRgba(this.statusColor(), 0.15));
 
   protected priorityColor(): string {
     return PRIORITY_COLORS[this.tarea().prioridad];
-  }
-
-  protected statusBgClass(): string {
-    switch (this.tarea().estado) {
-      case 'desarrollo': return 'badge-desarrollo';
-      case 'calidad': return 'badge-calidad';
-      case 'produccion': return 'badge-produccion';
-    }
   }
 
   onViewDetail(): void {

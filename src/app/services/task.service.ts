@@ -1,5 +1,6 @@
-import {Injectable, signal, computed} from '@angular/core';
-import {Task, TaskStatus} from '../models/task.model';
+import {Injectable, signal, computed, inject} from '@angular/core';
+import {Task} from '../models/task.model';
+import {ColumnService} from './column.service';
 
 const STORAGE_KEY = 'dev-tracker-tasks';
 
@@ -8,20 +9,18 @@ const STORAGE_KEY = 'dev-tracker-tasks';
 })
 export class TaskService {
   private readonly _tasks = signal<Task[]>([]);
+  private readonly columnService = inject(ColumnService);
 
   readonly tasks = this._tasks.asReadonly();
 
-  readonly tareasDesarrollo = computed(() =>
-    this._tasks().filter((t) => t.estado === 'desarrollo'),
-  );
-
-  readonly tareasCalidad = computed(() =>
-    this._tasks().filter((t) => t.estado === 'calidad'),
-  );
-
-  readonly tareasProduccion = computed(() =>
-    this._tasks().filter((t) => t.estado === 'produccion'),
-  );
+  readonly tareasPorColumna = computed(() => {
+    const columnas = this.columnService.columnas();
+    const map = new Map<string, Task[]>();
+    for (const col of columnas) {
+      map.set(col.id, this._tasks().filter((t) => t.estado === col.id));
+    }
+    return map;
+  });
 
   constructor() {
     this._loadFromStorage();
@@ -62,12 +61,17 @@ export class TaskService {
     this._saveToStorage();
   }
 
-  moverTarea(id: string, nuevoEstado: TaskStatus): void {
+  moverTarea(id: string, nuevoEstado: string): void {
     this.actualizarTarea(id, {estado: nuevoEstado});
   }
 
   eliminarTarea(id: string): void {
     this._tasks.update((tasks) => tasks.filter((t) => t.id !== id));
+    this._saveToStorage();
+  }
+
+  eliminarTareasPorColumna(columnaId: string): void {
+    this._tasks.update((tasks) => tasks.filter((t) => t.estado !== columnaId));
     this._saveToStorage();
   }
 

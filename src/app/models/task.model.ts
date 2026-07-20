@@ -1,4 +1,4 @@
-export type TaskStatus = 'desarrollo' | 'calidad' | 'produccion';
+export type TaskStatus = string;
 
 export type TaskPriority = 'baja' | 'media' | 'alta' | 'critica';
 
@@ -22,12 +22,6 @@ export interface Task {
   etiquetas: string[];
   comentarios: Comentario[];
 }
-
-export const STATUS_LABELS: Record<TaskStatus, string> = {
-  desarrollo: 'Desarrollo',
-  calidad: 'Calidad',
-  produccion: 'Producción',
-};
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   baja: 'Baja',

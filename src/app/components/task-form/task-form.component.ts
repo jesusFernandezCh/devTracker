@@ -1,8 +1,9 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {ReactiveFormsModule, NonNullableFormBuilder, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Task, TaskStatus, TaskPriority} from '../../models/task.model';
+import {Task, TaskPriority} from '../../models/task.model';
 import {TaskService} from '../../services/task.service';
+import {ColumnService} from '../../services/column.service';
 
 @Component({
   selector: 'app-task-form',
@@ -45,9 +46,9 @@ import {TaskService} from '../../services/task.service';
               <label class="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
               <select formControlName="estado"
                       class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                <option value="desarrollo">Desarrollo</option>
-                <option value="calidad">Calidad</option>
-                <option value="produccion">Producción</option>
+                @for (col of columnService.columnas(); track col.id) {
+                  <option [value]="col.id">{{ col.nombre }}</option>
+                }
               </select>
             </div>
 
@@ -122,6 +123,7 @@ export class TaskFormComponent implements OnInit {
   private readonly taskService = inject(TaskService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  protected readonly columnService = inject(ColumnService);
 
   private editandoId: string | null = null;
   protected editando = false;
@@ -130,7 +132,7 @@ export class TaskFormComponent implements OnInit {
   protected readonly taskForm = this.fb.group({
     titulo: ['', Validators.required],
     descripcion: [''],
-    estado: ['desarrollo' as TaskStatus, Validators.required],
+    estado: ['', Validators.required],
     prioridad: ['media' as TaskPriority, Validators.required],
     asignadoA: [''],
     proyecto: [''],
@@ -158,6 +160,11 @@ export class TaskFormComponent implements OnInit {
             : '',
         });
       }
+    }
+
+    const cols = this.columnService.columnas();
+    if (cols.length > 0 && !this.taskForm.controls.estado.value) {
+      this.taskForm.patchValue({estado: cols[0].id});
     }
   }
 
