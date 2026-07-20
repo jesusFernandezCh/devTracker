@@ -1,1 +1,144 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'tailwindcss';
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --color-surface: #ffffff;
+
+  --color-status-desarrollo-dot: #EAB308;
+  --color-status-desarrollo-bg: #FEF9C3;
+  --color-status-desarrollo-text: #A16207;
+  --color-status-calidad-dot: #3B82F6;
+  --color-status-calidad-bg: #DBEAFE;
+  --color-status-calidad-text: #1D4ED8;
+  --color-status-produccion-dot: #22C55E;
+  --color-status-produccion-bg: #DCFCE7;
+  --color-status-produccion-text: #15803D;
+
+  --color-priority-baja-bg: #F3F4F6;
+  --color-priority-baja-text: #374151;
+  --color-priority-media-bg: #DBEAFE;
+  --color-priority-media-text: #1D4ED8;
+  --color-priority-alta-bg: #FFEDD5;
+  --color-priority-alta-text: #C2410C;
+  --color-priority-critica-bg: #FEE2E2;
+  --color-priority-critica-text: #B91C1C;
+}
+
+[data-theme="dark"] {
+  --color-gray-50: #0B1120;
+  --color-gray-100: #1E293B;
+  --color-gray-200: #334155;
+  --color-gray-300: #475569;
+  --color-gray-400: #64748B;
+  --color-gray-500: #94A3B8;
+  --color-gray-600: #CBD5E1;
+  --color-gray-700: #E2E8F0;
+  --color-gray-800: #F1F5F9;
+  --color-gray-900: #F8FAFC;
+
+  --color-indigo-50: #1E1B4B;
+  --color-indigo-500: #818CF8;
+  --color-indigo-600: #6366F1;
+  --color-indigo-700: #4F46E5;
+
+  --color-red-50: #450A0A;
+  --color-red-500: #F87171;
+  --color-red-600: #F87171;
+
+  --color-purple-100: #3B0764;
+  --color-purple-700: #D8B4FE;
+
+  --color-surface: #1E293B;
+
+  --color-status-desarrollo-dot: #FACC15;
+  --color-status-desarrollo-bg: #422006;
+  --color-status-desarrollo-text: #FDE047;
+  --color-status-calidad-dot: #60A5FA;
+  --color-status-calidad-bg: #1E3A5F;
+  --color-status-calidad-text: #93C5FD;
+  --color-status-produccion-dot: #4ADE80;
+  --color-status-produccion-bg: #14532D;
+  --color-status-produccion-text: #86EFAC;
+
+  --color-priority-baja-bg: #334155;
+  --color-priority-baja-text: #CBD5E1;
+  --color-priority-media-bg: #1E3A5F;
+  --color-priority-media-text: #93C5FD;
+  --color-priority-alta-bg: #431407;
+  --color-priority-alta-text: #FDBA74;
+  --color-priority-critica-bg: #450A0A;
+  --color-priority-critica-text: #FCA5A5;
+}
+
+[data-theme="dark"] .bg-white {
+  background-color: var(--color-surface);
+}
+
+.dot-desarrollo { background-color: var(--color-status-desarrollo-dot); }
+.dot-calidad { background-color: var(--color-status-calidad-dot); }
+.dot-produccion { background-color: var(--color-status-produccion-dot); }
+
+.badge-desarrollo {
+  background-color: var(--color-status-desarrollo-bg);
+  color: var(--color-status-desarrollo-text);
+}
+.badge-calidad {
+  background-color: var(--color-status-calidad-bg);
+  color: var(--color-status-calidad-text);
+}
+.badge-produccion {
+  background-color: var(--color-status-produccion-bg);
+  color: var(--color-status-produccion-text);
+}
+
+.badge-priority-baja {
+  background-color: var(--color-priority-baja-bg);
+  color: var(--color-priority-baja-text);
+}
+.badge-priority-media {
+  background-color: var(--color-priority-media-bg);
+  color: var(--color-priority-media-text);
+}
+.badge-priority-alta {
+  background-color: var(--color-priority-alta-bg);
+  color: var(--color-priority-alta-text);
+}
+.badge-priority-critica {
+  background-color: var(--color-priority-critica-bg);
+  color: var(--color-priority-critica-text);
+}
+
+/* ── Drag & drop animations ── */
+
+.cdk-drag-preview {
+  opacity: 0.85;
+  rotate: 3deg;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.25;
+  border: 2px dashed var(--color-gray-300);
+  border-radius: 0.5rem;
+}
+
+.cdk-drop-list-receiving {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s ease;
+}
+
+[data-theme="dark"] .cdk-drop-list-receiving {
+  background-color: rgba(129, 140, 248, 0.12) !important;
+}
+
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
