@@ -24,6 +24,7 @@ No `lint` or `typecheck` scripts are configured.
 | Path | Component |
 |---|---|
 | `/` | BoardComponent (kanban) |
+| `/proyectos` | ProyectosComponent |
 | `/tarea/nueva` | TaskFormComponent |
 | `/tarea/:id` | TaskDetailComponent |
 | `/tarea/:id/editar` | TaskFormComponent |
