@@ -1,4 +1,4 @@
-import {Component, inject, ViewChild, ElementRef, HostListener, effect} from '@angular/core';
+import {Component, inject, ViewChild, ElementRef, HostListener, effect, AfterViewInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {TaskService} from '../../services/task.service';
@@ -16,7 +16,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
     <div class="space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Tablero Kanban</h1>
+          <h1 class="text-2xl font-bold text-gray-900">Tablero de tareas</h1>
           <p class="text-sm text-gray-500 mt-1">Arrastra las tareas entre columnas para cambiar su estado</p>
         </div>
         <div class="flex items-center gap-3">
@@ -41,9 +41,9 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
       <div class="relative">
         @if (hasScroll) {
           <button (click)="scrollIzquierda()"
-                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-all -ml-5"
+                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -ml-6"
                   aria-label="Desplazar a la izquierda">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
@@ -61,9 +61,29 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
                    class="flex items-center justify-between px-4 pt-4 cursor-grab active:cursor-grabbing">
                 <div class="flex items-center space-x-2 min-w-0">
                   <div class="w-3 h-3 rounded-full shrink-0" [style.background-color]="col.color"></div>
-                  <h2 class="text-lg font-semibold text-gray-800 truncate">{{ col.nombre }}</h2>
+                  @if (editandoColumnaId === col.id) {
+                    <input [(ngModel)]="editandoColumnaNombre"
+                           (keydown.enter)="guardarEditColumna()"
+                           (blur)="guardarEditColumna()"
+                           (keydown.escape)="cancelarEditColumna()"
+                           class="flex-1 min-w-0 px-1 py-0.5 text-lg font-semibold text-gray-800 bg-transparent border-0 border-b-2 border-indigo-500 focus:ring-0 outline-none"
+                           autofocus>
+                  } @else {
+                    <h2 class="text-lg font-semibold text-gray-800 truncate cursor-pointer rounded px-1 py-0.5 hover:bg-gray-100 transition-colors"
+                        (click)="iniciarEditColumna(col)">
+                      {{ col.nombre }}
+                    </h2>
+                  }
                   <span class="bg-gray-200 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full shrink-0">{{ (tareasPorColumna().get(col.id) ?? []).length }}</span>
                 </div>
+                <div class="flex items-center gap-0.5">
+                <button (mousedown)="$event.stopPropagation()" (click)="nuevaTareaEnColumna(col.id)"
+                        class="p-1 text-gray-400 hover:text-indigo-500 transition-all shrink-0"
+                        aria-label="Nueva tarea en esta columna">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                  </svg>
+                </button>
                 <button (mousedown)="$event.stopPropagation()" (click)="onEliminarColumna(col)"
                         class="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all shrink-0"
                         aria-label="Eliminar columna">
@@ -71,6 +91,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
                 </button>
+                </div>
               </div>
               <div class="flex-1 p-4 pt-3 min-h-0">
                 <app-column [columna]="col"
@@ -86,9 +107,9 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
       </div>
         @if (hasScroll) {
           <button (click)="scrollDerecha()"
-                  class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-all -mr-5"
+                  class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -mr-6"
                   aria-label="Desplazar a la derecha">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
           </button>
@@ -209,7 +230,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
     :host { display: block; }
   `]
 })
-export class BoardComponent {
+export class BoardComponent implements AfterViewInit {
   private readonly router = inject(Router);
   protected readonly taskService = inject(TaskService);
   protected readonly columnService = inject(ColumnService);
@@ -225,6 +246,10 @@ export class BoardComponent {
       this.columnService.columnas();
       setTimeout(() => this.actualizarEstadoScroll());
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.actualizarEstadoScroll();
   }
 
   @HostListener('window:resize')
@@ -342,5 +367,9 @@ export class BoardComponent {
 
   nuevaTarea(): void {
     this.router.navigate(['/tarea/nueva']);
+  }
+
+  nuevaTareaEnColumna(columnaId: string): void {
+    this.router.navigate(['/tarea/nueva'], {queryParams: {columna: columnaId}});
   }
 }

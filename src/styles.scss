@@ -8,7 +8,17 @@
 
   --scrollbar-thumb: #d1d5db;
   --scrollbar-track: transparent;
+
+  --color-priority-baja-bg: #F3F4F6;
+  --color-priority-baja-text: #374151;
+  --color-priority-media-bg: #DBEAFE;
+  --color-priority-media-text: #1D4ED8;
+  --color-priority-alta-bg: #FFEDD5;
+  --color-priority-alta-text: #C2410C;
+  --color-priority-critica-bg: #FEE2E2;
+  --color-priority-critica-text: #B91C1C;
 }
+
 [data-theme="dark"] {
   --scrollbar-thumb: #4b5563;
 }
@@ -29,16 +39,6 @@
   border-radius: 3px;
   border: 2px solid transparent;
   background-clip: content-box;
-}
-
-  --color-priority-baja-bg: #F3F4F6;
-  --color-priority-baja-text: #374151;
-  --color-priority-media-bg: #DBEAFE;
-  --color-priority-media-text: #1D4ED8;
-  --color-priority-alta-bg: #FFEDD5;
-  --color-priority-alta-text: #C2410C;
-  --color-priority-critica-bg: #FEE2E2;
-  --color-priority-critica-text: #B91C1C;
 }
 
 [data-theme="dark"] {

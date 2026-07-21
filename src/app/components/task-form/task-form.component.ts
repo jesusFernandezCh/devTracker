@@ -164,7 +164,12 @@ export class TaskFormComponent implements OnInit {
 
     const cols = this.columnService.columnas();
     if (cols.length > 0 && !this.taskForm.controls.estado.value) {
-      this.taskForm.patchValue({estado: cols[0].id});
+      const columnaId = this.route.snapshot.queryParamMap.get('columna');
+      if (columnaId && cols.some(c => c.id === columnaId)) {
+        this.taskForm.patchValue({estado: columnaId});
+      } else {
+        this.taskForm.patchValue({estado: cols[0].id});
+      }
     }
   }
 
