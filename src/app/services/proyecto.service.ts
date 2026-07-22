@@ -10,6 +10,8 @@ const PROYECTOS_DEMO: Proyecto[] = [
     descripcion: 'Rediseño completo del sitio web institucional con enfoque en rendimiento y accesibilidad.',
     fechaDesde: '2026-04-01',
     fechaHasta: '2026-06-30',
+    cliente: 'Cliente A',
+    status: 'Activo',
     documentacion: 'https://figma.com/file/sitio-web',
     createdAt: new Date().toISOString(),
   },
@@ -19,12 +21,16 @@ const PROYECTOS_DEMO: Proyecto[] = [
     descripcion: 'Aplicación móvil para seguimiento de pedidos en tiempo real.',
     fechaDesde: '2026-05-15',
     fechaHasta: '2026-09-15',
+    cliente: 'Cliente B',
+    status: 'Pausa',
     documentacion: 'https://figma.com/file/app-movil',
     createdAt: new Date().toISOString(),
   },
   {
     id: crypto.randomUUID(),
     nombre: 'Rediseño Dashboard',
+    cliente: 'Cliente C',
+    status: 'Activo',
     descripcion: 'Modernización del panel de administración con gráficos interactivos y modo oscuro.',
     fechaDesde: '2026-07-01',
     fechaHasta: '2026-10-01',
@@ -47,6 +53,8 @@ export class ProyectoService {
   }
 
   crear(data: Omit<Proyecto, 'id' | 'createdAt'>): void {
+    data = { ...data, cliente: data.cliente || '', status: data.status || 'Activo' };
+
     const proyecto: Proyecto = {
       ...data,
       id: crypto.randomUUID(),
@@ -76,7 +84,13 @@ export class ProyectoService {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
-        this._proyectos.set(JSON.parse(raw));
+        const data = JSON.parse(raw) as Proyecto[];
+        this._proyectos.set(data.map(p => ({
+          ...p,
+          cliente: p.cliente ?? '',
+          status: p.status ?? 'Activo',
+        })));
+        this._guardar();
         return;
       } catch {
         /* ignorar */

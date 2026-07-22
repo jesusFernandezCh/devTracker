@@ -57,7 +57,9 @@ import {Proyecto} from '../../models/proyecto.model';
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
                   <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Nombre</th>
                   <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Descripción</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Fechas</th>
+                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Fecha inicio</th>
+                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Cliente</th>
+                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Estado</th>
                   <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Figma</th>
                   <th class="text-right px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="font-family: 'DM Sans', sans-serif; color: var(--color-gray-400);">Acciones</th>
                 </tr>
@@ -76,8 +78,22 @@ import {Proyecto} from '../../models/proyecto.model';
                     </td>
                     <td class="px-4 sm:px-6 py-4 hidden md:table-cell">
                       <span class="text-sm whitespace-nowrap" style="color: var(--color-gray-500);">
-                        {{ proyecto.fechaDesde }} — {{ proyecto.fechaHasta }}
+                        {{ proyecto.fechaDesde }}
                       </span>
+                    </td>
+                    <td class="px-4 sm:px-6 py-4 hidden lg:table-cell">
+                      <span class="text-sm" style="color: var(--color-gray-600);">{{ proyecto.cliente || '—' }}</span>
+                    </td>
+                    <td class="px-4 sm:px-6 py-4 hidden lg:table-cell">
+                      @if (proyecto.status) {
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                              [style.color]="statusColor(proyecto.status).text" 
+                              [style.background-color]="statusColor(proyecto.status).bg">
+                          {{ proyecto.status }}
+                        </span>
+                      } @else {
+                        <span class="text-sm" style="color: var(--color-gray-300);">—</span>
+                      }
                     </td>
                     <td class="px-4 sm:px-6 py-4 hidden lg:table-cell">
                       @if (proyecto.documentacion) {
@@ -194,6 +210,31 @@ import {Proyecto} from '../../models/proyecto.model';
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
+                  <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Cliente</label>
+                  <select formControlName="cliente"
+                          class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
+                          style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                    <option value="">Selecciona un cliente</option>
+                    <option value="Cliente A">Cliente A</option>
+                    <option value="Cliente B">Cliente B</option>
+                    <option value="Cliente C">Cliente C</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Estado</label>
+                  <select formControlName="status"
+                          class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
+                          style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                    <option value="">Selecciona un estado</option>
+                    <option value="Activo">Activo</option>
+                    <option value="Pausa">Pausa</option>
+                    <option value="Inactivo">Inactivo</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
                   <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Fecha inicio</label>
                   <input formControlName="fechaDesde" type="date"
                          class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
@@ -264,6 +305,8 @@ export class ProyectosComponent {
   proyectoForm = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.minLength(3)]],
     descripcion: [''],
+    cliente: ['', Validators.required],
+    status: ['', Validators.required],
     fechaDesde: ['', Validators.required],
     fechaHasta: ['', Validators.required],
     documentacion: [''],
@@ -280,6 +323,8 @@ export class ProyectosComponent {
     this.proyectoForm.setValue({
       nombre: proyecto.nombre,
       descripcion: proyecto.descripcion,
+      cliente: proyecto.cliente,
+      status: proyecto.status,
       fechaDesde: proyecto.fechaDesde,
       fechaHasta: proyecto.fechaHasta,
       documentacion: proyecto.documentacion,
@@ -314,6 +359,19 @@ export class ProyectosComponent {
 
   cancelarEliminar(): void {
     this.deleteConfirmId = null;
+  }
+
+  statusColor(status: string): { text: string; bg: string } {
+    switch (status) {
+      case 'Activo':
+        return { text: '#059669', bg: '#d1fae5' };
+      case 'Pausa':
+        return { text: '#b45309', bg: '#fef3c7' };
+      case 'Inactivo':
+        return { text: '#dc2626', bg: '#fee2e2' };
+      default:
+        return { text: '#6b7280', bg: '#f3f4f6' };
+    }
   }
 
   cerrarForm(): void {
