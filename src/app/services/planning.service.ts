@@ -19,6 +19,7 @@ export class PlanningService {
   crear(data: Omit<Planning, 'id' | 'createdAt'>): void {
     const planning: Planning = {
       ...data,
+      tareas: data.tareas ?? [],
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
@@ -46,7 +47,12 @@ export class PlanningService {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
-        this._plannings.set(JSON.parse(raw));
+        const data = JSON.parse(raw) as Planning[];
+        this._plannings.set(data.map(p => ({
+          ...p,
+          tareas: p.tareas ?? [],
+        })));
+        this._guardar();
         return;
       } catch {
         /* ignorar */

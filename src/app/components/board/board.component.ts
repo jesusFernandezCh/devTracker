@@ -33,7 +33,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Nueva Tarea
+            Tarea
           </button>
         </div>
       </div>
@@ -79,7 +79,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
                 <div class="flex items-center gap-0.5">
                 <button (mousedown)="$event.stopPropagation()" (click)="nuevaTareaEnColumna(col.id)"
                         class="p-1 text-gray-400 hover:text-indigo-500 transition-all shrink-0"
-                        aria-label="Nueva tarea en esta columna">
+                        aria-label="Tarea en esta columna">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                   </svg>
