@@ -617,6 +617,7 @@ export class PlanningComponent implements OnDestroy {
       id: crypto.randomUUID(),
       tarea: raw.tarea,
       complejidad: raw.complejidad as PlanningTask['complejidad'],
+      completada: false,
     };
 
     const tareasActuales = this.planningTareasActual.tareas ?? [];

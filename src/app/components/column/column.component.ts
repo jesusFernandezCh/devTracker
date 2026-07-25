@@ -1,14 +1,14 @@
 import {Component, input, output} from '@angular/core';
 import {trigger, transition, style, animate} from '@angular/animations';
-import {Task} from '../../models/task.model';
+import {ProyectoConDatos} from '../../models/proyecto.model';
 import {Columna} from '../../models/columna.model';
-import {TaskCardComponent} from '../task-card/task-card.component';
+import {ProjectCardComponent} from '../project-card/project-card.component';
 import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-column',
   standalone: true,
-  imports: [TaskCardComponent, CdkDropList, CdkDrag],
+  imports: [ProjectCardComponent, CdkDropList, CdkDrag],
   animations: [
     trigger('slideIn', [
       transition(':enter', [
@@ -20,21 +20,27 @@ import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} f
   template: `
     <div cdkDropList
            [id]="columna().id"
-           [cdkDropListData]="tasks()"
+           [cdkDropListData]="proyectos()"
            [cdkDropListConnectedTo]="connectedDropIds()"
            class="flex-1 space-y-3 overflow-y-auto min-h-[200px] p-1"
            (cdkDropListDropped)="onDrop($event)">
-        @for (task of tasks(); track task.id) {
-          <div cdkDrag [cdkDragData]="task" [@slideIn]>
-            <app-task-card [tarea]="task" (viewDetail)="viewDetail.emit($event)" (deleteTask)="deleteTask.emit($event)"/>
+        @for (proj of proyectos(); track proj.proyecto.id) {
+          <div cdkDrag [cdkDragData]="proj" [@slideIn]>
+            <app-project-card
+              [proyecto]="proj.proyecto"
+              [plannings]="proj.plannings"
+              [tareas]="proj.tareas"
+              (viewDetail)="viewDetail.emit($event)"
+              (deleteProject)="deleteProject.emit($event)"
+              (toggleCompletada)="toggleCompletada.emit($event)"/>
           </div>
         }
         @empty {
           <div class="flex flex-col items-center justify-center h-32 text-gray-400">
             <svg class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-3 4v6m-3-3h6"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
             </svg>
-            <span class="text-sm">Arrastra tareas aquí</span>
+            <span class="text-sm">Arrastra proyectos aquí</span>
           </div>
         }
       </div>
@@ -45,13 +51,14 @@ import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} f
 })
 export class ColumnComponent {
   columna = input.required<Columna>();
-  tasks = input.required<Task[]>();
+  proyectos = input.required<ProyectoConDatos[]>();
   connectedDropIds = input<string[]>([]);
-  moveTask = output<{ taskId: string; newStatus: string }>();
+  moveProject = output<{ proyectoId: string; newStatus: string }>();
   viewDetail = output<string>();
-  deleteTask = output<string>();
+  deleteProject = output<string>();
+  toggleCompletada = output<string>();
 
-  onDrop(event: CdkDragDrop<Task[]>): void {
+  onDrop(event: CdkDragDrop<ProyectoConDatos[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
@@ -61,8 +68,8 @@ export class ColumnComponent {
         event.previousIndex,
         event.currentIndex,
       );
-      const taskId = event.item.data.id;
-      this.moveTask.emit({ taskId, newStatus: this.columna().id });
+      const proyectoId = event.item.data.proyecto.id;
+      this.moveProject.emit({ proyectoId, newStatus: this.columna().id });
     }
   }
 }

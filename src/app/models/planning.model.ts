@@ -2,6 +2,7 @@ export interface PlanningTask {
   id: string;
   tarea: string;
   complejidad: 'Simple' | 'Media' | 'Compleja';
+  completada: boolean;
 }
 
 export interface Planning {

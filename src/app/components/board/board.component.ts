@@ -1,10 +1,12 @@
-import {Component, inject, ViewChild, ElementRef, HostListener, effect, AfterViewInit} from '@angular/core';
+import {Component, inject, computed, ViewChild, ElementRef, HostListener, effect, AfterViewInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {FormsModule} from '@angular/forms';
-import {TaskService} from '../../services/task.service';
 import {ColumnService} from '../../services/column.service';
-import {TaskStatus} from '../../models/task.model';
+import {ProyectoService} from '../../services/proyecto.service';
+import {PlanningService} from '../../services/planning.service';
 import {Columna} from '../../models/columna.model';
+import {ProyectoConDatos} from '../../models/proyecto.model';
+import {PlanningTask} from '../../models/planning.model';
 import {ColumnComponent} from '../column/column.component';
 import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/drag-drop';
 
@@ -16,10 +18,17 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
     <div class="space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Tablero de tareas</h1>
-          <p class="text-sm text-gray-500 mt-1">Arrastra las tareas entre columnas para cambiar su estado</p>
+          <h1 class="text-2xl font-bold text-gray-900">Tablero de proyectos</h1>
+          <p class="text-sm text-gray-500 mt-1">Arrastra los proyectos entre columnas para cambiar su fase</p>
         </div>
         <div class="flex items-center gap-3">
+          <button (click)="router.navigate(['/proyectos'])"
+                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+            <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"/>
+            </svg>
+            Proyectos
+          </button>
           <button (click)="openColumnManager()"
                   class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
             <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -41,7 +50,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
       <div class="relative">
         @if (hasScroll) {
           <button (click)="scrollIzquierda()"
-                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -ml-6"
+                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -ml-6 opacity: 60%;"
                   aria-label="Desplazar a la izquierda">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
@@ -74,7 +83,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
                       {{ col.nombre }}
                     </h2>
                   }
-                  <span class="bg-gray-200 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full shrink-0">{{ (tareasPorColumna().get(col.id) ?? []).length }}</span>
+                  <span class="bg-gray-200 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full shrink-0">{{ (proyectosPorColumna().get(col.id) ?? []).length }}</span>
                 </div>
                 <div class="flex items-center gap-0.5">
                 <button (mousedown)="$event.stopPropagation()" (click)="nuevaTareaEnColumna(col.id)"
@@ -95,11 +104,12 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
               </div>
               <div class="flex-1 p-4 pt-3 min-h-0">
                 <app-column [columna]="col"
-                            [tasks]="(tareasPorColumna().get(col.id) ?? [])"
+                            [proyectos]="(proyectosPorColumna().get(col.id) ?? [])"
                             [connectedDropIds]="connectedDropIds(col.id)"
-                            (moveTask)="onMoverTarea($event)"
+                            (moveProject)="onMoverProyecto($event)"
                             (viewDetail)="onViewDetail($event)"
-                            (deleteTask)="onEliminarTarea($event)"/>
+                            (deleteProject)="onEliminarProyecto($event)"
+                            (toggleCompletada)="onToggleCompletada($event)"/>
               </div>
             </div>
           </div>
@@ -195,7 +205,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
             <div class="border border-red-200 bg-red-50 rounded-lg p-4 mb-4">
               <p class="text-sm text-red-600 mb-3">
                 <strong>{{ deleteConfirmColumna.nombre }}</strong> tiene
-                <strong>{{ tareasEnColumna(deleteConfirmColumna.id) }}</strong> tarea(s).
+                <strong>{{ proyectosEnColumna(deleteConfirmColumna.id) }}</strong> proyecto(s) y sus tareas.
                 Se eliminarán junto con la columna. ¿Continuar?
               </p>
               <div class="flex justify-end gap-2">
@@ -231,11 +241,31 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
   `]
 })
 export class BoardComponent implements AfterViewInit {
-  private readonly router = inject(Router);
-  protected readonly taskService = inject(TaskService);
+  protected readonly router = inject(Router);
   protected readonly columnService = inject(ColumnService);
+  protected readonly proyectoService = inject(ProyectoService);
+  protected readonly planningService = inject(PlanningService);
 
-  protected readonly tareasPorColumna = this.taskService.tareasPorColumna;
+  protected readonly proyectosPorColumna = computed(() => {
+    const columnas = this.columnService.columnas();
+    const proyectos = this.proyectoService.proyectos();
+    const allPlannings = this.planningService.plannings();
+    const map = new Map<string, ProyectoConDatos[]>();
+
+    for (const col of columnas) {
+      map.set(
+        col.id,
+        proyectos
+          .filter((p) => p.columnaId === col.id)
+          .map((p) => {
+            const plannings = allPlannings.filter((pl) => pl.proyectoId === p.id);
+            const tareas: PlanningTask[] = plannings.flatMap((pl) => pl.tareas);
+            return {proyecto: p, plannings, tareas};
+          }),
+      );
+    }
+    return map;
+  });
 
   protected readonly coloresPaleta = ['#EAB308', '#3B82F6', '#22C55E', '#A855F7', '#EC4899', '#06B6D4'];
 
@@ -323,8 +353,15 @@ export class BoardComponent implements AfterViewInit {
 
   ejecutarEliminarColumna(): void {
     if (!this.deleteConfirmColumna) return;
-    this.taskService.eliminarTareasPorColumna(this.deleteConfirmColumna.id);
-    this.columnService.eliminarColumna(this.deleteConfirmColumna.id);
+    const colId = this.deleteConfirmColumna.id;
+    this.proyectoService.proyectos()
+      .filter(p => p.columnaId === colId)
+      .forEach(p => {
+        const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
+        plannings.forEach(pl => this.planningService.eliminar(pl.id));
+        this.proyectoService.eliminar(p.id);
+      });
+    this.columnService.eliminarColumna(colId);
     this.deleteConfirmColumna = null;
   }
 
@@ -338,29 +375,46 @@ export class BoardComponent implements AfterViewInit {
       .map(c => c.id);
   }
 
-  protected tareasEnColumna(columnaId: string): number {
-    return this.tareasPorColumna().get(columnaId)?.length ?? 0;
+  protected proyectosEnColumna(columnaId: string): number {
+    return this.proyectosPorColumna().get(columnaId)?.length ?? 0;
   }
 
-  onMoverTarea(event: { taskId: string; newStatus: TaskStatus }): void {
-    this.taskService.moverTarea(event.taskId, event.newStatus);
+  onMoverProyecto(event: { proyectoId: string; newStatus: string }): void {
+    this.proyectoService.actualizarColumna(event.proyectoId, event.newStatus);
   }
 
-  onViewDetail(id: string): void {
-    this.router.navigate(['/tarea', id]);
+  onToggleCompletada(tareaId: string): void {
+    for (const planning of this.planningService.plannings()) {
+      if (planning.tareas.some((t: PlanningTask) => t.id === tareaId)) {
+        this.planningService.toggleCompletada(planning.id, tareaId);
+        break;
+      }
+    }
   }
 
-  onEliminarTarea(id: string): void {
-    if (confirm('¿Estás seguro de eliminar esta tarea?')) {
-      this.taskService.eliminarTarea(id);
+  onViewDetail(proyectoId: string): void {
+    this.router.navigate(['/planning'], {queryParams: {proyectoId}});
+  }
+
+  onEliminarProyecto(id: string): void {
+    if (confirm('¿Estás seguro de eliminar este proyecto? Se eliminarán también sus planificaciones.')) {
+      const plannings = this.planningService.plannings().filter(p => p.proyectoId === id);
+      plannings.forEach(p => this.planningService.eliminar(p.id));
+      this.proyectoService.eliminar(id);
     }
   }
 
   onEliminarColumna(col: Columna): void {
-    const count = this.tareasEnColumna(col.id);
+    const count = this.proyectosEnColumna(col.id);
     if (count > 0) {
-      if (!confirm(`"${col.nombre}" tiene ${count} tarea(s). ¿Eliminar columna y todas sus tareas?`)) return;
-      this.taskService.eliminarTareasPorColumna(col.id);
+      if (!confirm(`"${col.nombre}" tiene ${count} proyecto(s). ¿Eliminar columna y todos sus proyectos?`)) return;
+      this.proyectoService.proyectos()
+        .filter(p => p.columnaId === col.id)
+        .forEach(p => {
+          const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
+          plannings.forEach(pl => this.planningService.eliminar(pl.id));
+          this.proyectoService.eliminar(p.id);
+        });
     }
     this.columnService.eliminarColumna(col.id);
   }
