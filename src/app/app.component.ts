@@ -1,5 +1,6 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
+import {MatIconRegistry} from '@angular/material/icon';
 import {HeaderComponent} from './components/header/header.component';
 
 @Component({
@@ -20,4 +21,8 @@ import {HeaderComponent} from './components/header/header.component';
     }
   `]
 })
-export class AppComponent {}
+export class AppComponent {
+  constructor() {
+    inject(MatIconRegistry).setDefaultFontSetClass('material-symbols-outlined');
+  }
+}
