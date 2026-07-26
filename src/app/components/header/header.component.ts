@@ -1,10 +1,11 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {ThemeService} from '../../services/theme.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive],
   template: `
     <header class="bg-white border-b border-gray-200 shadow-sm">

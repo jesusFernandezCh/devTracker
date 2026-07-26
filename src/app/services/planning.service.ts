@@ -1,4 +1,4 @@
-import {Injectable, signal, computed} from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 import {Planning} from '../models/planning.model';
 
 const STORAGE_KEY = 'devtracker-planning';
@@ -12,8 +12,8 @@ export class PlanningService {
     this._cargar();
   }
 
-  planningPorId(id: string) {
-    return computed(() => this._plannings().find((p) => p.id === id));
+  planningPorId(id: string): Planning | undefined {
+    return this._plannings().find((p) => p.id === id);
   }
 
   crear(data: Omit<Planning, 'id' | 'createdAt'>): void {

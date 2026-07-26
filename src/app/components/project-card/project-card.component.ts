@@ -1,11 +1,13 @@
-import {Component, input, output, computed} from '@angular/core';
+import {Component, input, output, computed, ChangeDetectionStrategy} from '@angular/core';
 import {Proyecto} from '../../models/proyecto.model';
 import {PlanningTask} from '../../models/planning.model';
 import {Planning} from '../../models/planning.model';
+import {complejidadEstilo, estimacionTotal, statusColor} from '../../utils/estimacion';
 
 @Component({
   selector: 'app-project-card',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div class="p-4">
@@ -17,8 +19,8 @@ import {Planning} from '../../models/planning.model';
             </h3>
             @if (proyecto().status) {
               <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
-                    [style.color]="statusColor().text"
-                    [style.background-color]="statusColor().bg">
+                    [style.color]="statusColor(proyecto().status).text"
+                    [style.background-color]="statusColor(proyecto().status).bg">
                 {{ proyecto().status }}
               </span>
             }
@@ -92,7 +94,7 @@ import {Planning} from '../../models/planning.model';
                       <p class="text-gray-400 truncate">{{ planning.descripcion }}</p>
                     }
                   </div>
-                  <span class="shrink-0 ml-2 font-semibold text-indigo-600">Estimación: {{ estimacionPlanning(planning.tareas) }} días</span>
+                  <span class="shrink-0 ml-2 font-semibold text-indigo-600">Estimación: {{ estimacionTotal(planning.tareas) }} días</span>
                 </div>
               } @empty {
                 <p class="text-xs text-gray-400 pl-2">Sin planificaciones</p>
@@ -129,8 +131,8 @@ import {Planning} from '../../models/planning.model';
                   </label>
                   <div class="flex items-center gap-2 shrink-0">
                     <span class="text-xs font-medium px-1.5 py-0.5 rounded"
-                          [style.background-color]="complejidadBg(tarea.complejidad)"
-                          [style.color]="complejidadText(tarea.complejidad)">
+                          [style.background-color]="complejidadEstilo(tarea.complejidad).bg"
+                          [style.color]="complejidadEstilo(tarea.complejidad).text">
                       {{ tarea.complejidad }}
                     </span>
                   </div>
@@ -172,6 +174,9 @@ export class ProjectCardComponent {
 
   protected mostrarPlanificaciones = false;
   protected mostrarTareas = false;
+  protected readonly complejidadEstilo = complejidadEstilo;
+  protected readonly estimacionTotal = estimacionTotal;
+  protected readonly statusColor = statusColor;
 
   protected readonly porcentajeAvance = computed(() => {
     const lista = this.tareas();
@@ -179,38 +184,6 @@ export class ProjectCardComponent {
     const completadas = lista.filter((t) => t.completada).length;
     return Math.round((completadas / lista.length) * 100);
   });
-
-  protected statusColor(): {text: string; bg: string} {
-    switch (this.proyecto().status) {
-      case 'Activo': return {text: '#059669', bg: '#d1fae5'};
-      case 'Pausa': return {text: '#b45309', bg: '#fef3c7'};
-      case 'Inactivo': return {text: '#dc2626', bg: '#fee2e2'};
-      default: return {text: '#6b7280', bg: '#f3f4f6'};
-    }
-  }
-
-  protected estimacionPlanning(tareas: PlanningTask[]): number {
-    const valores: Record<string, number> = {Simple: 1, Media: 3, Compleja: 5};
-    return tareas.reduce((sum, t) => sum + (valores[t.complejidad] ?? 0), 0);
-  }
-
-  protected complejidadBg(comp: string): string {
-    switch (comp) {
-      case 'Simple': return '#d1fae5';
-      case 'Media': return '#fef3c7';
-      case 'Compleja': return '#fee2e2';
-      default: return '#f3f4f6';
-    }
-  }
-
-  protected complejidadText(comp: string): string {
-    switch (comp) {
-      case 'Simple': return '#059669';
-      case 'Media': return '#b45309';
-      case 'Compleja': return '#dc2626';
-      default: return '#6b7280';
-    }
-  }
 
   onDelete(): void {
     this.deleteProject.emit(this.proyecto().id);

@@ -1,5 +1,6 @@
 import {Injectable, signal} from '@angular/core';
-import {Columna, COLUMNAS_DEFAULT, generarId} from '../models/columna.model';
+import {Columna, COLUMNAS_DEFAULT} from '../models/columna.model';
+import {generarId} from '../utils/helpers';
 
 const STORAGE_KEY = 'dev-tracker-columns';
 
@@ -64,6 +65,7 @@ export class ColumnService {
       }
     }
     this._columnas.set(COLUMNAS_DEFAULT);
+    this._guardar();
   }
 
   private _guardar(): void {

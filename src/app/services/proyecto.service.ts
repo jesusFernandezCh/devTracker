@@ -1,48 +1,10 @@
-import {Injectable, signal, computed} from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 import {Proyecto} from '../models/proyecto.model';
+import {PROYECTOS_DEMO} from '../data/demo-proyectos';
 
 const STORAGE_KEY = 'devtracker-proyectos';
 
 const COLUMNA_POR_DEFECTO = 'desarrollo';
-
-const PROYECTOS_DEMO: Proyecto[] = [
-  {
-    id: crypto.randomUUID(),
-    nombre: 'Sitio Web Corporativo',
-    descripcion: 'Rediseño completo del sitio web institucional con enfoque en rendimiento y accesibilidad.',
-    fechaDesde: '2026-04-01',
-    fechaHasta: '2026-06-30',
-    cliente: 'Cliente A',
-    status: 'Activo',
-    columnaId: 'desarrollo',
-    documentacion: 'https://figma.com/file/sitio-web',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    nombre: 'App Móvil',
-    descripcion: 'Aplicación móvil para seguimiento de pedidos en tiempo real.',
-    fechaDesde: '2026-05-15',
-    fechaHasta: '2026-09-15',
-    cliente: 'Cliente B',
-    status: 'Pausa',
-    columnaId: 'calidad',
-    documentacion: 'https://figma.com/file/app-movil',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    nombre: 'Rediseño Dashboard',
-    cliente: 'Cliente C',
-    status: 'Activo',
-    columnaId: 'produccion',
-    descripcion: 'Modernización del panel de administración con gráficos interactivos y modo oscuro.',
-    fechaDesde: '2026-07-01',
-    fechaHasta: '2026-10-01',
-    documentacion: 'https://figma.com/file/dashboard',
-    createdAt: new Date().toISOString(),
-  },
-];
 
 @Injectable({providedIn: 'root'})
 export class ProyectoService {
@@ -53,8 +15,8 @@ export class ProyectoService {
     this._cargar();
   }
 
-  proyectoPorId(id: string) {
-    return computed(() => this._proyectos().find((p) => p.id === id));
+  proyectoPorId(id: string): Proyecto | undefined {
+    return this._proyectos().find((p) => p.id === id);
   }
 
   crear(data: Omit<Proyecto, 'id' | 'createdAt' | 'columnaId'> & {columnaId?: string}): void {

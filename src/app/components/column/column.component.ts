@@ -1,4 +1,4 @@
-import {Component, input, output} from '@angular/core';
+import {Component, input, output, ChangeDetectionStrategy} from '@angular/core';
 import {trigger, transition, style, animate} from '@angular/animations';
 import {ProyectoConDatos} from '../../models/proyecto.model';
 import {Columna} from '../../models/columna.model';
@@ -8,6 +8,7 @@ import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} f
 @Component({
   selector: 'app-column',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ProjectCardComponent, CdkDropList, CdkDrag],
   animations: [
     trigger('slideIn', [

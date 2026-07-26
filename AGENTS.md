@@ -42,7 +42,7 @@ No `lint` or `typecheck` scripts are configured.
 - **Column colors** are hex values applied via inline `[style.background-color]` on dots and `hexToRgba()` for badge backgrounds.
 - **Drag-drop for tasks**: `CdkDropList` inside `ColumnComponent` with explicit `[cdkDropListConnectedTo]` — no `cdkDropListGroup`.
 - **Drag-drop for columns**: Board-level horizontal `CdkDropList` wraps each column in `CdkDrag` with `cdkDragHandle` on the header. Column drag handle and task drop lists are in separate CDK hierarchies (no nesting).
-- Column reorder also available via the "Gestionar columnas" modal (drag handles in the modal list).
+- Column reorder also available via the "Columnas" modal (drag handles in the modal list).
 - Delete column shows confirmation with task count; inline delete uses `confirm()` dialog.
 - `ColumnService` seeds 3 default columns on first load: Desarrollo, Calidad, Produccion.
 - Scroll arrows on column container only visible when `scrollWidth > clientWidth` (checked via `effect` + `HostListener('window:resize')`).
