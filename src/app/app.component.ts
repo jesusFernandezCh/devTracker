@@ -43,7 +43,7 @@ import {HeaderComponent} from './components/header/header.component';
 
       <mat-sidenav-content>
         <app-header (toggleMenu)="sidenav.toggle()" />
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main class="container py-8">
           <router-outlet />
         </main>
       </mat-sidenav-content>

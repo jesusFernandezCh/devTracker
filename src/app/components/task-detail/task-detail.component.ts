@@ -11,7 +11,8 @@ import {complejidadEstilo} from '../../utils/estimacion';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
-    <div class="max-w-2xl mx-auto">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
       <div class="mb-6">
         <button (click)="volver()" class="text-sm inline-flex items-center transition-colors"
                 style="color: var(--color-gray-500);" (mouseenter)="hoverVolver = true" (mouseleave)="hoverVolver = false"
@@ -96,6 +97,7 @@ import {complejidadEstilo} from '../../utils/estimacion';
           </button>
         </div>
       }
+    </div>
     </div>
   `,
   styles: [`

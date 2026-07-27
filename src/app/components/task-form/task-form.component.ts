@@ -12,7 +12,8 @@ import {CommonModule} from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, CommonModule],
   template: `
-    <div class="max-w-2xl mx-auto">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
       <div class="mb-6">
         <button (click)="volver()" class="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center">
           <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,6 +94,7 @@ import {CommonModule} from '@angular/common';
           </form>
         </div>
       </div>
+    </div>
     </div>
   `,
   styles: [`

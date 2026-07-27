@@ -11,7 +11,7 @@ import {ThemeService} from '../../services/theme.service';
   imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule],
   template: `
     <header style="background-color: var(--color-surface); border-color: var(--color-gray-200);" class="border-b shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="container">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center space-x-8">
             <a routerLink="/" class="flex items-center space-x-2">
