@@ -1,4 +1,4 @@
-import {Component, inject, signal, ChangeDetectionStrategy} from '@angular/core';
+import {Component, inject, output, ChangeDetectionStrategy} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -42,37 +42,12 @@ import {ThemeService} from '../../services/theme.service';
                     [attr.aria-label]="themeService.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'">
               <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
             </button>
-            <button mat-icon-button (click)="menuOpen.set(!menuOpen())" style="color: var(--color-gray-500);" class="md:hidden" [attr.aria-label]="menuOpen() ? 'Cerrar menú' : 'Abrir menú'">
-              <mat-icon>{{ menuOpen() ? 'close' : 'menu' }}</mat-icon>
+            <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-gray-500);" class="md:hidden" aria-label="Abrir menú">
+              <mat-icon>menu</mat-icon>
             </button>
           </div>
         </div>
       </div>
-
-      @if (menuOpen()) {
-        <div class="md:hidden border-t" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-          <nav class="px-4 py-3 space-y-1">
-            <a routerLink="/" routerLinkActive="bg-indigo-50 text-indigo-600" [routerLinkActiveOptions]="{exact: true}"
-               (click)="cerrarMenu()"
-               class="block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
-               style="color: var(--color-gray-700);">
-              Tablero
-            </a>
-            <a routerLink="/proyectos" routerLinkActive="bg-indigo-50 text-indigo-600"
-               (click)="cerrarMenu()"
-               class="block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
-               style="color: var(--color-gray-700);">
-              Proyectos
-            </a>
-            <a routerLink="/planning" routerLinkActive="bg-indigo-50 text-indigo-600"
-               (click)="cerrarMenu()"
-               class="block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
-               style="color: var(--color-gray-700);">
-              Planning
-            </a>
-          </nav>
-        </div>
-      }
     </header>
   `,
   styles: [`
@@ -83,9 +58,5 @@ import {ThemeService} from '../../services/theme.service';
 })
 export class HeaderComponent {
   protected readonly themeService = inject(ThemeService);
-  protected readonly menuOpen = signal(false);
-
-  protected cerrarMenu(): void {
-    this.menuOpen.set(false);
-  }
+  readonly toggleMenu = output<void>();
 }
