@@ -13,10 +13,10 @@ import {CommonModule} from '@angular/common';
   imports: [ReactiveFormsModule, CommonModule],
   template: `
     <div class="row justify-content-center">
-      <div class="col-12 col-md-8 col-lg-6">
-      <div class="mb-6">
-        <button (click)="volver()" class="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center">
-          <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="col-12 col-md-6 col-lg-5">
+      <div class="mb-4">
+        <button (click)="volver()" class="text-xs text-gray-500 hover:text-gray-700 inline-flex items-center">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
           Volver
@@ -24,17 +24,17 @@ import {CommonModule} from '@angular/common';
       </div>
 
       <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-        <div class="px-6 py-5 border-b" style="border-color: var(--color-gray-100);">
-          <h1 class="text-2xl font-bold" style="color: var(--color-gray-900);">{{ editTaskId ? 'Editar tarea' : 'Nueva tarea' }}</h1>
+        <div class="px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
+          <h1 class="text-sm font-bold" style="color: var(--color-gray-900);">{{ editTaskId ? 'Editar tarea' : 'Nueva tarea' }}</h1>
         </div>
 
-        <div class="p-6">
-          <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="p-4">
+          <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="space-y-3">
             @if (!editTaskId) {
               <div>
-                <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Planning *</label>
+                <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Planning *</label>
                 <select formControlName="planningId"
-                        class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
+                        class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                         style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
                   <option value="">Selecciona un planning</option>
                   @for (planning of planningService.plannings(); track planning.id) {
@@ -47,7 +47,7 @@ import {CommonModule} from '@angular/common';
               </div>
             }
             @if (editTaskId && editContext(); as ctx) {
-              <div class="rounded-lg p-4" style="background-color: var(--color-gray-50);">
+              <div class="rounded-lg p-3" style="background-color: var(--color-gray-50);">
                 <p class="text-sm" style="color: var(--color-gray-600);">
                   Planning: <span class="font-medium" style="color: var(--color-gray-900);">{{ ctx.planningDesc }}</span>
                   · {{ ctx.proyectoNombre }} · {{ ctx.fecha }}
@@ -56,9 +56,9 @@ import {CommonModule} from '@angular/common';
             }
 
             <div>
-              <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Nombre de la tarea *</label>
+              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Nombre de la tarea *</label>
               <input type="text" formControlName="nombre"
-                     class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
+                     class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                      style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
                      placeholder="Ej: Implementar autenticación">
               @if (taskForm.controls.nombre.touched && taskForm.controls.nombre.errors?.['required']) {
@@ -67,9 +67,9 @@ import {CommonModule} from '@angular/common';
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Complejidad *</label>
+              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Complejidad *</label>
               <select formControlName="complejidad"
-                      class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
+                      class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
                 <option value="">Selecciona</option>
                 <option value="Simple">Simple</option>
@@ -81,13 +81,13 @@ import {CommonModule} from '@angular/common';
               }
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-4 border-t" style="border-color: var(--color-gray-100);">
+            <div class="flex items-center justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
               <button type="button" (click)="volver()"
-                      class="px-4 py-2.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
                 Cancelar
               </button>
               <button type="submit" [disabled]="taskForm.invalid"
-                      class="px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-indigo-600)] hover:bg-[var(--color-indigo-700)]">
+                      class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-indigo-600)] hover:bg-[var(--color-indigo-700)]">
                 {{ editTaskId ? 'Guardar cambios' : 'Crear tarea' }}
               </button>
             </div>

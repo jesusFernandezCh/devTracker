@@ -57,40 +57,40 @@ import {PlanningDetailComponent} from '../planning-detail/planning-detail.compon
             <table class="w-full">
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Descripción</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Proyecto</th>
-                  <th class="text-center px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Tareas</th>
-                  <th class="text-center px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estimación</th>
-                  <th class="text-right px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Descripción</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Proyecto</th>
+                  <th class="text-center px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Tareas</th>
+                  <th class="text-center px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estimación</th>
+                  <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
                 </tr>
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
                 @for (planning of plannings(); track planning.id) {
                   <tr class="planning-row" style="transition: background-color 0.15s;">
-                    <td class="px-4 sm:px-6 py-4 hidden sm:table-cell border-l-2 transition-all duration-200 cursor-pointer" style="border-color: rgba(13, 148, 136, 0.5);" (click)="abrirDetalle(planning)">
+                    <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell border-l-2 transition-all duration-200 cursor-pointer" style="border-color: rgba(13, 148, 136, 0.5);" (click)="abrirDetalle(planning)">
                       <span class="text-sm truncate-desc transition-colors text-[var(--color-gray-700)] hover:text-[var(--color-teal-600)]">
                         {{ planning.descripcion || '—' }}
                       </span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4">
+                    <td class="px-4 sm:px-6 py-2.5">
                       <span class="text-sm whitespace-nowrap" style="color: var(--color-gray-900);">{{ planning.fecha }}</span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 hidden sm:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell">
                       <span class="text-sm" style="color: var(--color-gray-500);">{{ nombreProyecto(planning.proyectoId) }}</span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 text-center">
+                    <td class="px-4 sm:px-6 py-2.5 text-center">
                       <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-medium"
                             style="background-color: #e0f2fe; color: #0369a1;">
                         {{ planning.tareas.length }}
                       </span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 text-center">
+                    <td class="px-4 sm:px-6 py-2.5 text-center">
                       <span class="text-sm font-semibold" style="color: var(--color-indigo-600);">
                         {{ estimacionTotal(planning.tareas) }} día{{ estimacionTotal(planning.tareas) !== 1 ? 's' : '' }}
                       </span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 text-right">
+                    <td class="px-4 sm:px-6 py-2.5 text-right">
                       <div class="flex items-center justify-end gap-1">
                         <button (click)="abrirEditar(planning)"
                                 class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
