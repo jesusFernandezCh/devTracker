@@ -46,9 +46,11 @@ import {ThemeService} from '../../services/theme.service';
                     [attr.aria-label]="themeService.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'">
               <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
             </button>
-            <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-gray-500);" class="md:hidden" aria-label="Abrir menú">
-              <mat-icon>menu</mat-icon>
-            </button>
+            <span class="md:hidden">
+              <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-gray-500);" aria-label="Abrir menú">
+                <mat-icon>menu</mat-icon>
+              </button>
+            </span>
           </div>
         </div>
       </div>

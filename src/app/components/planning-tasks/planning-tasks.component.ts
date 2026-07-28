@@ -13,32 +13,32 @@ import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
   imports: [CommonModule, ReactiveFormsModule, DragDropModule],
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrar.emit()">
-      <div class="modal-enter rounded-xl shadow-xl w-full max-w-lg border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
-        <div class="flex items-center justify-between px-6 py-5 border-b" style="border-color: var(--color-gray-100);">
-          <h2 class="text-lg font-bold" style="color: var(--color-gray-900);">
-            Planning — {{ nombreProyecto() }}
+      <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
+          <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">
+            {{ nombreProyecto() }}
           </h2>
           <button (click)="cerrar.emit()"
-                  class="p-1.5 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                  class="p-0.5 rounded transition-colors" style="color: var(--color-gray-400);">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        <div class="p-6 space-y-5">
-          <div class="grid grid-cols-2 gap-4">
+        <div class="p-4 space-y-3">
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Tarea</label>
+              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Tarea</label>
               <input [formControl]="tareaForm.controls.tarea" type="text" autocomplete="off"
-                     class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
+                     class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                      style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
                      placeholder="Nombre de la tarea">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Complejidad</label>
+              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Complejidad</label>
               <select [formControl]="tareaForm.controls.complejidad"
-                      class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
+                      class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
                 <option value="">Selecciona</option>
                 <option value="Simple">Simple</option>
@@ -49,21 +49,21 @@ import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
           </div>
 
           <button (click)="agregarTarea()"
-                  class="w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-indigo-600)] hover:bg-[var(--color-indigo-700)]"
+                  class="w-full px-3 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-indigo-600)] hover:bg-[var(--color-indigo-700)]"
                   [disabled]="tareaForm.invalid">
             Agregar tarea
           </button>
 
           @if (planning().tareas.length > 0) {
-            <div class="border-t pt-4" style="border-color: var(--color-gray-100);">
-              <p class="text-sm font-medium mb-3" style="color: var(--color-gray-700);">
+            <div class="border-t pt-3" style="border-color: var(--color-gray-200);">
+              <p class="text-sm font-medium mb-2" style="color: var(--color-gray-700);">
                 Tareas agregadas ({{ planning().tareas.length }})
               </p>
               <div cdkDropList [cdkDropListData]="planning().tareas"
-                   (cdkDropListDropped)="onDropTarea($event)" class="space-y-2 custom-scrollbar"
-                   style="max-height: 180px; overflow-y: auto;">
+                   (cdkDropListDropped)="onDropTarea($event)" class="space-y-1 custom-scrollbar"
+                   style="max-height: 150px; overflow-y: auto;">
                 @for (task of planning().tareas; track task.id) {
-                  <div cdkDrag class="flex items-center gap-2 p-3 rounded-lg group"
+                  <div cdkDrag class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg group"
                        style="background-color: var(--color-gray-50);">
                     <div class="flex-1 flex items-center gap-3 min-w-0">
                       @if (editandoTaskId() === task.id) {
@@ -118,13 +118,13 @@ import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
               </div>
             </div>
           } @else {
-            <div class="border-t pt-4" style="border-color: var(--color-gray-100);">
+            <div class="border-t pt-3" style="border-color: var(--color-gray-200);">
               <p class="text-sm text-center" style="color: var(--color-gray-400);">No hay tareas agregadas.</p>
             </div>
           }
 
           @if (planning().tareas.length > 0) {
-            <div class="flex items-center justify-between px-4 py-3 rounded-lg"
+            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg"
                  style="background: var(--estimation-bg);">
               <span class="text-sm font-semibold" style="color: var(--estimation-text);">Estimación:</span>
               <span class="text-sm font-bold" style="color: var(--estimation-text);">
@@ -133,9 +133,9 @@ import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
             </div>
           }
 
-          <div class="flex justify-end pt-2">
+          <div class="flex justify-end pt-0.5">
             <button (click)="cerrar.emit()"
-                    class="px-4 py-2.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
               Cerrar
             </button>
           </div>

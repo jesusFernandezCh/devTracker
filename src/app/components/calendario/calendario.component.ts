@@ -7,8 +7,9 @@ import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 import {ProyectoService} from '../../services/proyecto.service';
 import {ColumnService} from '../../services/column.service';
+import {PlanningService} from '../../services/planning.service';
 import {ThemeService} from '../../services/theme.service';
-import {statusColor} from '../../utils/estimacion';
+import {statusColor, complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
 import type {Proyecto} from '../../models/proyecto.model';
 import type {Columna} from '../../models/columna.model';
 
@@ -50,12 +51,12 @@ function addDay(dateStr: string): string {
           </div>
           <div class="modal-body">
             @if (p.descripcion) {
-              <div class="rounded-lg p-4 mb-4" style="background-color: var(--color-gray-50);">
+              <div class="rounded-lg p-3 mb-3" style="background-color: var(--color-gray-50);">
                 <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ p.descripcion }}</p>
               </div>
             }
 
-            <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
               <div>
                 <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</span>
                 <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ p.cliente || '—' }}</p>
@@ -89,16 +90,99 @@ function addDay(dateStr: string): string {
               }
             </div>
 
-            <div class="mt-4 pt-4 border-t" style="border-color: var(--color-gray-200);">
+            <div class="mt-3 pt-3 border-t" style="border-color: var(--color-gray-200);">
               <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Duración</span>
               <p class="mt-1 text-sm" style="color: var(--color-gray-800);">
                 {{ p.fechaDesde | date:'dd/MM/yyyy' }} — {{ p.fechaHasta | date:'dd/MM/yyyy' }}
               </p>
             </div>
 
-            <div class="flex justify-end pt-4">
+            <div class="mt-3 space-y-1">
+              <button (click)="mostrarPlanificaciones = !mostrarPlanificaciones"
+                      class="section-toggle">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/>
+                  </svg>
+                  <span>Planning ({{ planningsDelProyecto().length }})</span>
+                </span>
+                <svg class="chevron" [class.rotate-180]="mostrarPlanificaciones" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              @if (mostrarPlanificaciones) {
+                <div class="pl-3 space-y-2">
+                  @for (planning of planningsDelProyecto(); track planning.id) {
+                    <div class="planning-item">
+                      <div class="min-w-0">
+                        <span class="font-medium" style="color: var(--color-gray-700);">{{ planning.fecha }}</span>
+                        @if (planning.descripcion) {
+                          <p class="truncate" style="color: var(--color-gray-400);">{{ planning.descripcion }}</p>
+                        }
+                      </div>
+                      <span class="shrink-0 ml-2 font-semibold" style="color: var(--color-indigo-600);">Estimación: {{ estimacionTotal(planning.tareas) }} días</span>
+                    </div>
+                  } @empty {
+                    <p class="text-xs pl-2" style="color: var(--color-gray-400);">Sin planificaciones</p>
+                  }
+                </div>
+              }
+
+              <button (click)="mostrarTareas = !mostrarTareas"
+                      class="section-toggle">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-6 4h6m-6 4h6m-6 4h6"/>
+                  </svg>
+                  <span>Tareas ({{ tareasDelProyecto().length }})</span>
+                </span>
+                <svg class="chevron" [class.rotate-180]="mostrarTareas" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              @if (mostrarTareas) {
+                <div class="pl-3 space-y-1 tareas-scroll" style="max-height: 116px; overflow-y: auto;">
+                  @for (tarea of tareasDelProyecto(); track tarea.id) {
+                    <div class="task-item">
+                      <label class="flex items-center gap-2 min-w-0 cursor-pointer flex-1">
+                        <input type="checkbox"
+                               [checked]="tarea.completada"
+                               (change)="toggleTarea(tarea.id)"
+                               class="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
+                        <span class="text-xs truncate"
+                              [class.line-through]="tarea.completada"
+                              [style.text-decoration]="tarea.completada ? 'line-through' : 'none'"
+                              [style.color]="tarea.completada ? 'var(--color-gray-400)' : 'var(--color-gray-700)'">{{ tarea.tarea }}</span>
+                      </label>
+                      <span class="shrink-0 text-xs font-medium px-1.5 py-0.5 rounded"
+                            [style.background-color]="complejidadEstilo(tarea.complejidad).bg"
+                            [style.color]="complejidadEstilo(tarea.complejidad).text">
+                        {{ tarea.complejidad }}
+                      </span>
+                    </div>
+                  } @empty {
+                    <p class="text-xs pl-2" style="color: var(--color-gray-400);">Sin tareas</p>
+                  }
+                </div>
+                @if (tareasDelProyecto().length > 0) {
+                  <div class="mt-2 flex items-center gap-2 px-2">
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-200);">
+                      <div class="h-full rounded-full transition-all duration-300"
+                           [style.width.%]="porcentajeAvance()"
+                           [style.background-color]="porcentajeAvance() === 100 ? '#22C55E' : '#6366F1'"></div>
+                    </div>
+                    <span class="text-xs font-medium shrink-0"
+                          [style.color]="porcentajeAvance() === 100 ? '#059669' : 'var(--color-gray-400)'">
+                      {{ porcentajeAvance() }}%
+                    </span>
+                  </div>
+                }
+              }
+            </div>
+
+            <div class="flex justify-end gap-2 pt-3">
               <button (click)="router.navigate(['/proyectos'])"
-                      class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"/>
                 </svg>
@@ -192,30 +276,28 @@ function addDay(dateStr: string): string {
       border-radius: 0.75rem;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
       width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-      overflow-y: auto;
+      max-width: 400px;
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.25rem 1.5rem;
+      padding: 0.75rem 1rem;
       border-bottom: 1px solid var(--color-gray-200);
     }
 
     .modal-header h2 {
       margin: 0;
-      font-size: 1.125rem;
-      font-weight: 600;
+      font-size: 0.875rem;
+      font-weight: 700;
       line-height: 1.4;
     }
 
     .close-btn {
       background: none;
       border: none;
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       cursor: pointer;
       line-height: 1;
       padding: 0;
@@ -227,7 +309,7 @@ function addDay(dateStr: string): string {
     }
 
     .modal-body {
-      padding: 1.5rem;
+      padding: 1rem;
     }
 
     .badge {
@@ -238,13 +320,119 @@ function addDay(dateStr: string): string {
       border-radius: 9999px;
       width: fit-content;
     }
+
+    .section-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.375rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--color-gray-600);
+      transition: background-color 0.15s;
+      border: none;
+      cursor: pointer;
+      background: none;
+    }
+
+    .section-toggle:hover {
+      background-color: var(--color-gray-100);
+    }
+
+    .section-toggle .chevron {
+      width: 0.875rem;
+      height: 0.875rem;
+      transition: transform 0.2s;
+    }
+
+    .section-toggle .chevron.rotate-180 {
+      transform: rotate(180deg);
+    }
+
+    .planning-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--color-gray-600);
+      border-left: 2px solid var(--color-indigo-500);
+      padding-left: 0.5rem;
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.15s;
+      color: var(--color-gray-600);
+    }
+
+    .task-item:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    .tareas-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .tareas-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .tareas-scroll::-webkit-scrollbar-thumb {
+      background-color: var(--color-gray-300);
+      border-radius: 4px;
+    }
+    .tareas-scroll::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-gray-400);
+    }
+    .tareas-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-gray-300) transparent;
+    }
   `]
 })
 export class CalendarioComponent {
   protected readonly router = inject(Router);
   private readonly proyectoService = inject(ProyectoService);
   private readonly columnService = inject(ColumnService);
+  protected readonly planningService = inject(PlanningService);
   protected readonly themeService = inject(ThemeService);
+
+  protected mostrarPlanificaciones = false;
+  protected mostrarTareas = false;
+
+  protected readonly complejidadEstilo = complejidadEstilo;
+  protected readonly estimacionTotal = estimacionTotal;
+
+  protected readonly planningsDelProyecto = computed(() => {
+    const p = this.selectedProyecto();
+    if (!p) return [];
+    return this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
+  });
+
+  protected readonly tareasDelProyecto = computed(() =>
+    this.planningsDelProyecto().flatMap(pl => pl.tareas)
+  );
+
+  protected readonly porcentajeAvance = computed(() => {
+    const lista = this.tareasDelProyecto();
+    if (lista.length === 0) return 0;
+    const completadas = lista.filter(t => t.completada).length;
+    return Math.round((completadas / lista.length) * 100);
+  });
+
+  protected toggleTarea(tareaId: string): void {
+    const planning = this.planningsDelProyecto().find(p =>
+      p.tareas.some(t => t.id === tareaId)
+    );
+    if (planning) this.planningService.toggleCompletada(planning.id, tareaId);
+  }
 
   protected readonly selectedProyecto = signal<Proyecto | null>(null);
 

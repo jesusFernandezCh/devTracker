@@ -53,36 +53,36 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
             <table class="w-full">
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Nombre</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Descripción</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="color: var(--color-gray-400);">Fecha inicio</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Cliente</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Estado</th>
-                  <th class="text-left px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Figma</th>
-                  <th class="text-right px-4 sm:px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Nombre</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Descripción</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="color: var(--color-gray-400);">Fecha inicio</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Cliente</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Estado</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Figma</th>
+                  <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
                 </tr>
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
                 @for (proyecto of proyectos(); track proyecto.id) {
                   <tr class="proyecto-row" style="transition: background-color 0.15s;">
-                    <td class="px-4 sm:px-6 py-4 border-l-2 transition-all duration-200 hover:border-[rgba(13,148,136,1)] hover:pl-7" style="border-color: rgba(13, 148, 136, 0.5);">
+                    <td class="px-4 sm:px-6 py-2.5 border-l-2 transition-all duration-200 hover:border-[rgba(13,148,136,1)] hover:pl-7" style="border-color: rgba(13, 148, 136, 0.5);">
                       <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full shrink-0" style="background-color: var(--color-teal-500);"></div>
                         <span class="text-sm font-medium" style="color: var(--color-gray-900);">{{ proyecto.nombre }}</span>
                       </div>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 hidden sm:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell">
                       <span class="text-sm truncate-desc" style="color: var(--color-gray-500);">{{ proyecto.descripcion || '—' }}</span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 hidden md:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5 hidden md:table-cell">
                       <span class="text-sm whitespace-nowrap" style="color: var(--color-gray-500);">
                         {{ proyecto.fechaDesde }}
                       </span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 hidden lg:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5 hidden lg:table-cell">
                       <span class="text-sm" style="color: var(--color-gray-600);">{{ proyecto.cliente || '—' }}</span>
                     </td>
-                    <td class="px-4 sm:px-6 py-4 hidden lg:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5 hidden lg:table-cell">
                       @if (proyecto.status) {
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
                               [style.color]="statusColor(proyecto.status).text" 
@@ -93,7 +93,7 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
                         <span class="text-sm" style="color: var(--color-gray-300);">—</span>
                       }
                     </td>
-                    <td class="px-4 sm:px-6 py-4 hidden lg:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5 hidden lg:table-cell">
                       @if (proyecto.documentacion) {
                          <a [href]="proyecto.documentacion" target="_blank" rel="noopener"
                             class="inline-flex items-center gap-1.5 text-sm transition-colors text-[var(--color-teal-600)] hover:text-[var(--color-teal-700)]">
@@ -106,7 +106,7 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
                         <span class="text-sm" style="color: var(--color-gray-300);">—</span>
                       }
                     </td>
-                    <td class="px-4 sm:px-6 py-4 text-right">
+                    <td class="px-4 sm:px-6 py-2.5 text-right">
                       <div class="flex items-center justify-end gap-1">
                         <button (click)="irAPlanning(proyecto.id)"
                                 class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-indigo-600)] hover:bg-[var(--color-gray-100)]"
