@@ -38,6 +38,13 @@ import {HeaderComponent} from './components/header/header.component';
             <mat-icon class="text-lg">calendar_month</mat-icon>
             Planning
           </a>
+          <a routerLink="/calendario" routerLinkActive="bg-indigo-50 text-indigo-600"
+             (click)="sidenav.close()"
+             class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
+             style="color: var(--color-gray-700);">
+            <mat-icon class="text-lg">calendar_view_week</mat-icon>
+            Calendario
+          </a>
         </nav>
       </mat-sidenav>
 
