@@ -61,7 +61,7 @@ import {estimacionTotal} from '../../utils/estimacion';
       <div class="row g-4 mt-6">
         <div class="col-lg-6 col-12">
           <section class="db-card h-full">
-            <h2 class="db-card-heading">Progress by project</h2>
+            <h2 class="db-card-heading">Progreso por proyecto</h2>
             @if (avancePorProyecto().length > 0) {
               <div class="db-bars">
                 @for (item of avancePorProyecto(); track item.proyecto.id) {
@@ -87,7 +87,7 @@ import {estimacionTotal} from '../../utils/estimacion';
 
         <div class="col-lg-6 col-12">
           <section class="db-card h-full">
-            <h2 class="db-card-heading">Pipeline</h2>
+            <h2 class="db-card-heading">Progreso por ambiente</h2>
             @if (proyectosPorColumna().length > 0) {
               <div class="db-pipeline">
                 <div class="db-pipeline-bar">
@@ -239,7 +239,7 @@ import {estimacionTotal} from '../../utils/estimacion';
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--color-indigo-700);
+      color: var(--color-gray-400);
       margin-top: 0.25rem;
     }
 

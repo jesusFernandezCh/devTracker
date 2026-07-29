@@ -23,6 +23,42 @@ function addDay(dateStr: string): string {
   return `${yy}-${mm}-${dd}`;
 }
 
+function getWeekdaySegments(startStr: string, endStr: string): Array<{start: string; end: string}> {
+  const segments: Array<{start: string; end: string}> = [];
+  const toDate = (s: string) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const fmt = (dt: Date) => {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const d = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+  const start = toDate(startStr);
+  const end = toDate(endStr);
+  let segStart: Date | null = null;
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    const day = cursor.getDay();
+    if (day !== 0 && day !== 6) {
+      if (!segStart) segStart = new Date(cursor);
+    } else {
+      if (segStart) {
+        segments.push({start: fmt(segStart), end: fmt(cursor)});
+        segStart = null;
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  if (segStart) {
+    const next = new Date(end);
+    next.setDate(next.getDate() + 1);
+    segments.push({start: fmt(segStart), end: fmt(next)});
+  }
+  return segments;
+}
+
 @Component({
   selector: 'app-calendario',
   standalone: true,
@@ -456,18 +492,18 @@ export class CalendarioComponent {
   };
 
   protected readonly events = computed(() =>
-    this.proyectoService.proyectos().map((p) => {
+    this.proyectoService.proyectos().flatMap((p) => {
       const colors = statusColor(p.status);
-      return {
+      return getWeekdaySegments(p.fechaDesde, p.fechaHasta).map(seg => ({
         title: p.nombre,
-        start: p.fechaDesde,
-        end: addDay(p.fechaHasta),
+        start: seg.start,
+        end: seg.end,
         allDay: true,
         backgroundColor: colors.text,
         borderColor: colors.text,
         textColor: '#ffffff',
         extendedProps: {proyectoId: p.id},
-      };
+      }));
     }),
   );
 
