@@ -4,12 +4,14 @@ import {MatIconRegistry} from '@angular/material/icon';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {HeaderComponent} from './components/header/header.component';
+import {AuthService} from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, MatSidenavModule, HeaderComponent],
   template: `
+    @if (authService.isLoggedIn()) {
     <mat-sidenav-container>
       <mat-sidenav #sidenav mode="over" position="start" class="w-64"
                    style="background-color: var(--color-surface);">
@@ -21,6 +23,13 @@ import {HeaderComponent} from './components/header/header.component';
         </div>
         <nav class="p-2 space-y-1">
           <a routerLink="/" routerLinkActive="bg-indigo-50 text-indigo-600" [routerLinkActiveOptions]="{exact: true}"
+             (click)="sidenav.close()"
+             class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
+             style="color: var(--color-gray-700);">
+            <mat-icon class="text-lg">bar_chart</mat-icon>
+            Dashboard
+          </a>
+          <a routerLink="/tablero" routerLinkActive="bg-indigo-50 text-indigo-600"
              (click)="sidenav.close()"
              class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
              style="color: var(--color-gray-700);">
@@ -79,6 +88,9 @@ import {HeaderComponent} from './components/header/header.component';
         </main>
       </mat-sidenav-content>
     </mat-sidenav-container>
+    } @else {
+      <router-outlet />
+    }
   `,
   styles: [`
     :host {
@@ -100,6 +112,7 @@ import {HeaderComponent} from './components/header/header.component';
   `]
 })
 export class AppComponent {
+  protected readonly authService = inject(AuthService);
   protected mobileAdminOpen = false;
 
   constructor() {

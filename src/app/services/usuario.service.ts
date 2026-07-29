@@ -14,6 +14,10 @@ export class UsuarioService {
     return this._usuarios().find(u => u.id === id);
   }
 
+  usuarioPorCorreo(correo: string): Usuario | undefined {
+    return this._usuarios().find(u => u.correo === correo);
+  }
+
   crear(data: Omit<Usuario, 'id'>): void {
     const nuevo: Usuario = {
       ...data,

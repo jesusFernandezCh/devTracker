@@ -27,6 +27,7 @@
     "@fullcalendar/interaction": "^6.1.21",
     "@tailwindcss/postcss": "^4.3.3",
     "angular-calendar": "^0.31.1",
+    "apexcharts": "^5.16.0",
     "bootstrap": "^5.3.8",
     "date-fns": "^4.4.0",
     "postcss": "^8.5.20",
