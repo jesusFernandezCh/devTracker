@@ -15,11 +15,22 @@ import {estimacionTotal} from '../../utils/estimacion';
     <div class="dbs">
       <!-- ─── Hero ─── -->
       <section class="db-hero">
-        <div class="db-hero-number">
-          <span class="db-hero-digit">{{ heroValue() }}</span>
-          <span class="db-hero-percent">%</span>
-        </div>
-        <div class="db-hero-line" [style.background-color]="healthColor()"></div>
+        <div class="db-hero-circle-box">
+          <svg class="db-hero-svg" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-gray-100)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="45" fill="none"
+                    [attr.stroke]="healthColor()"
+                    stroke-width="8" stroke-linecap="round"
+                    [attr.stroke-dasharray]="circunferencia"
+                    [attr.stroke-dashoffset]="heroOffset()"
+                    transform="rotate(-90 50 50)" class="db-hero-arc"/>
+          </svg>
+          <div class="db-hero-center">
+            <span class="db-hero-digit">{{ heroValue() }}</span>
+            <span class="db-hero-percent">%</span>
+          </div>
+          </div>
+          <br>
         <p class="db-hero-meta">
           <span>overall completion</span>
           <span class="db-hero-dot"></span>
@@ -160,33 +171,49 @@ import {estimacionTotal} from '../../utils/estimacion';
     /* ─── Hero ─── */
     .db-hero {
       text-align: center;
-      padding: 2.5rem 0 0.5rem;
+      padding: 0.5rem 0 0.5rem;
     }
 
-    .db-hero-number {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 4.5rem;
-      font-weight: 600;
-      line-height: 1;
-      letter-spacing: -0.03em;
-      color: var(--color-gray-900);
+    .db-hero-circle-box {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       animation: dbFadeIn 0.6s ease-out;
     }
 
-    .db-hero-percent {
-      font-size: 2rem;
+    .db-hero-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .db-hero-arc {
+      transition: stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .db-hero-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .db-hero-center .db-hero-digit {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.25rem;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .db-hero-center .db-hero-percent {
+      font-size: 12px;
       font-weight: 400;
       color: var(--color-gray-400);
       vertical-align: super;
-    }
-
-    .db-hero-line {
-      height: 4px;
-      width: 120px;
-      margin: 1rem auto 1.25rem;
-      border-radius: 2px;
-      animation: dbDrawLine 0.8s ease-out 0.2s both;
-      transform-origin: center;
     }
 
     .db-hero-meta {
@@ -450,10 +477,7 @@ import {estimacionTotal} from '../../utils/estimacion';
       from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes dbDrawLine {
-      from { transform: scaleX(0); opacity: 0; }
-      to { transform: scaleX(1); opacity: 1; }
-    }
+
   `]
 })
 export class DashboardComponent {
@@ -463,6 +487,12 @@ export class DashboardComponent {
 
   protected readonly animacionIniciada = signal(false);
   protected readonly heroValue = signal(0);
+
+  protected readonly circunferencia = 2 * Math.PI * 45;
+
+  protected readonly heroOffset = computed(() =>
+    this.circunferencia * (1 - this.heroValue() / 100)
+  );
 
   /* ── counter animators ── */
   protected readonly countTareas = signal(0);
