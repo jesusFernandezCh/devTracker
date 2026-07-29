@@ -34,25 +34,25 @@ import {estimacionTotal} from '../../utils/estimacion';
         <div class="col-lg-3 col-6">
           <div class="db-pill">
             <span class="db-pill-num">{{ countTareas() }}</span>
-            <span class="db-pill-label">total tasks</span>
+            <span class="db-pill-label">Total Tareas</span>
           </div>
         </div>
         <div class="col-lg-3 col-6">
           <div class="db-pill">
             <span class="db-pill-num">{{ countCompletadas() }}</span>
-            <span class="db-pill-label">completed</span>
+            <span class="db-pill-label">Completadas</span>
           </div>
         </div>
         <div class="col-lg-3 col-6">
           <div class="db-pill">
             <span class="db-pill-num">{{ countPendientes() }}</span>
-            <span class="db-pill-label">pending</span>
+            <span class="db-pill-label">Pendientes</span>
           </div>
         </div>
         <div class="col-lg-3 col-6">
           <div class="db-pill">
             <span class="db-pill-num">{{ countEstimacion() }}</span>
-            <span class="db-pill-label">story points</span>
+            <span class="db-pill-label">Story points</span>
           </div>
         </div>
       </div>
@@ -239,7 +239,7 @@ import {estimacionTotal} from '../../utils/estimacion';
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--color-gray-400);
+      color: var(--color-indigo-700);
       margin-top: 0.25rem;
     }
 
