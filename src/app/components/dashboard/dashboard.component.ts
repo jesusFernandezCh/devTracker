@@ -12,7 +12,7 @@ import {estimacionTotal} from '../../utils/estimacion';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="db">
+    <div class="dbs">
       <!-- ─── Hero ─── -->
       <section class="db-hero">
         <div class="db-hero-number">
@@ -56,7 +56,7 @@ import {estimacionTotal} from '../../utils/estimacion';
           </div>
         </div>
       </div>
-      br
+      <br>
       <!-- ─── Content grid ─── -->
       <div class="row g-4 mt-6">
         <div class="col-lg-6 col-12">

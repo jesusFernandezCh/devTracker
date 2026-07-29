@@ -117,7 +117,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
 
     <!-- Delete confirmation -->
     @if (deleteConfirmId) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);">
+      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);">
         <div class="modal-enter rounded-xl shadow-xl p-6 w-full max-w-sm border" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
           <h3 class="text-lg font-semibold mb-2" style="color: var(--color-gray-900);">Eliminar usuario</h3>
           <p class="text-sm mb-6" style="color: var(--color-gray-500);">
@@ -139,7 +139,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
 
     <!-- Create/Edit form modal -->
     @if (showForm) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarForm()">
+      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarForm()">
         <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
             <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">

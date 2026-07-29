@@ -6,6 +6,7 @@
     opacity: 0;
     transform: scale(0.95) translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -46,13 +47,16 @@
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
+
 .custom-scrollbar::-webkit-scrollbar {
   height: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
   border-radius: 3px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
   border-radius: 3px;
@@ -107,14 +111,17 @@
   background-color: var(--color-priority-baja-bg);
   color: var(--color-priority-baja-text);
 }
+
 .badge-priority-media {
   background-color: var(--color-priority-media-bg);
   color: var(--color-priority-media-text);
 }
+
 .badge-priority-alta {
   background-color: var(--color-priority-alta-bg);
   color: var(--color-priority-alta-text);
 }
+
 .badge-priority-critica {
   background-color: var(--color-priority-critica-bg);
   color: var(--color-priority-critica-text);
@@ -154,22 +161,22 @@
 }
 
 .fc .fc-daygrid-day-number {
-    padding: 4px;
-    position: relative;
-    z-index: 4;
-    color: var(--color-gray-900);
+  padding: 4px;
+  position: relative;
+  z-index: 4;
+  color: var(--color-gray-900);
 }
 
 .fc .fc-col-header-cell-cushion {
-    display: inline-block;
-    padding: 2px 4px;
-    color: var(--color-gray-900);
+  display: inline-block;
+  padding: 2px 4px;
+  color: var(--color-gray-900);
 }
 
 .fc .fc-toolbar-title {
-    font-size: 1.75em;
-    margin: 0px;
-    color: var(--color-gray-900);
+  font-size: 1.75em;
+  margin: 0px;
+  color: var(--color-gray-900);
 }
 
 /* ── Sidebar (mat-sidenav) ── */
@@ -182,4 +189,25 @@
 /* Ensure sidebar content doesn't overflow */
 .mat-drawer-inner-container {
   overflow: hidden;
+}
+
+.mat-drawer {
+  width: var(--mat-sidenav-container-width, 300px) !important;
+}
+
+@media (min-width: 1400px) {
+
+  .container-xxl,
+  .container-xl,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container {
+    max-width: 98%;
+  }
+
+  .justify-center-modal {
+    justify-content: center;
+    margin-left: 306px;
+  }
 }

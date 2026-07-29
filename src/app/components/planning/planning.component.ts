@@ -124,7 +124,7 @@ import {PlanningDetailComponent} from '../planning-detail/planning-detail.compon
       }
 
       @if (deleteConfirmId) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);">
+        <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);">
           <div class="modal-enter rounded-xl shadow-xl p-6 w-full max-w-sm border" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
             <h3 class="text-lg font-semibold mb-2" style="color: var(--color-gray-900);">Eliminar planning</h3>
             <p class="text-sm mb-6" style="color: var(--color-gray-500);">

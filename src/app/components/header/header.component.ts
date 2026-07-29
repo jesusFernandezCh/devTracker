@@ -14,8 +14,8 @@ import {AuthService} from '../../services/auth.service';
       <div class="container">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center gap-3 min-w-0">
-            <span class="text-lg font-bold truncate shrink-0" style="color: var(--color-gray-900);">DevTracker</span>
-            <span class="text-xs sm:text-sm hidden sm:block truncate" style="color: var(--color-gray-400);">Sistema de Gestión de Desarrollos</span>
+            <span class="text-xs sm:text-sm hidden sm:block truncate" style="color: var(--color-gray-400); text-aling:left !important;
+            ">Sistema de Gestión de Desarrollos</span>
           </div>
           <div class="flex items-center space-x-1 sm:space-x-2">
             <button mat-icon-button (click)="themeService.toggle()"
