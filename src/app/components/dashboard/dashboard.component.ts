@@ -1,10 +1,10 @@
-import {Component, inject, computed, signal, afterNextRender, ChangeDetectionStrategy} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterLink} from '@angular/router';
-import {ProyectoService} from '../../services/proyecto.service';
-import {PlanningService} from '../../services/planning.service';
-import {ColumnService} from '../../services/column.service';
-import {estimacionTotal} from '../../utils/estimacion';
+import { Component, inject, computed, signal, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { ProyectoService } from '../../services/proyecto.service';
+import { PlanningService } from '../../services/planning.service';
+import { ColumnService } from '../../services/column.service';
+import { estimacionTotal } from '../../utils/estimacion';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,15 +30,15 @@ import {estimacionTotal} from '../../utils/estimacion';
             <span class="db-hero-percent">%</span>
           </div>
           </div>
-          <br>
-        <p class="db-hero-meta">
-          <span>overall completion</span>
+          <p class="db-hero-meta">
+          <span>Progreso General</span>
           <span class="db-hero-dot"></span>
-          <span>{{ totalProyectos() }} project{{ totalProyectos() !== 1 ? 's' : '' }}</span>
+          <span>{{ totalProyectos() }} projectos{{ totalProyectos() !== 1 ? 's' : '' }}</span>
           <span class="db-hero-dot"></span>
-          <span>{{ totalPlannings() }} planning{{ totalPlannings() !== 1 ? 's' : '' }}</span>
-        </p>
-      </section>
+          <span>{{ totalPlannings() }} planes{{ totalPlannings() !== 1 ? 's' : '' }}</span>
+          </p>
+        </section>
+      <br>
 
       <!-- ─── Stat pills ─── -->
       <div class="row g-4 mt-6">
@@ -131,8 +131,8 @@ import {estimacionTotal} from '../../utils/estimacion';
         <div class="col-12">
           <section class="db-card">
             <div class="db-card-head-row">
-              <h2 class="db-card-heading">Upcoming deadlines</h2>
-              <a routerLink="/tablero" class="db-card-link">View board</a>
+              <h2 class="db-card-heading">Planificaión en curso</h2>
+              <a routerLink="/tablero" class="db-card-link">Ver tablero</a>
             </div>
             @if (proximosVencimientos().length > 0) {
               <div class="db-deadlines">
@@ -508,7 +508,7 @@ export class DashboardComponent {
     const tareas = this.planningService.plannings().flatMap(p => p.tareas);
     const total = tareas.length;
     const completadas = tareas.filter(t => t.completada).length;
-    return {total, completadas, pendientes: total - completadas, porcentaje: total > 0 ? Math.round((completadas / total) * 100) : 0};
+    return { total, completadas, pendientes: total - completadas, porcentaje: total > 0 ? Math.round((completadas / total) * 100) : 0 };
   });
 
   protected readonly estimacionStats = computed(() => {
@@ -535,7 +535,7 @@ export class DashboardComponent {
         const tareas = this.planningService.plannings().filter(pl => pl.proyectoId === p.id).flatMap(pl => pl.tareas);
         const total = tareas.length;
         const completadas = tareas.filter(t => t.completada).length;
-        return {proyecto: p, totalTareas: total, completadas, porcentaje: total > 0 ? Math.round((completadas / total) * 100) : 0};
+        return { proyecto: p, totalTareas: total, completadas, porcentaje: total > 0 ? Math.round((completadas / total) * 100) : 0 };
       })
       .filter(p => p.totalTareas > 0)
       .sort((a, b) => b.porcentaje - a.porcentaje)

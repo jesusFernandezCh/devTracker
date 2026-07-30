@@ -86,7 +86,7 @@ import {Columna} from '../../models/columna.model';
         </div>
 
         @if (deleteConfirmColumna) {
-          <div class="border border-red-200 bg-red-50 rounded-lg p-4 mb-4">
+          <div class="border border-red-200 bg-red-50 rounded-lg p-3 mb-4">
             <p class="text-sm text-red-600 mb-3">
               <strong>{{ deleteConfirmColumna.nombre }}</strong> tiene
               <strong>{{ proyectosEnColumna(deleteConfirmColumna.id) }}</strong> proyecto(s) y sus tareas.
