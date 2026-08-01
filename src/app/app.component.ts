@@ -19,13 +19,13 @@ import {AuthService} from './services/auth.service';
                    [opened]="isMobile() ? sidenavOpened() : true"
                    [disableClose]="!isMobile()"
                    position="start"
-                   class="w-52">
+                   class="w-40">
         <app-sidebar [isMobile]="isMobile()" (navigate)="onSidenavNavigate()" />
       </mat-sidenav>
 
       <mat-sidenav-content>
         <app-header (toggleMenu)="toggleSidenav()" />
-        <main class="w-full px-4 md:max-w-7xl md:mx-auto py-8">
+        <main class="w-full px-5 md:max-w-7xl md:mx-auto py-8">
           <router-outlet />
         </main>
       </mat-sidenav-content>

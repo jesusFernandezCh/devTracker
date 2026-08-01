@@ -23,7 +23,7 @@ import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} f
            [id]="columna().id"
            [cdkDropListData]="proyectos()"
            [cdkDropListConnectedTo]="connectedDropIds()"
-           class="flex-1 space-y-3 overflow-y-auto min-h-[200px] p-1"
+           class="flex-1 space-y-3 overflow-y-auto custom-scrollbar min-h-[200px] p-1"
            (cdkDropListDropped)="onDrop($event)">
         @for (proj of proyectos(); track proj.proyecto.id) {
           <div cdkDrag [cdkDragData]="proj" [@slideIn]>

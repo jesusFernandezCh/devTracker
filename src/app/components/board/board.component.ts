@@ -69,7 +69,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
              class="flex gap-6 overflow-x-auto custom-scrollbar scroll-smooth">
         @for (col of columnService.columnas(); track col.id) {
           <div cdkDrag [cdkDragData]="col" class="w-[320px] shrink-0 group">
-            <div class="bg-gray-50 rounded-xl border border-gray-200 min-h-[calc(100vh-220px)] flex flex-col">
+            <div class="bg-gray-50 rounded-xl border border-gray-200 h-[calc(100vh-220px)] flex flex-col">
               <div cdkDragHandle
                    class="flex items-center justify-between px-4 pt-4 cursor-grab active:cursor-grabbing">
                 <div class="flex items-center space-x-2 min-w-0">
