@@ -2,7 +2,7 @@ import {Component, input, output, computed, ChangeDetectionStrategy} from '@angu
 import {Proyecto} from '../../models/proyecto.model';
 import {PlanningTask} from '../../models/planning.model';
 import {Planning} from '../../models/planning.model';
-import {complejidadEstilo, estimacionTotal, statusColor} from '../../utils/estimacion';
+import {complejidadEstilo, estimacionTotal, statusColor, prioridadColor} from '../../utils/estimacion';
 
 @Component({
   selector: 'app-project-card',
@@ -22,6 +22,13 @@ import {complejidadEstilo, estimacionTotal, statusColor} from '../../utils/estim
                     [style.color]="statusColor(proyecto().status).text"
                     [style.background-color]="statusColor(proyecto().status).bg">
                 {{ proyecto().status }}
+              </span>
+            }
+            @if (proyecto().prioridad) {
+              <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
+                    [style.color]="prioridadColor(proyecto().prioridad).text"
+                    [style.background-color]="prioridadColor(proyecto().prioridad).bg">
+                {{ proyecto().prioridad }}
               </span>
             }
           </div>
@@ -192,6 +199,7 @@ export class ProjectCardComponent {
   protected readonly complejidadEstilo = complejidadEstilo;
   protected readonly estimacionTotal = estimacionTotal;
   protected readonly statusColor = statusColor;
+  protected readonly prioridadColor = prioridadColor;
 
   protected readonly porcentajeAvance = computed(() => {
     const lista = this.tareas();

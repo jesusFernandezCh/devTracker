@@ -43,13 +43,13 @@ import {Proyecto} from '../../models/proyecto.model';
                       placeholder="Descripción del proyecto..."></textarea>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Cliente</label>
               <select formControlName="cliente"
                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
-                <option value="">Selecciona un cliente</option>
+                <option value="">Selecciona</option>
                 <option value="Cliente A">Cliente A</option>
                 <option value="Cliente B">Cliente B</option>
                 <option value="Cliente C">Cliente C</option>
@@ -60,10 +60,21 @@ import {Proyecto} from '../../models/proyecto.model';
               <select formControlName="status"
                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
-                <option value="">Selecciona un estado</option>
+                <option value="">Selecciona</option>
                 <option value="Activo">Activo</option>
                 <option value="Pausa">Pausa</option>
                 <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Prioridad</label>
+              <select formControlName="prioridad"
+                      class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                      style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                <option value="">Selecciona</option>
+                <option value="baja">Baja</option>
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
               </select>
             </div>
           </div>
@@ -115,7 +126,7 @@ export class ProyectoFormComponent {
   private fb = inject(FormBuilder);
 
   readonly editando = input<Proyecto | null>(null);
-  readonly guardar = output<{nombre: string; descripcion: string; cliente: string; status: string; fechaDesde: string; fechaHasta: string; documentacion: string}>();
+  readonly guardar = output<{nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}>();
   readonly cerrar = output();
 
   proyectoForm = this.fb.nonNullable.group({
@@ -123,6 +134,7 @@ export class ProyectoFormComponent {
     descripcion: [''],
     cliente: ['', Validators.required],
     status: ['', Validators.required],
+    prioridad: ['', Validators.required],
     fechaDesde: ['', Validators.required],
     fechaHasta: ['', Validators.required],
     documentacion: [''],
@@ -137,6 +149,7 @@ export class ProyectoFormComponent {
           descripcion: proj.descripcion,
           cliente: proj.cliente,
           status: proj.status,
+          prioridad: proj.prioridad,
           fechaDesde: proj.fechaDesde,
           fechaHasta: proj.fechaHasta,
           documentacion: proj.documentacion,

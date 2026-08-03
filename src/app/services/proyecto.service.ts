@@ -20,7 +20,7 @@ export class ProyectoService {
   }
 
   crear(data: Omit<Proyecto, 'id' | 'createdAt' | 'columnaId'> & {columnaId?: string}): void {
-    data = { ...data, cliente: data.cliente || '', status: data.status || 'Activo' };
+    data = { ...data, cliente: data.cliente || '', status: data.status || 'Activo', prioridad: data.prioridad || 'baja' };
 
     const proyecto: Proyecto = {
       ...data,
@@ -64,6 +64,7 @@ export class ProyectoService {
           ...p,
           cliente: p.cliente ?? '',
           status: p.status ?? 'Activo',
+          prioridad: p.prioridad ?? 'baja',
           columnaId: p.columnaId ?? COLUMNA_POR_DEFECTO,
         })));
         this._guardar();

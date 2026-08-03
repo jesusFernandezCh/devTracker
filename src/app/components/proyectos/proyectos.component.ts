@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
 import {ProyectoService} from '../../services/proyecto.service';
 import {Proyecto} from '../../models/proyecto.model';
-import {statusColor} from '../../utils/estimacion';
+import {statusColor, prioridadColor} from '../../utils/estimacion';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
 
 @Component({
@@ -50,15 +50,16 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
       } @else {
         <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
           <div class="overflow-x-auto">
-            <table class="w-full">
+            <table class="w-full min-w-[900px]">
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Nombre</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Descripción</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="color: var(--color-gray-400);">Fecha inicio</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Cliente</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Estado</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color: var(--color-gray-400);">Figma</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Descripción</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha inicio</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Prioridad</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Figma</th>
                   <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
                 </tr>
               </thead>
@@ -71,18 +72,18 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
                         <span class="text-sm font-medium" style="color: var(--color-gray-900);">{{ proyecto.nombre }}</span>
                       </div>
                     </td>
-                    <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5">
                       <span class="text-sm truncate-desc" style="color: var(--color-gray-500);">{{ proyecto.descripcion || '—' }}</span>
                     </td>
-                    <td class="px-4 sm:px-6 py-2.5 hidden md:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5">
                       <span class="text-sm whitespace-nowrap" style="color: var(--color-gray-500);">
                         {{ proyecto.fechaDesde }}
                       </span>
                     </td>
-                    <td class="px-4 sm:px-6 py-2.5 hidden lg:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5">
                       <span class="text-sm" style="color: var(--color-gray-600);">{{ proyecto.cliente || '—' }}</span>
                     </td>
-                    <td class="px-4 sm:px-6 py-2.5 hidden lg:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5">
                       @if (proyecto.status) {
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
                               [style.color]="statusColor(proyecto.status).text" 
@@ -93,7 +94,18 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
                         <span class="text-sm" style="color: var(--color-gray-300);">—</span>
                       }
                     </td>
-                    <td class="px-4 sm:px-6 py-2.5 hidden lg:table-cell">
+                    <td class="px-4 sm:px-6 py-2.5">
+                      @if (proyecto.prioridad) {
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                              [style.color]="prioridadColor(proyecto.prioridad).text"
+                              [style.background-color]="prioridadColor(proyecto.prioridad).bg">
+                          {{ proyecto.prioridad }}
+                        </span>
+                      } @else {
+                        <span class="text-sm" style="color: var(--color-gray-300);">—</span>
+                      }
+                    </td>
+                    <td class="px-4 sm:px-6 py-2.5">
                       @if (proyecto.documentacion) {
                          <a [href]="proyecto.documentacion" target="_blank" rel="noopener"
                             class="inline-flex items-center gap-1.5 text-sm transition-colors text-[var(--color-teal-600)] hover:text-[var(--color-teal-700)]">
@@ -185,6 +197,7 @@ export class ProyectosComponent {
 
   proyectos = this.proyectoService.proyectos;
   protected readonly statusColor = statusColor;
+  protected readonly prioridadColor = prioridadColor;
 
   showForm = false;
   editandoProyecto: Proyecto | null = null;
@@ -200,7 +213,7 @@ export class ProyectosComponent {
     this.showForm = true;
   }
 
-  onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; fechaDesde: string; fechaHasta: string; documentacion: string}): void {
+  onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): void {
     if (this.editandoProyecto) {
       this.proyectoService.actualizar(this.editandoProyecto.id, data);
     } else {

@@ -6,6 +6,7 @@ export interface Proyecto {
   descripcion: string;
   cliente: string;
   status: string;
+  prioridad: string;
   columnaId: string;
   fechaDesde: string;
   fechaHasta: string;

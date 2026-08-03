@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ProyectoService } from '../../services/proyecto.service';
 import { PlanningService } from '../../services/planning.service';
 import { ColumnService } from '../../services/column.service';
-import { estimacionTotal } from '../../utils/estimacion';
+import { estimacionTotal, prioridadColor } from '../../utils/estimacion';
 
 @Component({
   selector: 'app-dashboard',
@@ -78,7 +78,16 @@ import { estimacionTotal } from '../../utils/estimacion';
                 @for (item of avancePorProyecto(); track item.proyecto.id) {
                   <div class="db-bar-row">
                     <div class="db-bar-head">
-                      <span class="db-bar-label">{{ item.proyecto.nombre }}</span>
+                      <span class="db-bar-label">
+                        {{ item.proyecto.nombre }}
+                        @if (item.proyecto.prioridad) {
+                          <span class="db-bar-priority"
+                                [style.color]="prioridadColor(item.proyecto.prioridad).text"
+                                [style.background-color]="prioridadColor(item.proyecto.prioridad).bg">
+                            {{ item.proyecto.prioridad }}
+                          </span>
+                        }
+                      </span>
                       <span class="db-bar-value">{{ item.porcentaje }}<span class="db-percent-sign">%</span></span>
                     </div>
                     <div class="db-bar-track">
@@ -323,6 +332,17 @@ import { estimacionTotal } from '../../utils/estimacion';
       overflow: hidden;
       text-overflow: ellipsis;
       padding-right: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .db-bar-priority {
+      font-size: 0.625rem;
+      font-weight: 600;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      white-space: nowrap;
     }
 
     .db-bar-value {
@@ -503,6 +523,7 @@ export class DashboardComponent {
   /* ── computed ── */
   protected readonly totalProyectos = computed(() => this.proyectoService.proyectos().length);
   protected readonly totalPlannings = computed(() => this.planningService.plannings().length);
+  protected readonly prioridadColor = prioridadColor;
 
   protected readonly tareasStats = computed(() => {
     const tareas = this.planningService.plannings().flatMap(p => p.tareas);
