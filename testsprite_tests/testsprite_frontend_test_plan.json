@@ -1,0 +1,1428 @@
+[
+  {
+    "id": "TC001",
+    "title": "Log in and reach the dashboard",
+    "description": "This test verifies that a team member can sign in and access the protected dashboard successfully.",
+    "category": "User Login",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify core progress metrics are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Create a user",
+    "description": "This test verifies that an administrator can create a new user and see it added to the user list.",
+    "category": "User Administration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /usuarios"
+      },
+      {
+        "type": "action",
+        "description": "Create a new user with a unique name, email, password, and role"
+      },
+      {
+        "type": "action",
+        "description": "Save the user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new user appears in the user list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Move a task to another column on the board",
+    "description": "This test verifies that a user can drag a task to a different kanban column and see the updated board state.",
+    "category": "Kanban Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /tablero"
+      },
+      {
+        "type": "action",
+        "description": "Move a task to another column"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the task appears in the new column"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the board reflects the updated task placement"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Move a task between kanban columns",
+    "description": "This verifies a logged-in user can move a task on the kanban board and see the updated board state.",
+    "category": "Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to the kanban board"
+      },
+      {
+        "type": "action",
+        "description": "Move a task to a different column"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the task appears in the new column"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the board reflects the updated task placement"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Keep theme preference after revisiting the app",
+    "description": "This test verifies that a user's theme preference is preserved after leaving and returning to the dashboard.",
+    "category": "Dark Mode",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the theme toggle"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /tablero"
+      },
+      {
+        "type": "action",
+        "description": "Navigate back to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected theme remains applied"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Create, edit, and delete a project",
+    "description": "This test verifies that a project manager can create a project, update it, and remove it from the projects list.",
+    "category": "Proyectos",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /proyectos"
+      },
+      {
+        "type": "action",
+        "description": "Create a project"
+      },
+      {
+        "type": "action",
+        "description": "Edit the newly created project"
+      },
+      {
+        "type": "action",
+        "description": "Delete the project and confirm the action"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the project list reflects the removal of the project"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Create a project and see it added to the list",
+    "description": "This verifies a user can create a project and see the new project card in the projects list.",
+    "category": "Projects",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to projects"
+      },
+      {
+        "type": "action",
+        "description": "Create a new project with valid details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new project card is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the projects list is updated"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Toggle theme on the dashboard",
+    "description": "This test verifies that an authenticated user can switch the app theme from the dashboard.",
+    "category": "Dark Mode",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the theme toggle"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the interface switches to the alternate theme"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC009",
+    "title": "Create, edit role, and delete a user",
+    "description": "This test verifies that an administrator can create a user, change the user's role, and delete the user from the administration list.",
+    "category": "Usuarios",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /usuarios"
+      },
+      {
+        "type": "action",
+        "description": "Create a user"
+      },
+      {
+        "type": "action",
+        "description": "Edit the user's role"
+      },
+      {
+        "type": "action",
+        "description": "Delete the user and confirm the action"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user list reflects the removal of the user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated role is reflected before deletion"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC010",
+    "title": "Toggle dark mode and keep the preference after revisiting",
+    "description": "This verifies a user can change the theme on the dashboard and see the same preference persist after revisiting the app.",
+    "category": "Theme",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Toggle the theme preference on the dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the dashboard again"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected theme is still applied"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the theme preference persists across visits"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC011",
+    "title": "Edit an existing project and see the updated card",
+    "description": "This verifies a user can edit a project and see the updated information reflected in the projects list.",
+    "category": "Projects",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to projects"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing project for editing"
+      },
+      {
+        "type": "action",
+        "description": "Update the project details and save the changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated project card is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the projects list reflects the saved changes"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC012",
+    "title": "Reorder workflow columns on the board",
+    "description": "This test verifies that a user can reorder kanban columns and see the new column order persist in the board view.",
+    "category": "Kanban Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /tablero"
+      },
+      {
+        "type": "action",
+        "description": "Reorder a workflow column"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the column order is updated"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the board still displays all workflow columns"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Delete a project and confirm it is removed",
+    "description": "This verifies a user can delete a project and see it removed from the projects list after confirmation.",
+    "category": "Projects",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to projects"
+      },
+      {
+        "type": "action",
+        "description": "Delete an existing project"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the deletion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the project is removed from the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the projects list remains visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC014",
+    "title": "Create a planning and see it added to the list",
+    "description": "This verifies a user can create a planning and see the new planning appear in the planning list.",
+    "category": "Planning",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to planning"
+      },
+      {
+        "type": "action",
+        "description": "Create a new planning with valid details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new planning is displayed in the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning list is updated"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC015",
+    "title": "Create a user in administration and see it added to the list",
+    "description": "This verifies an administrator can create a user and see the new user appear in the administration list.",
+    "category": "User Administration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to user administration"
+      },
+      {
+        "type": "action",
+        "description": "Create a new user with valid details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new user is displayed in the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user administration list is updated"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC016",
+    "title": "Edit a user",
+    "description": "This test verifies that an administrator can update an existing user's information and see the changes reflected in the list.",
+    "category": "User Administration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /usuarios"
+      },
+      {
+        "type": "action",
+        "description": "Edit an existing user"
+      },
+      {
+        "type": "action",
+        "description": "Update the user's details"
+      },
+      {
+        "type": "action",
+        "description": "Save the changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated user information appears in the user list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC017",
+    "title": "Create a planning and open its detail view",
+    "description": "This test verifies that a user can create a planning from the planning list and open its detail screen.",
+    "category": "Planning",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /planning"
+      },
+      {
+        "type": "action",
+        "description": "Create a planning"
+      },
+      {
+        "type": "action",
+        "description": "Open the newly created planning detail"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning detail view is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC018",
+    "title": "Edit a planning and see the updated list entry",
+    "description": "This verifies a user can edit a planning and see the updated planning reflected in the list.",
+    "category": "Planning",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to planning"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing planning for editing"
+      },
+      {
+        "type": "action",
+        "description": "Update the planning details and save the changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated planning is displayed in the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning list reflects the saved changes"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC019",
+    "title": "Open the kanban board from the dashboard",
+    "description": "This test verifies that a signed-in user can navigate from the dashboard to the kanban board and see workflow columns.",
+    "category": "Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to view the kanban board"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the kanban board is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify workflow columns are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC020",
+    "title": "Delete a user",
+    "description": "This test verifies that an administrator can delete a user and see the user removed from the list after confirming the action.",
+    "category": "User Administration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /usuarios"
+      },
+      {
+        "type": "action",
+        "description": "Delete an existing user"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the deletion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user is removed from the user list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC021",
+    "title": "Delete a planning and confirm it is removed",
+    "description": "This verifies a user can delete a planning and see it removed from the planning list after confirmation.",
+    "category": "Planning",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to planning"
+      },
+      {
+        "type": "action",
+        "description": "Delete an existing planning"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the deletion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning is removed from the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning list remains visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC022",
+    "title": "Complete a planning task and return to the planning list",
+    "description": "This test verifies that a user can manage planning tasks, mark one as complete, and return to see the updated planning overview.",
+    "category": "Planning",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /planning"
+      },
+      {
+        "type": "action",
+        "description": "Create a planning"
+      },
+      {
+        "type": "action",
+        "description": "Open the newly created planning detail"
+      },
+      {
+        "type": "action",
+        "description": "Complete one planning task"
+      },
+      {
+        "type": "action",
+        "description": "Return to the planning list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning list shows the updated planning state"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the completed task is reflected in the planning detail summary"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC023",
+    "title": "Access the kanban board from the dashboard",
+    "description": "This verifies a logged-in user can move from the dashboard to the kanban board and see board content.",
+    "category": "Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to the kanban board"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the kanban board is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify tasks are displayed on the board"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC024",
+    "title": "Open planning detail and complete a planning task",
+    "description": "This verifies a user can open a planning detail, manage planning tasks, and see a task marked complete.",
+    "category": "Planning",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to planning"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing planning detail"
+      },
+      {
+        "type": "action",
+        "description": "Open planning task management"
+      },
+      {
+        "type": "action",
+        "description": "Mark one planning task as completed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning task completion status is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify planning details and associated tasks are visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC025",
+    "title": "Change a user's role and see the list update",
+    "description": "This verifies an administrator can update a user's role and see the changed role reflected in the users list.",
+    "category": "User Administration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to user administration"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing user for editing"
+      },
+      {
+        "type": "action",
+        "description": "Change the user's role and save the changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated user role is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the users list reflects the saved role change"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC026",
+    "title": "Change a user role",
+    "description": "This test verifies that an administrator can change a user's role and see the updated role in the user list.",
+    "category": "User Administration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /usuarios"
+      },
+      {
+        "type": "action",
+        "description": "Change an existing user's role"
+      },
+      {
+        "type": "action",
+        "description": "Save the role change"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user's updated role is shown in the list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC027",
+    "title": "Create a new kanban column",
+    "description": "This test verifies that a user can create a new workflow column and see it added to the board.",
+    "category": "Kanban Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /tablero"
+      },
+      {
+        "type": "action",
+        "description": "Open the column management modal"
+      },
+      {
+        "type": "action",
+        "description": "Create a new column"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new column is displayed on the board"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC028",
+    "title": "Delete a user and confirm the list updates",
+    "description": "This verifies an administrator can delete a user and see the user removed from the administration list after confirmation.",
+    "category": "User Administration",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to user administration"
+      },
+      {
+        "type": "action",
+        "description": "Delete an existing user"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the deletion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user is removed from the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user administration list remains visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC029",
+    "title": "Create a task and open its detail view",
+    "description": "This verifies a user can create a task and see the new task detail page open successfully.",
+    "category": "Tasks",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /tarea/nueva"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the task form with valid details"
+      },
+      {
+        "type": "action",
+        "description": "Save the task"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the task detail view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new task is visible in the detail view"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC030",
+    "title": "Edit an existing task and see the updated detail",
+    "description": "This verifies a user can edit a task and see the updated task detail after saving changes.",
+    "category": "Tasks",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing task detail"
+      },
+      {
+        "type": "action",
+        "description": "Open the task for editing"
+      },
+      {
+        "type": "action",
+        "description": "Update the task details and save the changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated task detail view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the saved task changes are visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC031",
+    "title": "Delete a kanban column from the board",
+    "description": "This test verifies that a user can delete a workflow column after confirming the action and see it removed from the board.",
+    "category": "Kanban Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /tablero"
+      },
+      {
+        "type": "action",
+        "description": "Open the column management modal"
+      },
+      {
+        "type": "action",
+        "description": "Delete a column and confirm the action"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the column is removed from the board"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC032",
+    "title": "Open task details from the board",
+    "description": "This test verifies that a user can open a task from the board and view its detail screen.",
+    "category": "Kanban Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /tablero"
+      },
+      {
+        "type": "action",
+        "description": "Select a task"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the task detail view is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC033",
+    "title": "View the calendar",
+    "description": "This test verifies that an authenticated user can open the calendar and see the calendar view rendered.",
+    "category": "Calendar",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "action",
+        "description": "Click the calendar link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the calendar view is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC034",
+    "title": "Show an error for invalid login credentials",
+    "description": "This test verifies that entering invalid credentials keeps the user on the login page and shows a visible validation error.",
+    "category": "User Login",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with invalid@example.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with invalid-password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an error message is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard is not displayed"
+      }
+    ],
+    "priority": "Low"
+  }
+]

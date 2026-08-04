@@ -1,0 +1,178 @@
+version: "2"
+type: frontend
+tech_stack:
+  - language: TypeScript
+  - framework: Angular 19
+  - ui_library: Tailwind CSS v4
+  - other: Angular CDK (drag-drop)
+routes:
+  - path: /login
+    file: src/app/components/login/login.component.ts
+    auth_required: false
+    description: Login page
+  - path: /
+    file: src/app/components/dashboard/dashboard.component.ts
+    auth_required: true
+    description: Dashboard with general progress and metrics
+  - path: /tablero
+    file: src/app/components/board/board.component.ts
+    auth_required: true
+    description: Kanban board with drag-drop columns and tasks
+  - path: /proyectos
+    file: src/app/components/proyectos/proyectos.component.ts
+    auth_required: true
+    description: Project list and management
+  - path: /planning
+    file: src/app/components/planning/planning.component.ts
+    auth_required: true
+    description: Planning list and management
+  - path: /calendario
+    file: src/app/components/calendario/calendario.component.ts
+    auth_required: true
+    description: Calendar view
+  - path: /usuarios
+    file: src/app/components/usuarios/usuarios.component.ts
+    auth_required: true
+    description: User and role administration
+  - path: /tarea/nueva
+    file: src/app/components/task-form/task-form.component.ts
+    auth_required: true
+    description: Create a task
+  - path: /tarea/:id
+    file: src/app/components/task-detail/task-detail.component.ts
+    auth_required: true
+    description: Task detail
+  - path: /tarea/:id/editar
+    file: src/app/components/task-form/task-form.component.ts
+    auth_required: true
+    description: Edit a task
+features:
+  - name: User Login
+    description: Login with email and password
+    files:
+      - src/app/components/login/login.component.ts
+      - src/app/services/auth.service.ts
+    entry_route: /login
+    user_interactions:
+      - Fill email input field
+      - Fill password input field
+      - Click Login button to submit
+      - See error message on invalid credentials
+    api_calls: []
+    auth_required: false
+  - name: Social Login
+    description: Mocked Google/Facebook login that creates a demo user
+    files:
+      - src/app/components/login/login.component.ts
+      - src/app/services/auth.service.ts
+    entry_route: /login
+    user_interactions:
+      - Click Google login button
+      - Click Facebook login button
+    api_calls: []
+    auth_required: false
+  - name: Dashboard
+    description: Shows progress ring, task metrics, project progress, pipeline and deadlines
+    files:
+      - src/app/components/dashboard/dashboard.component.ts
+    entry_route: /
+    user_interactions:
+      - Navigate to dashboard
+      - Click link to board
+    api_calls: []
+    auth_required: true
+  - name: Kanban Board
+    description: Kanban with drag-drop of tasks between columns and column reordering
+    files:
+      - src/app/components/board/board.component.ts
+      - src/app/components/column/column.component.ts
+      - src/app/services/column.service.ts
+    entry_route: /tablero
+    user_interactions:
+      - Drag a task to another column
+      - Drag a column to reorder
+      - Open Columnas modal
+      - Create/reorder/delete columns
+      - Click a task to open detail
+    api_calls: []
+    auth_required: true
+  - name: Projects
+    description: List, create, edit and delete projects
+    files:
+      - src/app/components/proyectos/proyectos.component.ts
+      - src/app/components/proyecto-form/proyecto-form.component.ts
+      - src/app/services/proyecto.service.ts
+    entry_route: /proyectos
+    user_interactions:
+      - View project cards
+      - Click new project button
+      - Fill project form
+      - Save project
+      - Edit project
+      - Delete project
+    api_calls: []
+    auth_required: true
+  - name: Planning
+    description: Create, edit, delete plannings and manage their tasks and estimates
+    files:
+      - src/app/components/planning/planning.component.ts
+      - src/app/components/planning-form/planning-form.component.ts
+      - src/app/components/planning-tasks/planning-tasks.component.ts
+      - src/app/components/planning-detail/planning-detail.component.ts
+      - src/app/services/planning.service.ts
+    entry_route: /planning
+    user_interactions:
+      - View planning list
+      - Click Planning button to create
+      - Fill planning form
+      - Save planning
+      - Edit planning
+      - Delete planning with confirmation
+      - Manage planning tasks
+      - Open planning detail
+    api_calls: []
+    auth_required: true
+  - name: Tasks
+    description: Create, edit and view task details
+    files:
+      - src/app/components/task-form/task-form.component.ts
+      - src/app/components/task-detail/task-detail.component.ts
+    entry_route: /tarea/nueva
+    user_interactions:
+      - Fill task form
+      - Save task
+      - View task detail
+      - Edit task
+    api_calls: []
+    auth_required: true
+  - name: User Administration
+    description: Create, edit, delete users and change roles
+    files:
+      - src/app/components/usuarios/usuarios.component.ts
+      - src/app/services/usuario.service.ts
+    entry_route: /usuarios
+    user_interactions:
+      - View user list
+      - Create user
+      - Edit user
+      - Change user role
+      - Delete user
+    api_calls: []
+    auth_required: true
+  - name: Dark Mode
+    description: Toggle light/dark theme persisted in localStorage
+    files:
+      - src/app/services/theme.service.ts
+      - src/app/components/header/header.component.ts
+    entry_route: /
+    user_interactions:
+      - Click theme toggle button
+    api_calls: []
+    auth_required: true
+known_limitations:
+  - issue: No backend; all data persisted to localStorage only
+    location: src/app/services
+    impact: Data is not shared across devices or browsers
+  - issue: User passwords stored as Base64 (btoa) only, not hashed
+    location: src/app/services/usuario.service.ts
+    impact: Weak password storage security
