@@ -8,7 +8,8 @@ export type Recurso =
   | 'roles'
   | 'planning'
   | 'calendario'
-  | 'tablero';
+  | 'tablero'
+  | 'reportes';
 
 export type Accion = 'leer' | 'crear' | 'editar' | 'eliminar';
 
@@ -52,6 +53,7 @@ export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
     planning: TODAS,
     calendario: TODAS,
     tablero: TODAS,
+    reportes: TODAS,
   },
   administrador: {
     tareas: TODAS,
@@ -61,6 +63,7 @@ export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
     planning: TODAS,
     calendario: TODAS,
     tablero: TODAS,
+    reportes: TODAS,
   },
   supervisor: {
     tareas: TODAS,
@@ -70,6 +73,7 @@ export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
     planning: TODAS,
     calendario: TODAS,
     tablero: TODAS,
+    reportes: ['leer'],
   },
   qa: {
     tareas: TODAS,
@@ -79,6 +83,7 @@ export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
     planning: ['leer'],
     calendario: ['leer'],
     tablero: ['leer'],
+    reportes: ['leer'],
   },
   usuario: {
     tareas: TODAS,
@@ -88,6 +93,7 @@ export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
     planning: ['leer'],
     calendario: ['leer'],
     tablero: ['leer'],
+    reportes: ['leer'],
   },
 };
 
@@ -102,6 +108,7 @@ export const RECURSOS_ORDEN: Recurso[] = [
   'planning',
   'calendario',
   'tablero',
+  'reportes',
   'usuarios',
   'roles',
 ];

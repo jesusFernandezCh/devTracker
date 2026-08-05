@@ -1,0 +1,517 @@
+import {Component, inject, ChangeDetectionStrategy, signal} from '@angular/core';
+import {ReporteService} from '../../services/reporte.service';
+import {ProyectoService} from '../../services/proyecto.service';
+import {ColumnService} from '../../services/column.service';
+import {estimacionTotal} from '../../utils/estimacion';
+
+type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad';
+
+const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> = {
+  urgente: {text: '#ffffff', bg: '#e11d48', label: 'URGENTE'},
+  alerta: {text: '#92400e', bg: '#fbbf24', label: 'ALERTA'},
+  normal: {text: '#6b7280', bg: '#e5e7eb', label: 'NORMAL'},
+};
+
+@Component({
+  selector: 'app-reportes',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [],
+  template: `
+    <div class="mb-6">
+      <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">Reportes</h1>
+          <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
+            Indicadores de proyectos, tareas, estimación y avance.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="no-print mb-6 p-4 rounded-xl border flex flex-wrap items-end gap-3"
+         style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+      <div>
+        <label class="block text-xs font-medium mb-1" style="color: var(--color-gray-500);">Desde</label>
+        <input type="date" [value]="reporteService.fechaDesde()"
+               (input)="reporteService.fechaDesde.set($any($event.target).value)"
+               class="px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+               style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1" style="color: var(--color-gray-500);">Hasta</label>
+        <input type="date" [value]="reporteService.fechaHasta()"
+               (input)="reporteService.fechaHasta.set($any($event.target).value)"
+               class="px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+               style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+      </div>
+      <div class="min-w-[12rem]">
+        <label class="block text-xs font-medium mb-1" style="color: var(--color-gray-500);">Proyecto</label>
+        <select [value]="reporteService.proyectoId()"
+                (change)="reporteService.proyectoId.set($any($event.target).value)"
+                class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+          <option value="">Todos los proyectos</option>
+          @for (p of proyectoService.proyectos(); track p.id) {
+            <option [value]="p.id">{{ p.nombre }}</option>
+          }
+        </select>
+      </div>
+      <button (click)="reporteService.limpiarFiltros()"
+              class="px-3 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+        Limpiar
+      </button>
+    </div>
+
+    <!-- Pestañas -->
+    <div class="no-print mb-6 flex flex-wrap gap-1.5">
+      @for (tab of tabs; track tab.id) {
+        <button (click)="tabActivo.set(tab.id)"
+                class="px-3.5 py-2 text-sm font-medium rounded-lg transition-colors"
+                [style.background-color]="tabActivo() === tab.id ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
+                [style.color]="tabActivo() === tab.id ? '#ffffff' : 'var(--color-gray-600)'"
+                [style.border]="'1px solid ' + (tabActivo() === tab.id ? 'var(--color-indigo-600)' : 'var(--color-gray-200)')">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <div class="print-area">
+      @switch (tabActivo()) {
+        @case ('proyectos') {
+          @let rows = reporteService.proyectosDetalle();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Reporte de proyectos</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarProyectos()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[900px] text-sm">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                    <th class="th-cell">Proyecto</th>
+                    <th class="th-cell">Estado</th>
+                    <th class="th-cell">Prioridad</th>
+                    <th class="th-cell">Tareas</th>
+                    <th class="th-cell">Completadas</th>
+                    <th class="th-cell">Avance</th>
+                    <th class="th-cell">Story points</th>
+                    <th class="th-cell">Vence</th>
+                  </tr>
+                </thead>
+                <tbody style="border-top: 1px solid var(--color-gray-100);">
+                  @for (r of rows; track r.proyecto.id) {
+                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ r.proyecto.nombre }}</td>
+                      <td class="td-cell">
+                        <span class="badge" [style.background-color]="r.proyecto.status ? 'var(--color-indigo-100)' : 'var(--color-gray-100)'"
+                              [style.color]="'var(--color-indigo-700)'">{{ r.proyecto.status || '—' }}</span>
+                      </td>
+                      <td class="td-cell">
+                        @if (r.proyecto.prioridad) {
+                          <span class="badge" [style.background-color]="'var(--color-amber-100)'" [style.color]="'var(--color-amber-700)'">{{ r.proyecto.prioridad }}</span>
+                        } @else { — }
+                      </td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.tareas }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.completadas }}</td>
+                      <td class="td-cell">
+                        <span class="font-semibold" [style.color]="colorPorcentaje(r.porcentaje)">{{ r.porcentaje }}%</span>
+                      </td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.puntos }}</td>
+                      <td class="td-cell">
+                        @if (r.diasRestantes !== null) {
+                          <span class="badge" [style.background-color]="URGENCIA_STYLE[r.urgencia].bg"
+                                [style.color]="URGENCIA_STYLE[r.urgencia].text">{{ URGENCIA_STYLE[r.urgencia].label }} · {{ r.diasRestantes }}d</span>
+                        } @else { — }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="8" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @case ('productividad') {
+          @let items = reporteService.productividadPorProyecto();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Productividad por proyecto</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarProductividad()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="space-y-4">
+            @for (item of items; track item.proyecto.id) {
+              <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <div class="flex items-center justify-between gap-4 px-5 py-3.5 border-b flex-wrap" style="border-color: var(--color-gray-100);">
+                  <div>
+                    <p class="text-sm font-semibold" style="color: var(--color-gray-900);">{{ item.proyecto.nombre }}</p>
+                    <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">{{ item.plannings.length }} planning(s) · {{ item.puntos }} story points</p>
+                  </div>
+                  <span class="inline-flex items-center gap-2">
+                    <div class="w-32 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
+                      <div class="h-full rounded-full" [style.width.%]="item.porcentaje" [style.background-color]="colorPorcentaje(item.porcentaje)"></div>
+                    </div>
+                    <span class="text-sm font-semibold" style="color: var(--color-gray-700);">{{ item.porcentaje }}%</span>
+                  </span>
+                </div>
+                @if (item.plannings.length > 0) {
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                        <th class="th-cell">Fecha</th>
+                        <th class="th-cell">Descripción</th>
+                        <th class="th-cell">Tareas</th>
+                        <th class="th-cell">Completadas</th>
+                        <th class="th-cell">Puntos</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (pl of item.plannings; track pl.planning.id) {
+                        <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                          <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.planning.fecha }}</td>
+                          <td class="td-cell" style="color: var(--color-gray-900);">{{ pl.planning.descripcion || '—' }}</td>
+                          <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.tareas.length }}</td>
+                          <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.completadas }}</td>
+                          <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ pl.puntos }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+            } @empty {
+              <div class="rounded-xl border p-10 text-center text-sm" style="background-color: var(--color-surface); border-color: var(--color-gray-200); color: var(--color-gray-400);">
+                No hay proyectos para los filtros aplicados.
+              </div>
+            }
+          </div>
+        }
+
+        @case ('estimacion') {
+          @let complejidad = reporteService.estimacionPorComplejidad();
+          @let porProyecto = reporteService.estimacionPorProyecto();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Estimación / carga de trabajo</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarEstimacion()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-3 gap-4 mb-4">
+            @for (c of complejidad; track c.complejidad) {
+              <div class="rounded-xl border p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--color-gray-400);">{{ c.complejidad }}</p>
+                <p class="text-2xl font-bold" style="color: var(--color-gray-900);">{{ c.cantidad }} <span class="text-sm font-medium" style="color: var(--color-gray-400);">tarea{{ c.cantidad !== 1 ? 's' : '' }}</span></p>
+                <p class="text-sm mt-1" style="color: var(--color-indigo-600);">{{ c.puntos }} pts</p>
+              </div>
+            }
+          </div>
+          <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                    <th class="th-cell">Proyecto</th>
+                    <th class="th-cell">Tareas</th>
+                    <th class="th-cell">Story points</th>
+                    <th class="th-cell">Peso relativo</th>
+                  </tr>
+                </thead>
+                <tbody style="border-top: 1px solid var(--color-gray-100);">
+                  @let totalPuntos = sumarPuntos(porProyecto);
+                  @for (r of porProyecto; track r.proyecto.id) {
+                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ r.proyecto.nombre }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.tareas }}</td>
+                      <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ r.puntos }}</td>
+                      <td class="td-cell">
+                        <div class="flex items-center gap-2">
+                          <div class="w-28 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
+                            <div class="h-full rounded-full" [style.width.%]="totalPuntos > 0 ? (r.puntos / totalPuntos) * 100 : 0" style="background-color: var(--color-indigo-500);"></div>
+                          </div>
+                          <span class="text-xs" style="color: var(--color-gray-400);">{{ totalPuntos > 0 ? Math.round((r.puntos / totalPuntos) * 100) : 0 }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="4" class="empty-row">No hay tareas para los filtros aplicados.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @case ('vencimientos') {
+          @let vencimientos = reporteService.vencimientos();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Vencimientos próximos</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarVencimientos()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                    <th class="th-cell">Proyecto</th>
+                    <th class="th-cell">Fecha límite</th>
+                    <th class="th-cell">Días restantes</th>
+                    <th class="th-cell">Urgencia</th>
+                  </tr>
+                </thead>
+                <tbody style="border-top: 1px solid var(--color-gray-100);">
+                  @for (v of vencimientos; track v.proyecto.id) {
+                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ v.proyecto.nombre }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ v.proyecto.fechaHasta }}</td>
+                      <td class="td-cell font-semibold" [style.color]="URGENCIA_STYLE[v.urgencia].bg === '#e11d48' ? '#e11d48' : 'var(--color-gray-700)'">{{ v.diasRestantes }}d</td>
+                      <td class="td-cell">
+                        <span class="badge" [style.background-color]="URGENCIA_STYLE[v.urgencia].bg" [style.color]="URGENCIA_STYLE[v.urgencia].text">{{ URGENCIA_STYLE[v.urgencia].label }}</span>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="4" class="empty-row">No hay proyectos con fecha límite.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @case ('pipeline') {
+          @let pipeline = reporteService.pipelinePorColumna();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Pipeline por ambiente</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarPipeline()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="rounded-xl border shadow-sm p-5" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="flex h-8 rounded-lg overflow-hidden" style="background-color: var(--color-gray-100);">
+              @for (item of pipeline; track item.columna.id) {
+                @if (item.porcentaje > 0) {
+                  <div class="min-w-[4px]" [style.width.%]="item.porcentaje" [style.background-color]="item.columna.color"
+                       [title]="item.columna.nombre + ': ' + item.cantidad + ' proyecto' + (item.cantidad !== 1 ? 's' : '')"></div>
+                }
+              }
+            </div>
+            <div class="flex flex-wrap gap-4 mt-4">
+              @for (item of pipeline; track item.columna.id) {
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="w-2.5 h-2.5 rounded-full" [style.background-color]="item.columna.color"></span>
+                  <span style="color: var(--color-gray-600);">{{ item.columna.nombre }}</span>
+                  <span class="font-semibold" style="color: var(--color-gray-900);">{{ item.cantidad }}</span>
+                  <span style="color: var(--color-gray-400);">({{ item.porcentaje }}%)</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @case ('calidad') {
+          @let calidad = reporteService.calidadPorColumna();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Calidad por ambiente</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarCalidad()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-3 gap-4">
+            @for (c of calidad; track c.columna.id) {
+              <div class="rounded-xl border p-5" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="w-2.5 h-2.5 rounded-full" [style.background-color]="c.columna.color"></span>
+                  <p class="text-sm font-semibold" style="color: var(--color-gray-900);">{{ c.columna.nombre }}</p>
+                </div>
+                <p class="text-3xl font-bold" style="color: var(--color-gray-900);">{{ c.porcentaje }}<span class="text-base" style="color: var(--color-gray-400);">%</span></p>
+                <p class="text-sm mt-1" style="color: var(--color-gray-500);">{{ c.completadas }} de {{ c.total }} completadas</p>
+                <div class="mt-3 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
+                  <div class="h-full rounded-full" [style.width.%]="c.porcentaje" [style.background-color]="colorPorcentaje(c.porcentaje)"></div>
+                </div>
+                <p class="text-xs mt-2" style="color: var(--color-gray-400);">{{ c.pendientes }} pendiente{{ c.pendientes !== 1 ? 's' : '' }}</p>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  `,
+  styles: [`
+    :host { display: block; }
+
+    .btn-accion {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border-radius: 0.5rem;
+      color: var(--color-gray-700);
+      background-color: var(--color-gray-100);
+      border: 1px solid var(--color-gray-200);
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s;
+    }
+    .btn-accion:hover { background-color: var(--color-gray-200); }
+
+    .th-cell {
+      text-align: left;
+      padding: 0.625rem 1rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-400);
+    }
+
+    .td-cell {
+      padding: 0.625rem 1rem;
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .empty-row {
+      padding: 2.5rem 1rem;
+      text-align: center;
+      color: var(--color-gray-400);
+    }
+  `]
+})
+export class ReportesComponent {
+  protected readonly reporteService = inject(ReporteService);
+  protected readonly proyectoService = inject(ProyectoService);
+  protected readonly columnService = inject(ColumnService);
+
+  protected readonly tabActivo = signal<TabReporte>('proyectos');
+  protected readonly tabs: {id: TabReporte; label: string}[] = [
+    {id: 'proyectos', label: 'Proyectos'},
+    {id: 'productividad', label: 'Productividad'},
+    {id: 'estimacion', label: 'Estimación'},
+    {id: 'vencimientos', label: 'Vencimientos'},
+    {id: 'pipeline', label: 'Pipeline'},
+    {id: 'calidad', label: 'Calidad'},
+  ];
+
+  protected readonly URGENCIA_STYLE = URGENCIA_STYLE;
+  protected readonly estimacionTotal = estimacionTotal;
+  protected readonly Math = Math;
+
+  protected colorPorcentaje(pct: number): string {
+    if (pct >= 75) return 'var(--color-emerald-600)';
+    if (pct >= 40) return 'var(--color-amber-500)';
+    return 'var(--color-rose-500)';
+  }
+
+  protected sumarPuntos(items: {puntos: number}[]): number {
+    return items.reduce((s, r) => s + r.puntos, 0);
+  }
+
+  protected nombreColumna(id: string): string {
+    return this.columnService.columnas().find(c => c.id === id)?.nombre ?? '—';
+  }
+
+  protected imprimir(): void {
+    window.print();
+  }
+
+  protected exportarProyectos(): void {
+    const filas = this.reporteService.proyectosDetalle().map(r => ({
+      Proyecto: r.proyecto.nombre,
+      Estado: r.proyecto.status ?? '',
+      Prioridad: r.proyecto.prioridad ?? '',
+      Ambiente: this.nombreColumna(r.proyecto.columnaId),
+      Tareas: r.tareas,
+      Completadas: r.completadas,
+      Pendientes: r.pendientes,
+      Avance: `${r.porcentaje}%`,
+      'Story points': r.puntos,
+      'Fecha inicio': r.proyecto.fechaDesde ?? '',
+      'Fecha fin': r.proyecto.fechaHasta ?? '',
+      'Dias restantes': r.diasRestantes ?? '',
+    }));
+    this.reporteService.exportarCSV('reporte-proyectos', filas, [
+      'Proyecto', 'Estado', 'Prioridad', 'Ambiente', 'Tareas', 'Completadas', 'Pendientes',
+      'Avance', 'Story points', 'Fecha inicio', 'Fecha fin', 'Dias restantes',
+    ]);
+  }
+
+  protected exportarProductividad(): void {
+    const filas = this.reporteService.productividadPorProyecto().map(r => ({
+      Proyecto: r.proyecto.nombre,
+      Plannings: r.plannings.length,
+      Tareas: r.totalTareas,
+      Completadas: r.completadas,
+      Avance: `${r.porcentaje}%`,
+      'Story points': r.puntos,
+    }));
+    this.reporteService.exportarCSV('reporte-productividad', filas, [
+      'Proyecto', 'Plannings', 'Tareas', 'Completadas', 'Avance', 'Story points',
+    ]);
+  }
+
+  protected exportarEstimacion(): void {
+    const filas = this.reporteService.estimacionPorProyecto().map(r => ({
+      Proyecto: r.proyecto.nombre,
+      Tareas: r.tareas,
+      'Story points': r.puntos,
+    }));
+    this.reporteService.exportarCSV('reporte-estimacion', filas, ['Proyecto', 'Tareas', 'Story points']);
+  }
+
+  protected exportarVencimientos(): void {
+    const filas: Record<string, unknown>[] = this.reporteService.vencimientos().map(v => ({
+      Proyecto: v.proyecto.nombre,
+      'Fecha limite': v.proyecto.fechaHasta,
+      'Dias restantes': v.diasRestantes,
+      Urgencia: URGENCIA_STYLE[v.urgencia].label,
+    }));
+    this.reporteService.exportarCSV('reporte-vencimientos', filas, [
+      'Proyecto', 'Fecha limite', 'Dias restantes', 'Urgencia',
+    ]);
+  }
+
+  protected exportarPipeline(): void {
+    const filas = this.reporteService.pipelinePorColumna().map(r => ({
+      Ambiente: r.columna.nombre,
+      Proyectos: r.cantidad,
+      Porcentaje: `${r.porcentaje}%`,
+    }));
+    this.reporteService.exportarCSV('reporte-pipeline', filas, ['Ambiente', 'Proyectos', 'Porcentaje']);
+  }
+
+  protected exportarCalidad(): void {
+    const filas = this.reporteService.calidadPorColumna().map(r => ({
+      Ambiente: r.columna.nombre,
+      Total: r.total,
+      Completadas: r.completadas,
+      Pendientes: r.pendientes,
+      Porcentaje: `${r.porcentaje}%`,
+    }));
+    this.reporteService.exportarCSV('reporte-calidad', filas, [
+      'Ambiente', 'Total', 'Completadas', 'Pendientes', 'Porcentaje',
+    ]);
+  }
+}

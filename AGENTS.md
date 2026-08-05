@@ -30,6 +30,7 @@ No `lint` or `typecheck` scripts are configured.
 | `/tarea/:id/editar` | TaskFormComponent |
 | `/usuarios` | UsuariosComponent (guard `leer` + `usuarios`) |
 | `/roles` | RolesComponent (guard `leer` + `roles`) |
+| `/reportes` | ReportesComponent (guard `leer` + `reportes`) |
 
 ## Roles y permisos (RBAC)
 
@@ -42,6 +43,14 @@ No `lint` or `typecheck` scripts are configured.
 - `PermisoDirective` (estructural): `<button *appPermiso="'editar'; recurso: 'tareas'">` oculta acciones sin permiso.
 - Contraseñas: hash **SHA-256 + salt** (`salt:hash` en hex) vía `utils/cripto.ts` (Web Crypto). Las claves legacy en base64 se migran automáticamente al cargar.
 - **Seguridad:** el RBAC se evalúa en el navegador y es solo UX. La autorización real debe validarse en un backend.
+
+## Reportes
+
+- `ReporteService` (persistencia de filtros en signals, no en localStorage): `proyectosDetalle`, `productividadPorProyecto`, `estimacionPorComplejidad`, `estimacionPorProyecto`, `vencimientos`, `pipelinePorColumna`, `calidadPorColumna` (todos `computed`), filtros `fechaDesde`/`fechaHasta`/`proyectoId` (comparación de strings ISO, no de Date) y `exportarCSV(nombre, filas, columnas)` con BOM + Blob.
+- Helpers exportados: `diasRestantes(fechaHasta)` y `urgenciaDe(dias)` (`<=14` urgente, `<=30` alerta, si no normal).
+- Los templates de ReportesComponent usan `@let` para los computeds y métodos de clase (`sumarPuntos`, `colorPorcentaje`, `nombreColumna`) — **no usar arrow functions en expresiones de template** (el parser de Angular no las soporta).
+- Story points: Simple=1, Media=3, Compleja=5 (coincide con `utils/estimacion.ts`).
+- Impresión: botones "Imprimir" llaman `window.print()`; `@media print` global en `styles.scss` oculta `mat-sidenav`, `app-header` y `.no-print`, dejando visible `.print-area`.
 
 ## Dark mode
 

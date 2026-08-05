@@ -211,3 +211,32 @@
     margin-left: 306px;
   }
 }
+/* ─── Impresión de reportes ─── */
+@media print {
+  mat-sidenav,
+  app-header,
+  .no-print {
+    display: none !important;
+  }
+
+  mat-sidenav-container {
+    display: block;
+    min-height: 0 !important;
+  }
+
+  mat-sidenav-content {
+    margin-left: 0 !important;
+    min-height: 0 !important;
+    transform: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .print-area {
+    display: block;
+    width: 100%;
+  }
+}

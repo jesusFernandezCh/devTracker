@@ -58,6 +58,12 @@ import {PermisoService} from '../../services/permiso.service';
           <mat-icon class="sidebar-nav-icon">calendar_view_week</mat-icon>
           <span>Calendario</span>
         </a>
+        <a routerLink="/reportes" routerLinkActive="sidebar-active"
+           (click)="onNavClick()"
+           class="sidebar-nav-item">
+          <mat-icon class="sidebar-nav-icon">query_stats</mat-icon>
+          <span>Reportes</span>
+        </a>
 
         <div class="border-t my-2" style="border-color: var(--color-gray-200);"></div>
 
