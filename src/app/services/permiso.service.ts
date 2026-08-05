@@ -3,10 +3,10 @@ import {AuthService} from './auth.service';
 import {
   ACCIONES,
   RECURSOS_ORDEN,
-  ROLES_ORDEN,
   Accion,
   MatrizPermisos,
   PERMISOS,
+  ROL_SUPER_ADMIN_ID,
   Recurso,
   TipoUsuario,
 } from '../models/permiso.model';
@@ -57,7 +57,7 @@ export class PermisoService {
   }
 
   toggle(rol: TipoUsuario, recurso: Recurso, accion: Accion): void {
-    if (rol === 'super-administrador') return;
+    if (rol === ROL_SUPER_ADMIN_ID) return;
     this._permisos.update((matriz) => {
       const recursos = {...matriz[rol]};
       const acciones = [...(recursos[recurso] ?? [])];
@@ -69,8 +69,31 @@ export class PermisoService {
     this._guardar();
   }
 
+  agregarRol(id: TipoUsuario): void {
+    this._permisos.update((matriz) => ({...matriz, [id]: {}}));
+    this._guardar();
+  }
+
+  eliminarRol(id: TipoUsuario): void {
+    if (id === ROL_SUPER_ADMIN_ID) return;
+    this._permisos.update((matriz) => {
+      const copia = {...matriz};
+      delete copia[id];
+      return copia;
+    });
+    this._guardar();
+  }
+
   restablecer(): void {
-    this._permisos.set(clonarMatriz(PERMISOS));
+    this._permisos.update((matriz) => {
+      const base = clonarMatriz(PERMISOS);
+      for (const id of Object.keys(matriz)) {
+        if (!(id in PERMISOS) && id !== ROL_SUPER_ADMIN_ID) {
+          base[id] = clonarMatriz({[id]: matriz[id]})[id];
+        }
+      }
+      return base;
+    });
     this._guardar();
   }
 
@@ -90,23 +113,32 @@ export class PermisoService {
           parsed && parsed.version === STORAGE_VERSION && parsed.matriz ? parsed.matriz : null;
         if (data) {
           const base = clonarMatriz(PERMISOS);
-          for (const rol of ROLES_ORDEN) {
-            if (rol === 'super-administrador') {
-              base[rol] = clonarMatriz(PERMISOS)[rol];
-              continue;
-            }
-            const guardado = data[rol];
+          for (const [rolId, guardado] of Object.entries(data)) {
+            if (rolId === ROL_SUPER_ADMIN_ID) continue;
             if (!guardado || typeof guardado !== 'object') continue;
-            const recursos = {...base[rol]};
-            for (const recurso of RECURSOS_ORDEN) {
-              const accionesGuardadas = (guardado as Partial<Record<Recurso, unknown>>)[recurso];
-              if (!Array.isArray(accionesGuardadas)) continue;
-              const validas = accionesGuardadas.filter(
-                (a): a is Accion => (ACCIONES as readonly string[]).includes(a as string),
-              );
-              recursos[recurso] = [...new Set(validas)];
+            if (rolId in PERMISOS) {
+              const recursos = {...base[rolId]};
+              for (const recurso of RECURSOS_ORDEN) {
+                const accionesGuardadas = (guardado as Partial<Record<Recurso, unknown>>)[recurso];
+                if (!Array.isArray(accionesGuardadas)) continue;
+                const validas = accionesGuardadas.filter(
+                  (a): a is Accion => (ACCIONES as readonly string[]).includes(a as string),
+                );
+                recursos[recurso] = [...new Set(validas)];
+              }
+              base[rolId] = recursos;
+            } else {
+              const recursos: MatrizPermisos = {};
+              for (const recurso of RECURSOS_ORDEN) {
+                const accionesGuardadas = (guardado as Partial<Record<Recurso, unknown>>)[recurso];
+                if (!Array.isArray(accionesGuardadas)) continue;
+                const validas = accionesGuardadas.filter(
+                  (a): a is Accion => (ACCIONES as readonly string[]).includes(a as string),
+                );
+                recursos[recurso] = [...new Set(validas)];
+              }
+              base[rolId] = recursos;
             }
-            base[rol] = recursos;
           }
           return base;
         }

@@ -1,4 +1,5 @@
-export type TipoUsuario = 'usuario' | 'supervisor' | 'qa' | 'administrador' | 'super-administrador';
+/** Identificador de rol. Actualmente los roles son dinámicos y se referencian por su id. */
+export type TipoUsuario = string;
 
 export type Recurso =
   | 'tareas'
@@ -17,8 +18,25 @@ const TODAS: Accion[] = ['leer', 'crear', 'editar', 'eliminar'];
 
 export type MatrizPermisos = Partial<Record<Recurso, Accion[]>>;
 
+export const ROL_SUPER_ADMIN_ID = 'super-administrador';
+
+export interface Rol {
+  id: string;
+  nombre: string;
+  /** Rol de sistema (semilla). El super-administrador nunca se renombra ni elimina. */
+  sistema: boolean;
+}
+
+export const ROLES_DEFAULT: Rol[] = [
+  {id: ROL_SUPER_ADMIN_ID, nombre: 'Super Administrador', sistema: true},
+  {id: 'administrador', nombre: 'Administrador', sistema: true},
+  {id: 'supervisor', nombre: 'Supervisor', sistema: true},
+  {id: 'qa', nombre: 'QA', sistema: true},
+  {id: 'usuario', nombre: 'Usuario', sistema: true},
+];
+
 /**
- * Matriz estática de permisos por rol.
+ * Matriz de permisos por defecto (por id de rol).
  *
  * NOTA DE SEGURIDAD: Esta matriz se evalúa únicamente en el cliente. El control
  * de acceso del navegador es un filtro de UX (ocultar/mostrar) y nunca debe
@@ -26,7 +44,7 @@ export type MatrizPermisos = Partial<Record<Recurso, Accion[]>>;
  * validarse en un backend.
  */
 export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
-  'super-administrador': {
+  [ROL_SUPER_ADMIN_ID]: {
     tareas: TODAS,
     proyectos: TODAS,
     usuarios: TODAS,
@@ -73,25 +91,10 @@ export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
   },
 };
 
-const ROL_LABEL: Record<TipoUsuario, string> = {
-  usuario: 'Usuario',
-  supervisor: 'Supervisor',
-  qa: 'QA',
-  administrador: 'Administrador',
-  'super-administrador': 'Super Administrador',
-};
-
-export function labelTipoUsuario(tipo: TipoUsuario): string {
-  return ROL_LABEL[tipo];
+/** Nombre por defecto de un rol de sistema, si existe. */
+export function labelRolDefault(id: string): string | undefined {
+  return ROLES_DEFAULT.find(r => r.id === id)?.nombre;
 }
-
-export const ROLES_ORDEN: TipoUsuario[] = [
-  'usuario',
-  'qa',
-  'supervisor',
-  'administrador',
-  'super-administrador',
-];
 
 export const RECURSOS_ORDEN: Recurso[] = [
   'tareas',
@@ -102,7 +105,3 @@ export const RECURSOS_ORDEN: Recurso[] = [
   'usuarios',
   'roles',
 ];
-
-export function validarTipoUsuario(value: string): value is TipoUsuario {
-  return value in ROL_LABEL;
-}

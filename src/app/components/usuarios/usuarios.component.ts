@@ -2,17 +2,18 @@ import {Component, inject, ChangeDetectionStrategy, effect} from '@angular/core'
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {UsuarioService} from '../../services/usuario.service';
-import {TipoUsuario} from '../../models/permiso.model';
+import {RolService} from '../../services/rol.service';
 import {PermisoDirective} from '../../directives/permiso.directive';
 import {Usuario} from '../../models/usuario.model';
 
-function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
+function tipoColor(tipo: string): {text: string; bg: string} {
   switch (tipo) {
     case 'super-administrador': return {text: '#ffffff', bg: 'var(--color-purple-600)'};
     case 'administrador': return {text: '#ffffff', bg: 'var(--color-indigo-600)'};
     case 'supervisor': return {text: '#ffffff', bg: 'var(--color-blue-500)'};
     case 'qa': return {text: 'var(--color-gray-900)', bg: 'var(--color-amber-400)'};
-    default: return {text: 'var(--color-gray-700)', bg: 'var(--color-gray-200)'};
+    case 'usuario': return {text: 'var(--color-gray-700)', bg: 'var(--color-gray-200)'};
+    default: return {text: 'var(--color-gray-900)', bg: 'var(--color-teal-200)'};
   }
 }
 
@@ -89,7 +90,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                           [style.color]="tipoColor(usuario.tipo).text"
                           [style.background-color]="tipoColor(usuario.tipo).bg">
-                      {{ usuario.tipo }}
+                      {{ rolService.nombreDe(usuario.tipo) }}
                     </span>
                   </td>
                   <td class="px-4 sm:px-6 py-2.5 text-right">
@@ -205,11 +206,9 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
               <select formControlName="tipo"
                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
-                <option value="usuario">Usuario</option>
-                <option value="qa">QA</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="administrador">Administrador</option>
-                <option value="super-administrador">Super Administrador</option>
+                @for (rol of rolService.rolesUsables(); track rol.id) {
+                  <option [value]="rol.id">{{ rol.nombre }}</option>
+                }
               </select>
             </div>
 
@@ -236,6 +235,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
 export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
   protected readonly usuarioService = inject(UsuarioService);
+  protected readonly rolService = inject(RolService);
 
   protected readonly usuarios = this.usuarioService.usuarios;
   protected readonly tipoColor = tipoColor;
@@ -248,8 +248,12 @@ export class UsuariosComponent {
     usuario: ['', [Validators.required, Validators.minLength(3)]],
     correo: ['', [Validators.required, Validators.email]],
     clave: ['', [Validators.required, Validators.minLength(4)]],
-    tipo: ['usuario' as TipoUsuario, Validators.required],
+    tipo: ['usuario', Validators.required],
   });
+
+  private tipoPorDefecto(): string {
+    return this.rolService.rolesUsables()[0]?.id ?? 'usuario';
+  }
 
   constructor() {
     effect(() => {
@@ -267,7 +271,7 @@ export class UsuariosComponent {
           usuario: '',
           correo: '',
           clave: '',
-          tipo: 'usuario',
+          tipo: this.tipoPorDefecto(),
         });
         this.userForm.controls.clave.setValidators([Validators.required, Validators.minLength(4)]);
       }

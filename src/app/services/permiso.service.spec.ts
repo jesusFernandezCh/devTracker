@@ -1,7 +1,7 @@
 import {TestBed} from '@angular/core/testing';
 import {PermisoService} from './permiso.service';
 import {AuthService} from './auth.service';
-import {PERMISOS, ACCIONES, ROLES_ORDEN, RECURSOS_ORDEN} from '../models/permiso.model';
+import {PERMISOS, ACCIONES, RECURSOS_ORDEN} from '../models/permiso.model';
 
 describe('PermisoService', () => {
   let service: PermisoService;
@@ -22,7 +22,7 @@ describe('PermisoService', () => {
   });
 
   it('se crea con la matriz por defecto', () => {
-    for (const rol of ROLES_ORDEN) {
+    for (const rol of Object.keys(PERMISOS)) {
       for (const recurso of RECURSOS_ORDEN) {
         const esperadas = PERMISOS[rol][recurso] ?? [];
         const actuales = service.permisos()[rol][recurso] ?? [];
@@ -115,8 +115,42 @@ describe('PermisoService', () => {
       }),
     );
     const nueva = TestBed.runInInjectionContext(() => new PermisoService());
-    const tareas = (nueva.permisos().supervisor.tareas ?? []) as string[];
+    const tareas = (nueva.permisos()['supervisor'].tareas ?? []) as string[];
     expect(tareas).not.toContain('hack');
     expect(tareas.sort()).toEqual(['crear', 'editar', 'eliminar', 'leer']);
+  });
+
+  it('agregarRol crea una entrada con permisos vacíos y persiste', () => {
+    service.agregarRol('rol-personalizado');
+    expect(service.permisos()['rol-personalizado']).toEqual({});
+    const guardado = JSON.parse(localStorage.getItem('devtracker-permisos') ?? '{}');
+    expect(guardado.matriz['rol-personalizado']).toEqual({});
+  });
+
+  it('eliminarRol remueve la entrada de la matriz', () => {
+    service.agregarRol('rol-personalizado');
+    expect(service.permisos()['rol-personalizado']).toBeDefined();
+    service.eliminarRol('rol-personalizado');
+    expect(service.permisos()['rol-personalizado']).toBeUndefined();
+  });
+
+  it('eliminarRol no afecta al super-administrador', () => {
+    service.eliminarRol('super-administrador');
+    expect(service.permisos()['super-administrador']).toBeDefined();
+  });
+
+  it('los roles personalizados se conservan tras restablecer', () => {
+    service.agregarRol('rol-personalizado');
+    service.toggle('rol-personalizado', 'tareas', 'leer');
+    service.restablecer();
+    expect(service.puede('leer', 'tareas', 'rol-personalizado')).toBeTrue();
+    expect(service.puede('eliminar', 'tareas', 'usuario')).toBeTrue();
+  });
+
+  it('las entradas de roles personalizados sobreviven a una nueva instancia', () => {
+    service.agregarRol('rol-personalizado');
+    service.toggle('rol-personalizado', 'proyectos', 'crear');
+    const nueva = TestBed.runInInjectionContext(() => new PermisoService());
+    expect(nueva.puede('crear', 'proyectos', 'rol-personalizado')).toBeTrue();
   });
 });

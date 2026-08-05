@@ -33,9 +33,11 @@ No `lint` or `typecheck` scripts are configured.
 
 ## Roles y permisos (RBAC)
 
-- Tipos en `models/permiso.model.ts`: `usuario | qa | supervisor | administrador | super-administrador`.
-- Matriz estática `PERMISOS` por recurso/acción. Acciones: `leer | crear | editar | eliminar`. Recursos: `tareas | proyectos | planning | calendario | tablero | usuarios | roles`.
-- `PermisoService.puede(accion, recurso, tipo?)` / `puedeUsuarioActual(...)`.
+- Roles **dinámicos** gestionados por `RolService` (persistido en `devtracker-roles`), sembrados con `ROLES_DEFAULT` de `models/permiso.model.ts` (usuario, qa, supervisor, administrador, super-administrador).
+- `Usuario.tipo` es un `string` que referencia el id del rol. `RolService.nombreDe(id)` resuelve el nombre.
+- Matriz de permisos por id de rol en `PermisoService` (persistido en `devtracker-permisos`). Acciones: `leer | crear | editar | eliminar`. Recursos: `tareas | proyectos | planning | calendario | tablero | usuarios | roles`.
+- `RolService`: `crear(nombre)` (permisos vacíos), `renombrar(id, nombre)`, `eliminar(id)` → `'ok' | 'protegido' | 'en-uso'`. El super-administrador no se renombra ni elimina; un rol con usuarios asignados no se puede eliminar. Nombres únicos.
+- `PermisoService.puede(accion, recurso, tipo?)` / `puedeUsuarioActual(...)` / `toggle` / `agregarRol` / `eliminarRol` / `restablecer`.
 - `permisoGuard(accion, recurso)` (CanActivateFn) protege rutas sensibles (`/usuarios`, `/roles`, `/tarea/nueva`, `/tarea/:id/editar`).
 - `PermisoDirective` (estructural): `<button *appPermiso="'editar'; recurso: 'tareas'">` oculta acciones sin permiso.
 - Contraseñas: hash **SHA-256 + salt** (`salt:hash` en hex) vía `utils/cripto.ts` (Web Crypto). Las claves legacy en base64 se migran automáticamente al cargar.
