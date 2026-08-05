@@ -2,14 +2,18 @@ import {Component, inject, ChangeDetectionStrategy, effect} from '@angular/core'
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {UsuarioService} from '../../services/usuario.service';
-import {Usuario, TipoUsuario} from '../../models/usuario.model';
+import {RolService} from '../../services/rol.service';
+import {PermisoDirective} from '../../directives/permiso.directive';
+import {Usuario} from '../../models/usuario.model';
 
-function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
+function tipoColor(tipo: string): {text: string; bg: string} {
   switch (tipo) {
     case 'super-administrador': return {text: '#ffffff', bg: 'var(--color-purple-600)'};
     case 'administrador': return {text: '#ffffff', bg: 'var(--color-indigo-600)'};
     case 'supervisor': return {text: '#ffffff', bg: 'var(--color-blue-500)'};
-    default: return {text: 'var(--color-gray-700)', bg: 'var(--color-gray-200)'};
+    case 'qa': return {text: 'var(--color-gray-900)', bg: 'var(--color-amber-400)'};
+    case 'usuario': return {text: 'var(--color-gray-700)', bg: 'var(--color-gray-200)'};
+    default: return {text: 'var(--color-gray-900)', bg: 'var(--color-teal-200)'};
   }
 }
 
@@ -17,7 +21,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
   selector: 'app-usuarios',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -29,7 +33,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
         </p>
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0">
-        <button (click)="abrirNuevo()"
+        <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -46,7 +50,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
         </svg>
         <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500);">No hay usuarios</h3>
         <p class="text-sm mb-6" style="color: var(--color-gray-400);">Crea el primer usuario para empezar.</p>
-        <button (click)="abrirNuevo()"
+        <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -86,19 +90,19 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                           [style.color]="tipoColor(usuario.tipo).text"
                           [style.background-color]="tipoColor(usuario.tipo).bg">
-                      {{ usuario.tipo }}
+                      {{ rolService.nombreDe(usuario.tipo) }}
                     </span>
                   </td>
                   <td class="px-4 sm:px-6 py-2.5 text-right">
                     <div class="flex items-center justify-end gap-1">
-                      <button (click)="abrirEditar(usuario)"
+                      <button *appPermiso="'editar'; recurso: 'usuarios'" (click)="abrirEditar(usuario)"
                               class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
                               [attr.aria-label]="'Editar ' + usuario.usuario">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                         </svg>
                       </button>
-                      <button (click)="confirmarEliminar(usuario.id)"
+                      <button *appPermiso="'eliminar'; recurso: 'usuarios'" (click)="confirmarEliminar(usuario.id)"
                               class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
                               [attr.aria-label]="'Eliminar ' + usuario.usuario">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -202,10 +206,9 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
               <select formControlName="tipo"
                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
-                <option value="usuario">Usuario</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="administrador">Administrador</option>
-                <option value="super-administrador">Super Administrador</option>
+                @for (rol of rolService.rolesUsables(); track rol.id) {
+                  <option [value]="rol.id">{{ rol.nombre }}</option>
+                }
               </select>
             </div>
 
@@ -232,6 +235,7 @@ function tipoColor(tipo: TipoUsuario): {text: string; bg: string} {
 export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
   protected readonly usuarioService = inject(UsuarioService);
+  protected readonly rolService = inject(RolService);
 
   protected readonly usuarios = this.usuarioService.usuarios;
   protected readonly tipoColor = tipoColor;
@@ -244,8 +248,12 @@ export class UsuariosComponent {
     usuario: ['', [Validators.required, Validators.minLength(3)]],
     correo: ['', [Validators.required, Validators.email]],
     clave: ['', [Validators.required, Validators.minLength(4)]],
-    tipo: ['usuario' as TipoUsuario, Validators.required],
+    tipo: ['usuario', Validators.required],
   });
+
+  private tipoPorDefecto(): string {
+    return this.rolService.rolesUsables()[0]?.id ?? 'usuario';
+  }
 
   constructor() {
     effect(() => {
@@ -263,7 +271,7 @@ export class UsuariosComponent {
           usuario: '',
           correo: '',
           clave: '',
-          tipo: 'usuario',
+          tipo: this.tipoPorDefecto(),
         });
         this.userForm.controls.clave.setValidators([Validators.required, Validators.minLength(4)]);
       }
@@ -286,7 +294,7 @@ export class UsuariosComponent {
     this.editandoUsuario = null;
   }
 
-  onGuardar(): void {
+  async onGuardar(): Promise<void> {
     if (this.userForm.invalid) return;
     const raw = this.userForm.getRawValue();
     if (this.editandoUsuario) {
@@ -298,9 +306,9 @@ export class UsuariosComponent {
       if (raw.clave) {
         data.clave = raw.clave;
       }
-      this.usuarioService.actualizar(this.editandoUsuario.id, data);
+      await this.usuarioService.actualizar(this.editandoUsuario.id, data);
     } else {
-      this.usuarioService.crear({
+      await this.usuarioService.crear({
         usuario: raw.usuario,
         correo: raw.correo,
         clave: raw.clave,

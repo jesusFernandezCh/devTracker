@@ -5,12 +5,13 @@ import {DragDropModule, CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-dr
 import {Planning, PlanningTask} from '../../models/planning.model';
 import {Proyecto} from '../../models/proyecto.model';
 import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
+import {PermisoDirective} from '../../directives/permiso.directive';
 
 @Component({
   selector: 'app-planning-tasks',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, DragDropModule, PermisoDirective],
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrar.emit()">
       <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
@@ -48,7 +49,7 @@ import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
             </div>
           </div>
 
-          <button (click)="agregarTarea()"
+          <button *appPermiso="'crear'; recurso: 'tareas'" (click)="agregarTarea()"
                   class="w-full px-3 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-indigo-600)] hover:bg-[var(--color-indigo-700)]"
                   [disabled]="tareaForm.invalid">
             Agregar tarea
@@ -106,7 +107,7 @@ import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16"/>
                       </svg>
                     </button>
-                    <button (click)="removerTarea(task.id)"
+                    <button *appPermiso="'eliminar'; recurso: 'tareas'" (click)="removerTarea(task.id)"
                             class="shrink-0 p-1.5 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-200)]"
                             [attr.aria-label]="'Eliminar tarea ' + task.tarea">
                       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

@@ -9,12 +9,13 @@ import {estimacionTotal} from '../../utils/estimacion';
 import {PlanningFormComponent} from '../planning-form/planning-form.component';
 import {PlanningTasksComponent} from '../planning-tasks/planning-tasks.component';
 import {PlanningDetailComponent} from '../planning-detail/planning-detail.component';
+import {PermisoDirective} from '../../directives/permiso.directive';
 
 @Component({
   selector: 'app-planning',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, PlanningFormComponent, PlanningTasksComponent, PlanningDetailComponent],
+  imports: [CommonModule, PlanningFormComponent, PlanningTasksComponent, PlanningDetailComponent, PermisoDirective],
   template: `
       <div class="row align-items-center mb-8">
         <div class="col-12 col-md">
@@ -26,7 +27,7 @@ import {PlanningDetailComponent} from '../planning-detail/planning-detail.compon
           </p>
         </div>
         <div class="col-12 col-md-auto mt-3 mt-md-0">
-          <button (click)="abrirNuevo()"
+          <button *appPermiso="'crear'; recurso: 'planning'" (click)="abrirNuevo()"
                   class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -43,7 +44,7 @@ import {PlanningDetailComponent} from '../planning-detail/planning-detail.compon
           </svg>
           <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500)">No hay plannings</h3>
           <p class="text-sm mb-6" style="color: var(--color-gray-400)">Crea tu primer planning para empezar.</p>
-          <button (click)="abrirNuevo()"
+          <button *appPermiso="'crear'; recurso: 'planning'" (click)="abrirNuevo()"
                   class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -92,7 +93,7 @@ import {PlanningDetailComponent} from '../planning-detail/planning-detail.compon
                     </td>
                     <td class="px-4 sm:px-6 py-2.5 text-right">
                       <div class="flex items-center justify-end gap-1">
-                        <button (click)="abrirEditar(planning)"
+                        <button *appPermiso="'editar'; recurso: 'planning'" (click)="abrirEditar(planning)"
                                 class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
                                 [attr.aria-label]="'Editar planning'">
                           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -106,7 +107,7 @@ import {PlanningDetailComponent} from '../planning-detail/planning-detail.compon
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/>
                           </svg>
                         </button>
-                        <button (click)="confirmarEliminar(planning.id)"
+                        <button *appPermiso="'eliminar'; recurso: 'planning'" (click)="confirmarEliminar(planning.id)"
                                 class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
                                 [attr.aria-label]="'Eliminar planning'">
                           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

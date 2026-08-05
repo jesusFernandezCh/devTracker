@@ -200,8 +200,8 @@ export class LoginComponent {
 
     const {correo, clave} = this.loginForm.getRawValue();
 
-    setTimeout(() => {
-      const ok = this.authService.login(correo, clave);
+    setTimeout(async () => {
+      const ok = await this.authService.login(correo, clave);
       if (!ok) {
         this.error.set('Correo o contraseña incorrectos.');
         this.loading.set(false);

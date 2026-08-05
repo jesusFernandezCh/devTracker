@@ -4,12 +4,13 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {PlanningService} from '../../services/planning.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {complejidadEstilo} from '../../utils/estimacion';
+import {PermisoDirective} from '../../directives/permiso.directive';
 
 @Component({
   selector: 'app-task-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, PermisoDirective],
   template: `
     <div class="row justify-content-center">
       <div class="col-12 col-md-8 col-lg-6">
@@ -76,7 +77,7 @@ import {complejidadEstilo} from '../../utils/estimacion';
             </div>
 
             <div class="flex items-center gap-3 pt-2">
-              <button (click)="editarTarea(data.task.id)"
+              <button *appPermiso="'editar'; recurso: 'tareas'" (click)="editarTarea(data.task.id)"
                       class="px-4 py-2.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
                 Editar tarea
               </button>

@@ -1,9 +1,12 @@
-export type TipoUsuario = 'usuario' | 'supervisor' | 'administrador' | 'super-administrador';
+import {TipoUsuario} from './permiso.model';
+
+export type {TipoUsuario} from './permiso.model';
 
 export interface Usuario {
   id: string;
   usuario: string;
   correo: string;
+  /** Hash `salt:hash` (SHA-256). Se mantienen claves base64 legacy hasta migrar. */
   clave: string;
   tipo: TipoUsuario;
 }

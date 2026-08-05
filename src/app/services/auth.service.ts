@@ -2,6 +2,7 @@ import {Injectable, signal, computed, inject} from '@angular/core';
 import {Router} from '@angular/router';
 import {UsuarioService} from './usuario.service';
 import {Usuario} from '../models/usuario.model';
+import {verificarClave} from '../utils/cripto';
 
 const SESSION_KEY = 'devtracker-session';
 
@@ -15,16 +16,16 @@ export class AuthService {
 
   constructor() { this._cargarSesion(); }
 
-  login(correo: string, clave: string): boolean {
+  async login(correo: string, clave: string): Promise<boolean> {
     const usuario = this.usuarioService.usuarioPorCorreo(correo);
-    if (usuario && atob(usuario.clave) === clave) {
+    if (usuario && await verificarClave(clave, usuario.clave)) {
       this._iniciarSesion(usuario);
       return true;
     }
     return false;
   }
 
-  loginSocial(proveedor: 'google' | 'facebook'): void {
+  async loginSocial(proveedor: 'google' | 'facebook'): Promise<void> {
     const email = proveedor === 'google'
       ? 'usuario.google@demo.com'
       : 'usuario.facebook@demo.com';
@@ -32,7 +33,7 @@ export class AuthService {
 
     let usuario = this.usuarioService.usuarioPorCorreo(email);
     if (!usuario) {
-      this.usuarioService.crear({
+      await this.usuarioService.crear({
         usuario: nombre,
         correo: email,
         clave: crypto.randomUUID(),
