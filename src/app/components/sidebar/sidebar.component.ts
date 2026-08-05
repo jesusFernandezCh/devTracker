@@ -3,6 +3,7 @@ import {RouterLink, RouterLinkActive} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
 import {AuthService} from '../../services/auth.service';
 import {ThemeService} from '../../services/theme.service';
+import {PermisoService} from '../../services/permiso.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -75,6 +76,14 @@ import {ThemeService} from '../../services/theme.service';
             <mat-icon class="sidebar-nav-icon">group</mat-icon>
             <span>Usuarios</span>
           </a>
+          @if (permisoService.puedeUsuarioActual('leer', 'roles')) {
+            <a routerLink="/roles" routerLinkActive="sidebar-active"
+               (click)="onNavClick(); mobileAdminOpen = false"
+               class="sidebar-nav-item pl-11">
+              <mat-icon class="sidebar-nav-icon">admin_panel_settings</mat-icon>
+              <span>Roles</span>
+            </a>
+          }
         }
       </nav>
 
@@ -155,6 +164,7 @@ import {ThemeService} from '../../services/theme.service';
 export class SidebarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly themeService = inject(ThemeService);
+  protected readonly permisoService = inject(PermisoService);
   protected mobileAdminOpen = false;
   readonly isMobile = input(false);
   readonly navigate = output<void>();

@@ -5,12 +5,13 @@ import {ProyectoService} from '../../services/proyecto.service';
 import {Proyecto} from '../../models/proyecto.model';
 import {statusColor, prioridadColor} from '../../utils/estimacion';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
+import {PermisoDirective} from '../../directives/permiso.directive';
 
 @Component({
   selector: 'app-proyectos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ProyectoFormComponent],
+  imports: [CommonModule, ProyectoFormComponent, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -22,7 +23,7 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
         </p>
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0">
-        <button (click)="abrirNuevo()"
+        <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -39,7 +40,7 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
           </svg>
           <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500)">No hay proyectos</h3>
           <p class="text-sm mb-6" style="color: var(--color-gray-400)">Crea tu primer proyecto para empezar.</p>
-          <button (click)="abrirNuevo()"
+          <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
                   class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -127,14 +128,14 @@ import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                           </svg>
                         </button>
-                        <button (click)="abrirEditar(proyecto)"
+                        <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirEditar(proyecto)"
                                 class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
                                 [attr.aria-label]="'Editar ' + proyecto.nombre">
                           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                           </svg>
                         </button>
-                        <button (click)="confirmarEliminar(proyecto.id)"
+                        <button *appPermiso="'eliminar'; recurso: 'proyectos'" (click)="confirmarEliminar(proyecto.id)"
                                 class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
                                 [attr.aria-label]="'Eliminar ' + proyecto.nombre">
                           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
