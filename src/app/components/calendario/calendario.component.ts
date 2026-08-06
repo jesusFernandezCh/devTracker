@@ -92,7 +92,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
               </div>
             }
 
-            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
               <div>
                 <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</span>
                 <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ p.cliente || '—' }}</p>
@@ -430,6 +430,62 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
     .tareas-scroll {
       scrollbar-width: thin;
       scrollbar-color: var(--color-gray-300) transparent;
+    }
+
+    @media (max-width: 767px) {
+      .calendario-page {
+        padding: 0 0.5rem;
+      }
+
+      .fc-wrapper {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+      }
+
+      :host ::ng-deep .fc .fc-toolbar {
+        flex-wrap: wrap;
+        gap: 0.375rem;
+      }
+
+      :host ::ng-deep .fc .fc-toolbar-chunk {
+        flex: 1 1 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      :host ::ng-deep .fc .fc-toolbar-title {
+        font-size: 1rem !important;
+        order: -1;
+      }
+
+      :host ::ng-deep .fc .fc-button {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.4rem;
+      }
+
+      :host ::ng-deep .fc .fc-daygrid-day-number {
+        font-size: 0.625rem;
+      }
+
+      :host ::ng-deep .fc .fc-event {
+        font-size: 0.6rem;
+        padding: 0 1px;
+      }
+
+      :host ::ng-deep .fc .fc-event-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .modal-backdrop {
+        padding: 0.5rem;
+      }
+
+      .modal-card {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
     }
   `]
 })
