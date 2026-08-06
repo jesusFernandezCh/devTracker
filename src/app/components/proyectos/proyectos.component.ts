@@ -189,8 +189,8 @@ const PAGINA_SIZE = 10;
 
       @if (detalleProyecto(); as detalle) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarDetalle()">
-          <div class="modal-enter rounded-xl shadow-xl w-full max-w-lg border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
-            <div class="flex items-start justify-between gap-4 px-6 py-5 border-b" style="border-color: var(--color-gray-100);">
+          <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+            <div class="flex items-start justify-between gap-4 px-6 py-3 border-b" style="border-color: var(--color-gray-100);">
               <div class="min-w-0">
                 <h3 class="text-lg font-semibold leading-tight" style="color: var(--color-gray-900);">{{ detalle.proyecto.nombre }}</h3>
                 @if (detalle.proyecto.cliente) {
@@ -206,7 +206,7 @@ const PAGINA_SIZE = 10;
               </button>
             </div>
 
-            <div class="px-6 py-5">
+            <div class="px-6 py-3">
               @if (detalle.proyecto.descripcion) {
                 <div class="rounded-lg p-3 mb-5" style="background-color: var(--color-gray-50);">
                   <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ detalle.proyecto.descripcion }}</p>
