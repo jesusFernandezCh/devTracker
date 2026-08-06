@@ -511,7 +511,7 @@ export class DashboardComponent {
           outerRadius: '100%',
           // innerRadius: '72%',
           shape: 'arc',
-          borderWidth: 0,
+          borderWidth: 1,
           backgroundColor: p.grid,
         }],
       },
