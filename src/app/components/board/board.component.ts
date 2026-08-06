@@ -52,9 +52,9 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
       </div>
 
       <div class="relative">
-        @if (hasScroll()) {
+        @if (puedeIzquierda()) {
           <button (click)="scrollIzquierda()"
-                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 d-none d-md-flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -ml-[68px] opacity: 60%;"
+                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 d-none d-md-flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -ml-4"
                   aria-label="Desplazar a la izquierda">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
@@ -62,6 +62,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
           </button>
         }
         <div #columnasScroll
+             (scroll)="actualizarEstadoScroll()"
              cdkDropList
              [cdkDropListData]="columnService.columnas()"
              (cdkDropListDropped)="onDropColumna($event)"
@@ -119,9 +120,9 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
           </div>
         }
       </div>
-        @if (hasScroll()) {
+        @if (puedeDerecha()) {
           <button (click)="scrollDerecha()"
-                  class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 d-none d-md-flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -mr-[68px]"
+                  class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-600 d-none d-md-flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:scale-105 transition-all -mr-4"
                   aria-label="Desplazar a la derecha">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -166,7 +167,8 @@ export class BoardComponent {
     return map;
   });
 
-  protected hasScroll = signal(false);
+  protected puedeIzquierda = signal(false);
+  protected puedeDerecha = signal(false);
 
   constructor() {
     afterNextRender(() => this.actualizarEstadoScroll());
@@ -179,7 +181,9 @@ export class BoardComponent {
   @HostListener('window:resize')
   protected actualizarEstadoScroll(): void {
     const el = this.columnasScrollEl?.nativeElement;
-    this.hasScroll.set(el ? el.scrollWidth > el.clientWidth : false);
+    if (!el) return;
+    this.puedeIzquierda.set(el.scrollLeft > 1);
+    this.puedeDerecha.set(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
   }
 
   protected showColumnManager = false;

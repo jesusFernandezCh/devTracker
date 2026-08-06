@@ -1,4 +1,4 @@
-import {Component, inject, ChangeDetectionStrategy, signal, computed} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, signal, computed, effect} from '@angular/core';
 import {HighchartsChartComponent} from 'highcharts-angular';
 import type {Options as HighchartsOptions, SeriesOptionsType} from 'highcharts';
 import {ReporteService} from '../../services/reporte.service';
@@ -9,6 +9,8 @@ import {estimacionTotal} from '../../utils/estimacion';
 
 type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'graficas';
 type GraficaId = 'cerradas' | 'balance' | 'puntos' | 'produccion' | 'activos';
+
+const PAGINA_SIZE = 10;
 
 const PALETA_CLARA = {fondo: '#ffffff', texto: '#374151', suave: '#6b7280', grid: '#f1f5f9'};
 const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', grid: '#334155'};
@@ -87,7 +89,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
     <div class="print-area">
       @switch (tabActivo()) {
         @case ('proyectos') {
-          @let rows = reporteService.proyectosDetalle();
+          @let rows = proyectosPagina();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Reporte de proyectos</h2>
             <div class="flex items-center gap-2">
@@ -143,6 +145,39 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
               </table>
             </div>
           </div>
+
+          @if (totalProyectosReporte() > 0) {
+            <div class="mt-4 flex items-center justify-between gap-4 flex-wrap no-print">
+              <p class="text-sm" style="color: var(--color-gray-500);">
+                Mostrando {{ inicioProyectos() }}–{{ finProyectos() }} de {{ totalProyectosReporte() }} proyecto{{ totalProyectosReporte() !== 1 ? 's' : '' }}
+              </p>
+              <div class="flex items-center gap-1">
+                <button (click)="anteriorProyectos()" [disabled]="paginaProyectos() <= 1"
+                        class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                  Anterior
+                </button>
+                @if (paginasProyectos() > 1) {
+                  @for (p of rangoProyectos(); track $index) {
+                    @if (p === null) {
+                      <span class="px-1 text-sm" style="color: var(--color-gray-400);">…</span>
+                    } @else {
+                      <button (click)="irPaginaProyectos(p)"
+                              class="min-w-[2rem] px-2 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                              [style.background-color]="p === paginaProyectos() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
+                              [style.color]="p === paginaProyectos() ? '#ffffff' : 'var(--color-gray-600)'"
+                              [style.border]="p === paginaProyectos() ? '1px solid var(--color-indigo-600)' : '1px solid var(--color-gray-200)'">
+                        {{ p }}
+                      </button>
+                    }
+                  }
+                }
+                <button (click)="siguienteProyectos()" [disabled]="paginaProyectos() >= paginasProyectos()"
+                        class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          }
         }
 
         @case ('productividad') {
@@ -463,6 +498,55 @@ export class ReportesComponent {
   protected readonly URGENCIA_STYLE = URGENCIA_STYLE;
   protected readonly estimacionTotal = estimacionTotal;
   protected readonly Math = Math;
+
+  protected readonly paginaProyectos = signal(1);
+  protected readonly totalProyectosReporte = computed(() => this.reporteService.proyectosDetalle().length);
+  protected readonly paginasProyectos = computed(() => Math.max(1, Math.ceil(this.totalProyectosReporte() / PAGINA_SIZE)));
+  protected readonly inicioProyectos = computed(() => (this.paginaProyectos() - 1) * PAGINA_SIZE + 1);
+  protected readonly finProyectos = computed(() => Math.min(this.paginaProyectos() * PAGINA_SIZE, this.totalProyectosReporte()));
+  protected readonly proyectosPagina = computed(() =>
+    this.reporteService.proyectosDetalle().slice(this.inicioProyectos() - 1, this.finProyectos()),
+  );
+  protected readonly rangoProyectos = computed<(number | null)[]>(() => {
+    const total = this.paginasProyectos();
+    const actual = this.paginaProyectos();
+    if (total <= 7) {
+      return Array.from({length: total}, (_, i) => i + 1);
+    }
+    const paginas = new Set<number>([1, actual - 1, actual, actual + 1, total]);
+    const lista = [...paginas].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+    const resultado: (number | null)[] = [];
+    let anterior = 0;
+    for (const p of lista) {
+      if (p - anterior > 1) resultado.push(null);
+      resultado.push(p);
+      anterior = p;
+    }
+    return resultado;
+  });
+
+  constructor() {
+    effect(() => {
+      const total = this.paginasProyectos();
+      if (this.paginaProyectos() > total) {
+        this.paginaProyectos.set(total);
+      }
+    });
+  }
+
+  irPaginaProyectos(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.paginasProyectos()) {
+      this.paginaProyectos.set(pagina);
+    }
+  }
+
+  anteriorProyectos(): void {
+    this.irPaginaProyectos(this.paginaProyectos() - 1);
+  }
+
+  siguienteProyectos(): void {
+    this.irPaginaProyectos(this.paginaProyectos() + 1);
+  }
 
   protected colorPorcentaje(pct: number): string {
     if (pct >= 75) return 'var(--color-emerald-600)';

@@ -1,11 +1,15 @@
-import {Component, inject, ChangeDetectionStrategy} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, signal, computed, effect} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
 import {ProyectoService} from '../../services/proyecto.service';
-import {Proyecto} from '../../models/proyecto.model';
-import {statusColor, prioridadColor} from '../../utils/estimacion';
+import {PlanningService} from '../../services/planning.service';
+import {ColumnService} from '../../services/column.service';
+import {Proyecto, ProyectoConDatos} from '../../models/proyecto.model';
+import {statusColor, prioridadColor, estimacionTotal} from '../../utils/estimacion';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
+
+const PAGINA_SIZE = 10;
 
 @Component({
   selector: 'app-proyectos',
@@ -55,7 +59,6 @@ import {PermisoDirective} from '../../directives/permiso.directive';
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Nombre</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Descripción</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha inicio</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</th>
@@ -65,16 +68,15 @@ import {PermisoDirective} from '../../directives/permiso.directive';
                 </tr>
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
-                @for (proyecto of proyectos(); track proyecto.id) {
+                @for (proyecto of proyectosPagina(); track proyecto.id) {
                   <tr class="proyecto-row" style="transition: background-color 0.15s;">
                     <td class="px-4 sm:px-6 py-2.5 border-l-2 transition-all duration-200 hover:border-[rgba(13,148,136,1)] hover:pl-7" style="border-color: rgba(13, 148, 136, 0.5);">
-                      <div class="flex items-center gap-3">
+                      <button (click)="abrirDetalle(proyecto)"
+                              class="flex items-center gap-3 text-left group"
+                              [attr.aria-label]="'Ver detalles de ' + proyecto.nombre">
                         <div class="w-2 h-2 rounded-full shrink-0" style="background-color: var(--color-teal-500);"></div>
-                        <span class="text-sm font-medium" style="color: var(--color-gray-900);">{{ proyecto.nombre }}</span>
-                      </div>
-                    </td>
-                    <td class="px-4 sm:px-6 py-2.5">
-                      <span class="text-sm truncate-desc" style="color: var(--color-gray-500);">{{ proyecto.descripcion || '—' }}</span>
+                        <span class="text-sm font-medium transition-colors group-hover:text-[var(--color-teal-600)]" style="color: var(--color-gray-900);">{{ proyecto.nombre }}</span>
+                      </button>
                     </td>
                     <td class="px-4 sm:px-6 py-2.5">
                       <span class="text-sm whitespace-nowrap" style="color: var(--color-gray-500);">
@@ -150,6 +152,154 @@ import {PermisoDirective} from '../../directives/permiso.directive';
             </table>
           </div>
         </div>
+
+        @if (totalProyectos() > 0) {
+          <div class="mt-4 flex items-center justify-between gap-4 flex-wrap no-print">
+            <p class="text-sm" style="color: var(--color-gray-500);">
+              Mostrando {{ paginaInicio() }}–{{ paginaFin() }} de {{ totalProyectos() }} proyecto{{ totalProyectos() !== 1 ? 's' : '' }}
+            </p>
+            <div class="flex items-center gap-1">
+              <button (click)="paginaAnterior()" [disabled]="paginaActual() <= 1"
+                      class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                Anterior
+              </button>
+              @if (paginasTotales() > 1) {
+                @for (p of rangoPaginas(); track $index) {
+                  @if (p === null) {
+                    <span class="px-1 text-sm" style="color: var(--color-gray-400);">…</span>
+                  } @else {
+                    <button (click)="irPagina(p)"
+                            class="min-w-[2rem] px-2 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                            [style.background-color]="p === paginaActual() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
+                            [style.color]="p === paginaActual() ? '#ffffff' : 'var(--color-gray-600)'"
+                            [style.border]="p === paginaActual() ? '1px solid var(--color-indigo-600)' : '1px solid var(--color-gray-200)'">
+                      {{ p }}
+                    </button>
+                  }
+                }
+              }
+              <button (click)="paginaSiguiente()" [disabled]="paginaActual() >= paginasTotales()"
+                      class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                Siguiente
+              </button>
+            </div>
+          </div>
+        }
+      }
+
+      @if (detalleProyecto(); as detalle) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarDetalle()">
+          <div class="modal-enter rounded-xl shadow-xl w-full max-w-lg border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+            <div class="flex items-start justify-between gap-4 px-6 py-5 border-b" style="border-color: var(--color-gray-100);">
+              <div class="min-w-0">
+                <h3 class="text-lg font-semibold leading-tight" style="color: var(--color-gray-900);">{{ detalle.proyecto.nombre }}</h3>
+                @if (detalle.proyecto.cliente) {
+                  <p class="text-sm mt-0.5" style="color: var(--color-gray-500);">{{ detalle.proyecto.cliente }}</p>
+                }
+              </div>
+              <button (click)="cerrarDetalle()"
+                      class="shrink-0 p-1.5 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)]"
+                      aria-label="Cerrar detalle">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="px-6 py-5">
+              @if (detalle.proyecto.descripcion) {
+                <div class="rounded-lg p-3 mb-5" style="background-color: var(--color-gray-50);">
+                  <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ detalle.proyecto.descripcion }}</p>
+                </div>
+              }
+
+              <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+                <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</span>
+                  <div class="mt-1">
+                    @if (detalle.proyecto.status) {
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                            [style.color]="statusColor(detalle.proyecto.status).text"
+                            [style.background-color]="statusColor(detalle.proyecto.status).bg">
+                        {{ detalle.proyecto.status }}
+                      </span>
+                    } @else { <span class="text-sm" style="color: var(--color-gray-300);">—</span> }
+                  </div>
+                </div>
+                <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Prioridad</span>
+                  <div class="mt-1">
+                    @if (detalle.proyecto.prioridad) {
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                            [style.color]="prioridadColor(detalle.proyecto.prioridad).text"
+                            [style.background-color]="prioridadColor(detalle.proyecto.prioridad).bg">
+                        {{ detalle.proyecto.prioridad }}
+                      </span>
+                    } @else { <span class="text-sm" style="color: var(--color-gray-300);">—</span> }
+                  </div>
+                </div>
+                <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Ambiente</span>
+                  <p class="mt-1 text-sm flex items-center gap-1.5" style="color: var(--color-gray-800);">
+                    <span class="w-2 h-2 rounded-full" [style.background-color]="columnaColor(detalle.proyecto.columnaId)"></span>
+                    {{ nombreColumna(detalle.proyecto.columnaId) }}
+                  </p>
+                </div>
+                <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Documentación</span>
+                  @if (detalle.proyecto.documentacion) {
+                    <a [href]="detalle.proyecto.documentacion" target="_blank" rel="noopener"
+                       class="mt-1 inline-flex items-center gap-1.5 text-sm text-[var(--color-teal-600)] hover:text-[var(--color-teal-700)]">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                      </svg>
+                      Abrir Figma
+                    </a>
+                  } @else { <p class="mt-1 text-sm" style="color: var(--color-gray-300);">—</p> }
+                </div>
+                <div class="col-span-2">
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Duración</span>
+                  <p class="mt-1 text-sm" style="color: var(--color-gray-800);">
+                    {{ detalle.proyecto.fechaDesde || '—' }} — {{ detalle.proyecto.fechaHasta || '—' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-xl font-bold" style="color: var(--color-gray-900);">{{ detalle.plannings.length }}</p>
+                  <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Planning</p>
+                </div>
+                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-xl font-bold" style="color: var(--color-gray-900);">{{ detalle.tareas.length }}</p>
+                  <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Tareas</p>
+                </div>
+                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-xl font-bold" style="color: var(--color-teal-600);">{{ tareasCompletadas(detalle) }}</p>
+                  <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Completadas</p>
+                </div>
+                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-xl font-bold" style="color: var(--color-indigo-600);">{{ estimacionTotal(detalle.tareas) }}</p>
+                  <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Story points</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 px-6 py-4 border-t" style="border-color: var(--color-gray-100);">
+              <button (click)="cerrarDetalle()"
+                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                Cerrar
+              </button>
+              <button (click)="irAPlanning(detalle.proyecto.id)"
+                      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Ir a planning
+              </button>
+            </div>
+          </div>
+        </div>
       }
 
       @if (deleteConfirmId) {
@@ -180,13 +330,6 @@ import {PermisoDirective} from '../../directives/permiso.directive';
       }
   `,
   styles: [`
-    .truncate-desc {
-      max-width: 220px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: block;
-    }
     .proyecto-row:hover {
       background-color: var(--color-gray-50);
     }
@@ -194,15 +337,62 @@ import {PermisoDirective} from '../../directives/permiso.directive';
 })
 export class ProyectosComponent {
   private proyectoService = inject(ProyectoService);
+  private planningService = inject(PlanningService);
+  private columnService = inject(ColumnService);
   private router = inject(Router);
 
   proyectos = this.proyectoService.proyectos;
   protected readonly statusColor = statusColor;
   protected readonly prioridadColor = prioridadColor;
+  protected readonly estimacionTotal = estimacionTotal;
 
   showForm = false;
   editandoProyecto: Proyecto | null = null;
   deleteConfirmId: string | null = null;
+
+  protected readonly detalleId = signal<string | null>(null);
+  protected readonly detalleProyecto = computed<ProyectoConDatos | null>(() => {
+    const id = this.detalleId();
+    if (!id) return null;
+    const proyecto = this.proyectoService.proyectoPorId(id);
+    if (!proyecto) return null;
+    const plannings = this.planningService.plannings().filter((pl) => pl.proyectoId === id);
+    const tareas = plannings.flatMap((pl) => pl.tareas);
+    return {proyecto, plannings, tareas};
+  });
+
+  protected readonly paginaActual = signal(1);
+  protected readonly totalProyectos = computed(() => this.proyectos().length);
+  protected readonly paginasTotales = computed(() => Math.max(1, Math.ceil(this.totalProyectos() / PAGINA_SIZE)));
+  protected readonly paginaInicio = computed(() => (this.paginaActual() - 1) * PAGINA_SIZE + 1);
+  protected readonly paginaFin = computed(() => Math.min(this.paginaActual() * PAGINA_SIZE, this.totalProyectos()));
+  protected readonly proyectosPagina = computed(() => this.proyectos().slice(this.paginaInicio() - 1, this.paginaFin()));
+  protected readonly rangoPaginas = computed<(number | null)[]>(() => {
+    const total = this.paginasTotales();
+    const actual = this.paginaActual();
+    if (total <= 7) {
+      return Array.from({length: total}, (_, i) => i + 1);
+    }
+    const paginas = new Set<number>([1, actual - 1, actual, actual + 1, total]);
+    const lista = [...paginas].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+    const resultado: (number | null)[] = [];
+    let anterior = 0;
+    for (const p of lista) {
+      if (p - anterior > 1) resultado.push(null);
+      resultado.push(p);
+      anterior = p;
+    }
+    return resultado;
+  });
+
+  constructor() {
+    effect(() => {
+      const total = this.paginasTotales();
+      if (this.paginaActual() > total) {
+        this.paginaActual.set(total);
+      }
+    });
+  }
 
   abrirNuevo(): void {
     this.editandoProyecto = null;
@@ -212,6 +402,40 @@ export class ProyectosComponent {
   abrirEditar(proyecto: Proyecto): void {
     this.editandoProyecto = proyecto;
     this.showForm = true;
+  }
+
+  abrirDetalle(proyecto: Proyecto): void {
+    this.detalleId.set(proyecto.id);
+  }
+
+  cerrarDetalle(): void {
+    this.detalleId.set(null);
+  }
+
+  nombreColumna(id: string): string {
+    return this.columnService.columnas().find((c) => c.id === id)?.nombre ?? '—';
+  }
+
+  columnaColor(id: string): string {
+    return this.columnService.columnas().find((c) => c.id === id)?.color ?? 'var(--color-gray-300)';
+  }
+
+  tareasCompletadas(detalle: ProyectoConDatos): number {
+    return detalle.tareas.filter((t) => t.completada).length;
+  }
+
+  irPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.paginasTotales()) {
+      this.paginaActual.set(pagina);
+    }
+  }
+
+  paginaAnterior(): void {
+    this.irPagina(this.paginaActual() - 1);
+  }
+
+  paginaSiguiente(): void {
+    this.irPagina(this.paginaActual() + 1);
   }
 
   onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): void {

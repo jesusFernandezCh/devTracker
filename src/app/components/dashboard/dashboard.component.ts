@@ -552,7 +552,7 @@ export class DashboardComponent {
       series: [{
         type: 'solidgauge',
         name: 'Progreso General',
-        // color: this.healthColor(),
+        color: this.healthColor(),
         data: [this.tareasStats().porcentaje],
       }] as SeriesOptionsType[],
     };

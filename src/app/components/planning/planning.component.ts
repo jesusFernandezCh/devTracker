@@ -1,4 +1,4 @@
-import {Component, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, DestroyRef, signal, computed, effect} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PlanningService} from '../../services/planning.service';
@@ -10,6 +10,8 @@ import {PlanningFormComponent} from '../planning-form/planning-form.component';
 import {PlanningTasksComponent} from '../planning-tasks/planning-tasks.component';
 import {PlanningDetailComponent} from '../planning-detail/planning-detail.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
+
+const PAGINA_SIZE = 10;
 
 @Component({
   selector: 'app-planning',
@@ -67,7 +69,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
                 </tr>
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
-                @for (planning of plannings(); track planning.id) {
+                @for (planning of planningsPagina(); track planning.id) {
                   <tr class="planning-row" style="transition: background-color 0.15s;">
                     <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell border-l-2 transition-all duration-200 cursor-pointer" style="border-color: rgba(13, 148, 136, 0.5);" (click)="abrirDetalle(planning)">
                       <span class="text-sm truncate-desc transition-colors text-[var(--color-gray-700)] hover:text-[var(--color-teal-600)]">
@@ -122,6 +124,39 @@ import {PermisoDirective} from '../../directives/permiso.directive';
             </table>
           </div>
         </div>
+
+        @if (totalPlannings() > 0) {
+          <div class="mt-4 flex items-center justify-between gap-4 flex-wrap no-print">
+            <p class="text-sm" style="color: var(--color-gray-500);">
+              Mostrando {{ paginaInicio() }}–{{ paginaFin() }} de {{ totalPlannings() }} plan{{ totalPlannings() !== 1 ? 'es' : '' }}
+            </p>
+            <div class="flex items-center gap-1">
+              <button (click)="paginaAnterior()" [disabled]="paginaActual() <= 1"
+                      class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                Anterior
+              </button>
+              @if (paginasTotales() > 1) {
+                @for (p of rangoPaginas(); track $index) {
+                  @if (p === null) {
+                    <span class="px-1 text-sm" style="color: var(--color-gray-400);">…</span>
+                  } @else {
+                    <button (click)="irPagina(p)"
+                            class="min-w-[2rem] px-2 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                            [style.background-color]="p === paginaActual() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
+                            [style.color]="p === paginaActual() ? '#ffffff' : 'var(--color-gray-600)'"
+                            [style.border]="p === paginaActual() ? '1px solid var(--color-indigo-600)' : '1px solid var(--color-gray-200)'">
+                      {{ p }}
+                    </button>
+                  }
+                }
+              }
+              <button (click)="paginaSiguiente()" [disabled]="paginaActual() >= paginasTotales()"
+                      class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                Siguiente
+              </button>
+            </div>
+          </div>
+        }
       }
 
       @if (deleteConfirmId) {
@@ -196,6 +231,30 @@ export class PlanningComponent {
   showDetalle = false;
   planningDetalleActual: Planning | null = null;
 
+  protected readonly paginaActual = signal(1);
+  protected readonly totalPlannings = computed(() => this.plannings().length);
+  protected readonly paginasTotales = computed(() => Math.max(1, Math.ceil(this.totalPlannings() / PAGINA_SIZE)));
+  protected readonly paginaInicio = computed(() => (this.paginaActual() - 1) * PAGINA_SIZE + 1);
+  protected readonly paginaFin = computed(() => Math.min(this.paginaActual() * PAGINA_SIZE, this.totalPlannings()));
+  protected readonly planningsPagina = computed(() => this.plannings().slice(this.paginaInicio() - 1, this.paginaFin()));
+  protected readonly rangoPaginas = computed<(number | null)[]>(() => {
+    const total = this.paginasTotales();
+    const actual = this.paginaActual();
+    if (total <= 7) {
+      return Array.from({length: total}, (_, i) => i + 1);
+    }
+    const paginas = new Set<number>([1, actual - 1, actual, actual + 1, total]);
+    const lista = [...paginas].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+    const resultado: (number | null)[] = [];
+    let anterior = 0;
+    for (const p of lista) {
+      if (p - anterior > 1) resultado.push(null);
+      resultado.push(p);
+      anterior = p;
+    }
+    return resultado;
+  });
+
   private destroyRef = inject(DestroyRef);
 
   constructor() {
@@ -206,6 +265,27 @@ export class PlanningComponent {
         this.router.navigate([], {queryParams: {}, replaceUrl: true});
       }
     });
+
+    effect(() => {
+      const total = this.paginasTotales();
+      if (this.paginaActual() > total) {
+        this.paginaActual.set(total);
+      }
+    });
+  }
+
+  irPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.paginasTotales()) {
+      this.paginaActual.set(pagina);
+    }
+  }
+
+  paginaAnterior(): void {
+    this.irPagina(this.paginaActual() - 1);
+  }
+
+  paginaSiguiente(): void {
+    this.irPagina(this.paginaActual() + 1);
   }
 
   nombreProyecto(proyectoId: string): string {
