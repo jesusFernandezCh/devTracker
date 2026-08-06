@@ -1,7 +1,7 @@
 import { Component, inject, computed, signal, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { HighchartsChartComponent } from 'highcharts-angular';
+import { HighchartsChartComponent, providePartialHighcharts } from 'highcharts-angular';
 import type { Options as HighchartsOptions, SeriesOptionsType } from 'highcharts';
 import { ProyectoService } from '../../services/proyecto.service';
 import { PlanningService } from '../../services/planning.service';
@@ -9,41 +9,34 @@ import { ColumnService } from '../../services/column.service';
 import { ThemeService } from '../../services/theme.service';
 import { estimacionTotal, prioridadColor } from '../../utils/estimacion';
 
-const PALETA_CLARA = { fondo: '#ffffff', texto: '#374151', suave: '#6b7280', grid: '#f1f5f9' };
-const PALETA_OSCURA = { fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', grid: '#334155' };
+const PALETA_CLARA = {fondo: '#ffffff', texto: '#374151', suave: '#6b7280', grid: '#f1f5f9'};
+const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', grid: '#334155'};
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, HighchartsChartComponent],
+  providers: [providePartialHighcharts({
+    modules: () => [
+      import('highcharts/esm/highcharts-more').then(() => import('highcharts/esm/modules/solid-gauge')),
+    ],
+  })],
   template: `
     <div class="dbs">
       <!-- ─── Hero ─── -->
       <section class="db-hero">
-        <div class="db-hero-circle-box">
-          <svg class="db-hero-svg" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-gray-100)" stroke-width="8"/>
-            <circle cx="50" cy="50" r="45" fill="none"
-                    [attr.stroke]="healthColor()"
-                    stroke-width="8" stroke-linecap="round"
-                    [attr.stroke-dasharray]="circunferencia"
-                    [attr.stroke-dashoffset]="heroOffset()"
-                    transform="rotate(-90 50 50)" class="db-hero-arc"/>
-          </svg>
-          <div class="db-hero-center">
-            <span class="db-hero-digit">{{ heroValue() }}</span>
-            <span class="db-hero-percent">%</span>
-          </div>
-          </div>
-          <p class="db-hero-meta">
+        <div class="db-hero-gauge-box">
+          <highcharts-chart [options]="graficaProgreso()" class="db-hero-gauge"></highcharts-chart>
+        </div>
+        <p class="db-hero-meta">
           <span>Progreso General</span>
           <span class="db-hero-dot"></span>
           <span>{{ totalProyectos() }} projectos{{ totalProyectos() !== 1 ? 's' : '' }}</span>
           <span class="db-hero-dot"></span>
           <span>{{ totalPlannings() }} planes{{ totalPlannings() !== 1 ? 's' : '' }}</span>
-          </p>
-        </section>
+        </p>
+      </section>
       <br>
 
       <!-- ─── Stat pills ─── -->
@@ -181,46 +174,16 @@ const PALETA_OSCURA = { fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', gr
       padding: 0.5rem 0 0.5rem;
     }
 
-    .db-hero-circle-box {
-      position: relative;
-      width: 140px;
-      height: 140px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: dbFadeIn 0.6s ease-out;
-    }
-
-    .db-hero-svg {
+    .db-hero-gauge-box {
       width: 100%;
-      height: 100%;
+      max-width: 250px;
+      margin: 0 auto;
     }
 
-    .db-hero-arc {
-      transition: stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .db-hero-center {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .db-hero-center .db-hero-digit {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 2.25rem;
-      font-weight: 600;
-      color: var(--color-gray-900);
-    }
-
-    .db-hero-center .db-hero-percent {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--color-gray-400);
-      vertical-align: super;
+    .db-hero-gauge {
+      width: 100%;
+      height: 230px;
+      display: block;
     }
 
     .db-hero-meta {
@@ -261,7 +224,7 @@ const PALETA_OSCURA = { fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', gr
     .db-pill-num {
       display: block;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.375rem;
+      font-size: 2.375rem;
       font-weight: 500;
       line-height: 1.2;
       color: var(--color-gray-900);
@@ -498,13 +461,6 @@ export class DashboardComponent {
   private readonly themeService = inject(ThemeService);
 
   protected readonly animacionIniciada = signal(false);
-  protected readonly heroValue = signal(0);
-
-  protected readonly circunferencia = 2 * Math.PI * 45;
-
-  protected readonly heroOffset = computed(() =>
-    this.circunferencia * (1 - this.heroValue() / 100)
-  );
 
   /* ── counter animators ── */
   protected readonly countTareas = signal(0);
@@ -534,6 +490,72 @@ export class DashboardComponent {
     if (pct >= 70) return 'var(--color-emerald-500)';
     if (pct >= 40) return 'var(--color-amber-500)';
     return 'var(--color-rose-500)';
+  });
+
+  protected readonly graficaProgreso = computed<HighchartsOptions>(() => {
+    const p = this.themeService.isDark() ? PALETA_OSCURA : PALETA_CLARA;
+    return {
+      chart: {
+        type: 'solidgauge',
+        backgroundColor: 'transparent',
+        // height: 230,
+        style: {fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif"},
+      },
+      title: {text: undefined},
+      credits: {enabled: false},
+      pane: {
+        startAngle: -90,
+        endAngle: 90,
+        innerSize: '60%',
+        background: [{
+          outerRadius: '100%',
+          // innerRadius: '72%',
+          shape: 'arc',
+          borderWidth: 0,
+          backgroundColor: p.grid,
+        }],
+      },
+      yAxis: {
+        min: 0,
+        max: 100,
+        lineWidth: 0,
+        tickWidth: 0,
+        labels: {enabled: false},
+         stops: [
+            [100, '#55BF3B'], // green
+            [50, '#DDDF0D'], // yellow
+            [0, '#DF5353'] // red
+        ],
+        tickAmount: 2,
+        title: {
+            y: -70
+        }
+      },
+      tooltip: {valueSuffix: '%'},
+      
+      plotOptions: {
+        solidgauge: {
+          linecap: 'round',
+          dataLabels: {
+            enabled: true,
+            y: 10,
+            format: '{y}%',
+            style: {
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '2rem',
+              fontWeight: '600',
+              color: p.texto,
+            },
+          },
+        },
+      },
+      series: [{
+        type: 'solidgauge',
+        name: 'Progreso General',
+        // color: this.healthColor(),
+        data: [this.tareasStats().porcentaje],
+      }] as SeriesOptionsType[],
+    };
   });
 
   protected barColor(pct: number): string {
@@ -647,7 +669,6 @@ export class DashboardComponent {
   private _animarValores(): void {
     const dur = 1000;
     const targets: [number, (v: number) => void][] = [
-      [this.tareasStats().porcentaje, v => this.heroValue.set(v)],
       [this.tareasStats().total, v => this.countTareas.set(v)],
       [this.tareasStats().completadas, v => this.countCompletadas.set(v)],
       [this.tareasStats().pendientes, v => this.countPendientes.set(v)],

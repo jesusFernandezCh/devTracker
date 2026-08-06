@@ -87,4 +87,33 @@ describe('DashboardComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.db-dona').length).toBe(0);
     expect(fixture.nativeElement.textContent).toContain('Sin proyectos por ambiente.');
   });
+
+  it('renderiza el gauge de progreso general', () => {
+    configurarCon({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify(proyectos),
+      'devtracker-planning': JSON.stringify(plannings),
+    });
+    expect(fixture.nativeElement.querySelectorAll('.db-hero-gauge').length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Progreso General');
+  });
+
+  it('genera el gauge solidgauge con el porcentaje y color de salud', () => {
+    configurarCon({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify(proyectos),
+      'devtracker-planning': JSON.stringify(plannings),
+    });
+    const g = (component as unknown as {
+      graficaProgreso: () => {
+        plotOptions: unknown;
+        series: {type: string; name: string; color: string; data: number[]}[];
+      };
+    }).graficaProgreso();
+    expect(g.plotOptions).not.toBeUndefined();
+    expect(g.series[0].type).toBe('solidgauge');
+    expect(g.series[0].name).toBe('Progreso General');
+    expect(g.series[0].data).toEqual([50]);
+    expect(g.series[0].color).toBe('var(--color-amber-500)');
+  });
 });
