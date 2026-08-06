@@ -1,16 +1,22 @@
 import { Component, inject, computed, signal, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { HighchartsChartComponent } from 'highcharts-angular';
+import type { Options as HighchartsOptions, SeriesOptionsType } from 'highcharts';
 import { ProyectoService } from '../../services/proyecto.service';
 import { PlanningService } from '../../services/planning.service';
 import { ColumnService } from '../../services/column.service';
+import { ThemeService } from '../../services/theme.service';
 import { estimacionTotal, prioridadColor } from '../../utils/estimacion';
+
+const PALETA_CLARA = { fondo: '#ffffff', texto: '#374151', suave: '#6b7280', grid: '#f1f5f9' };
+const PALETA_OSCURA = { fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', grid: '#334155' };
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, HighchartsChartComponent],
   template: `
     <div class="dbs">
       <!-- ─── Hero ─── -->
@@ -108,31 +114,23 @@ import { estimacionTotal, prioridadColor } from '../../utils/estimacion';
         <div class="col-lg-6 col-12">
           <section class="db-card h-full">
             <h2 class="db-card-heading">Progreso por ambiente</h2>
-            @if (proyectosPorColumna().length > 0) {
+            @if (tieneDatosAmbiente()) {
               <div class="db-pipeline">
-                <div class="db-pipeline-bar">
+                <highcharts-chart [options]="graficaAmbiente()" class="db-dona"></highcharts-chart>
+                <div class="db-pipeline-legend">
                   @for (item of proyectosPorColumna(); track item.columna.id) {
-                    @if (item.porcentaje > 0) {
-                      <div class="db-pipeline-seg"
-                           [style.width.%]="item.porcentaje"
-                           [style.background-color]="item.columna.color"
-                           [title]="item.columna.nombre + ': ' + item.cantidad + ' project' + (item.cantidad !== 1 ? 's' : '')">
+                    @if (item.cantidad > 0) {
+                      <div class="db-pipeline-item">
+                        <span class="db-pipeline-dot" [style.background-color]="item.columna.color"></span>
+                        <span class="db-pipeline-name">{{ item.columna.nombre }}</span>
+                        <span class="db-pipeline-count">{{ item.cantidad }}</span>
                       </div>
                     }
                   }
                 </div>
-                <div class="db-pipeline-legend">
-                  @for (item of proyectosPorColumna(); track item.columna.id) {
-                    <div class="db-pipeline-item">
-                      <span class="db-pipeline-dot" [style.background-color]="item.columna.color"></span>
-                      <span class="db-pipeline-name">{{ item.columna.nombre }}</span>
-                      <span class="db-pipeline-count">{{ item.cantidad }}</span>
-                    </div>
-                  }
-                </div>
               </div>
             } @else {
-              <p class="db-empty">No columns configured.</p>
+              <p class="db-empty">Sin proyectos por ambiente.</p>
             }
           </section>
         </div>
@@ -373,17 +371,10 @@ import { estimacionTotal, prioridadColor } from '../../utils/estimacion';
     }
 
     /* ─── Pipeline ─── */
-    .db-pipeline-bar {
-      display: flex;
-      height: 2rem;
-      border-radius: 0.5rem;
-      overflow: hidden;
-      background-color: var(--color-gray-100);
-    }
-
-    .db-pipeline-seg {
-      transition: width 1s ease-out;
-      min-width: 4px;
+    .db-dona {
+      width: 100%;
+      height: 260px;
+      display: block;
     }
 
     .db-pipeline-legend {
@@ -504,6 +495,7 @@ export class DashboardComponent {
   private readonly proyectoService = inject(ProyectoService);
   private readonly planningService = inject(PlanningService);
   private readonly columnService = inject(ColumnService);
+  private readonly themeService = inject(ThemeService);
 
   protected readonly animacionIniciada = signal(false);
   protected readonly heroValue = signal(0);
@@ -580,6 +572,64 @@ export class DashboardComponent {
       .sort((a, b) => new Date(a.fechaHasta).getTime() - new Date(b.fechaHasta).getTime())
       .slice(0, 5)
   );
+
+  protected readonly tieneDatosAmbiente = computed(() =>
+    this.proyectosPorColumna().some(i => i.cantidad > 0),
+  );
+
+  protected readonly graficaAmbiente = computed<HighchartsOptions>(() => {
+    const p = this.themeService.isDark() ? PALETA_OSCURA : PALETA_CLARA;
+    const data = this.proyectosPorColumna()
+      .filter(i => i.cantidad > 0)
+      .map(i => ({ name: i.columna.nombre, y: i.cantidad, color: i.columna.color }));
+    return {
+      chart: {
+        type: 'pie',
+        borderRadius: 8, // Rounded slice corners
+        innerSize: '70%', // Turning the pie into a donut
+        // We can show multiple data labels per point
+        backgroundColor: p.fondo,
+        // height: 260,
+        // style: { fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif" },
+      },
+      title: { text: undefined },
+      credits: { enabled: false },
+      legend: { enabled: false },
+      tooltip: {
+        pointFormat: '<b>{point.y} proyecto{point.y === 1 ? "" : "s"} · {point.percentage:.1f}%',
+      },
+      plotOptions: {
+        pie: {
+          innerSize: '60%',
+          allowPointSelect: false,
+          cursor: 'pointer',
+          dataLabels: { enabled: false },
+        },
+      },
+      series: [
+        {
+          name: 'Allocation',
+          // borderRadius: 8, // Rounded slice corners
+          // borderWidth: 3,
+          innerSize: '70%', // Turning the pie into a donut
+          // We can show multiple data labels per point
+          dataLabels: [
+            {
+              format: '{point.name}'
+            },
+            {
+              format: '{point.percentage:.1f}%',
+              distance: '-15%', // Placing the label inside
+              backgroundColor: 'contrast',
+              style: {
+                textOutline: 'none'
+              }
+            }
+          ],
+          data,
+        }] as SeriesOptionsType[],
+    };
+  });
 
   protected getDiasRestantes(fechaHasta: string): number {
     return Math.max(0, Math.ceil((new Date(fechaHasta).getTime() - Date.now()) / 86400000));
