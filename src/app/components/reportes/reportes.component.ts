@@ -1,10 +1,17 @@
-import {Component, inject, ChangeDetectionStrategy, signal} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, signal, computed} from '@angular/core';
+import {HighchartsChartComponent} from 'highcharts-angular';
+import type {Options as HighchartsOptions, SeriesOptionsType} from 'highcharts';
 import {ReporteService} from '../../services/reporte.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {ColumnService} from '../../services/column.service';
+import {ThemeService} from '../../services/theme.service';
 import {estimacionTotal} from '../../utils/estimacion';
 
-type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad';
+type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'graficas';
+type GraficaId = 'cerradas' | 'balance' | 'puntos' | 'produccion' | 'activos';
+
+const PALETA_CLARA = {fondo: '#ffffff', texto: '#374151', suave: '#6b7280', grid: '#f1f5f9'};
+const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', grid: '#334155'};
 
 const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> = {
   urgente: {text: '#ffffff', bg: '#e11d48', label: 'URGENTE'},
@@ -16,7 +23,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
   selector: 'app-reportes',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [HighchartsChartComponent],
   template: `
     <div class="mb-6">
       <div class="flex items-center justify-between gap-4 flex-wrap">
@@ -346,11 +353,47 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
             }
           </div>
         }
+
+        @case ('graficas') {
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Gráficas</h2>
+            <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+          </div>
+          @if (hayDatosMensuales()) {
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="rounded-xl border shadow-sm p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <highcharts-chart [options]="graficas().cerradas" class="grafica"></highcharts-chart>
+              </div>
+              <div class="rounded-xl border shadow-sm p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <highcharts-chart [options]="graficas().produccion" class="grafica"></highcharts-chart>
+              </div>
+              <div class="rounded-xl border shadow-sm p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <highcharts-chart [options]="graficas().balance" class="grafica"></highcharts-chart>
+              </div>
+              <div class="rounded-xl border shadow-sm p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <highcharts-chart [options]="graficas().puntos" class="grafica"></highcharts-chart>
+              </div>
+              <div class="rounded-xl border shadow-sm p-4 md:col-span-2" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+                <highcharts-chart [options]="graficas().activos" class="grafica"></highcharts-chart>
+              </div>
+            </div>
+          } @else {
+            <div class="rounded-xl border p-10 text-center text-sm" style="background-color: var(--color-surface); border-color: var(--color-gray-200); color: var(--color-gray-400);">
+              No hay datos mensuales para los filtros aplicados.
+            </div>
+          }
+        }
       }
     </div>
   `,
   styles: [`
     :host { display: block; }
+
+    .grafica {
+      width: 100%;
+      height: 320px;
+      display: block;
+    }
 
     .btn-accion {
       display: inline-flex;
@@ -404,6 +447,7 @@ export class ReportesComponent {
   protected readonly reporteService = inject(ReporteService);
   protected readonly proyectoService = inject(ProyectoService);
   protected readonly columnService = inject(ColumnService);
+  protected readonly themeService = inject(ThemeService);
 
   protected readonly tabActivo = signal<TabReporte>('proyectos');
   protected readonly tabs: {id: TabReporte; label: string}[] = [
@@ -413,6 +457,7 @@ export class ReportesComponent {
     {id: 'vencimientos', label: 'Vencimientos'},
     {id: 'pipeline', label: 'Pipeline'},
     {id: 'calidad', label: 'Calidad'},
+    {id: 'graficas', label: 'Gráficas'},
   ];
 
   protected readonly URGENCIA_STYLE = URGENCIA_STYLE;
@@ -431,6 +476,99 @@ export class ReportesComponent {
 
   protected nombreColumna(id: string): string {
     return this.columnService.columnas().find(c => c.id === id)?.nombre ?? '—';
+  }
+
+  protected readonly hayDatosMensuales = computed(() => this.reporteService.datosMensuales().length > 0);
+
+  protected readonly graficas = computed<Record<GraficaId, HighchartsOptions>>(() => {
+    const datos = this.reporteService.datosMensuales();
+    const categorias = datos.map(d => d.etiqueta);
+    const oscuro = this.themeService.isDark();
+    const pendientesColor = oscuro ? '#475569' : '#CBD5E1';
+    return {
+      cerradas: this.construirOpcionesGrafica({
+        titulo: 'Tareas cerradas por mes',
+        tipo: 'column',
+        categorias,
+        series: [{nombre: 'Cerradas', datos: datos.map(d => d.completadas), color: '#6366F1'}],
+      }),
+      balance: this.construirOpcionesGrafica({
+        titulo: 'Tareas pendientes vs completadas por mes',
+        tipo: 'column',
+        categorias,
+        apilado: true,
+        series: [
+          {nombre: 'Pendientes', datos: datos.map(d => d.pendientes), color: pendientesColor},
+          {nombre: 'Completadas', datos: datos.map(d => d.completadas), color: '#6366F1'},
+        ],
+      }),
+      puntos: this.construirOpcionesGrafica({
+        titulo: 'Story points por mes',
+        tipo: 'area',
+        categorias,
+        series: [{nombre: 'Story points', datos: datos.map(d => d.puntos), color: '#8B5CF6'}],
+      }),
+      produccion: this.construirOpcionesGrafica({
+        titulo: 'Proyectos llevados a producción por mes',
+        tipo: 'column',
+        categorias,
+        series: [{nombre: 'En producción', datos: datos.map(d => d.proyectosProduccion), color: '#10B981'}],
+      }),
+      activos: this.construirOpcionesGrafica({
+        titulo: 'Proyectos activos por mes',
+        tipo: 'line',
+        categorias,
+        series: [{nombre: 'Activos', datos: datos.map(d => d.proyectosActivos), color: '#0EA5E9'}],
+      }),
+    };
+  });
+
+  private construirOpcionesGrafica(opts: {
+    titulo: string;
+    tipo: 'column' | 'area' | 'line';
+    categorias: string[];
+    apilado?: boolean;
+    series: {nombre: string; datos: number[]; color: string}[];
+  }): HighchartsOptions {
+    const p = this.themeService.isDark() ? PALETA_OSCURA : PALETA_CLARA;
+    const continuo = opts.tipo === 'area' || opts.tipo === 'line';
+    return {
+      chart: {
+        type: opts.tipo,
+        backgroundColor: p.fondo,
+        height: 320,
+        style: {fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif"},
+      },
+      title: {text: opts.titulo, style: {color: p.texto, fontSize: '14px', fontWeight: '600'}},
+      credits: {enabled: false},
+      legend: {
+        enabled: true,
+        itemStyle: {color: p.texto},
+        itemHoverStyle: {color: p.texto},
+      },
+      tooltip: {shared: true},
+      xAxis: {
+        categories: opts.categorias,
+        labels: {style: {color: p.suave}},
+        lineColor: p.grid,
+        tickColor: p.grid,
+      },
+      yAxis: {
+        title: {text: undefined},
+        gridLineColor: p.grid,
+        labels: {style: {color: p.suave}},
+        allowDecimals: false,
+      },
+      plotOptions: opts.apilado ? {column: {stacking: 'normal'}} : {},
+      series: opts.series.map(s => ({
+        name: s.nombre,
+        data: s.datos,
+        color: s.color,
+        type: opts.tipo,
+        ...(continuo ? {marker: {enabled: false}, lineWidth: 2} : {}),
+        ...(opts.tipo === 'area' ? {fillOpacity: 0.25} : {}),
+      })) as SeriesOptionsType[],
+    };
   }
 
   protected imprimir(): void {

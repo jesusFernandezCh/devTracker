@@ -62,7 +62,39 @@ export interface ProductividadReporte {
   puntos: number;
 }
 
+export interface DatoMensual {
+  mes: string;
+  etiqueta: string;
+  completadas: number;
+  pendientes: number;
+  puntos: number;
+  proyectosProduccion: number;
+  proyectosActivos: number;
+}
+
 const VALORES_COMPLEJIDAD: Record<string, number> = {Simple: 1, Media: 3, Compleja: 5};
+const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+function mesDe(fecha: string): string | null {
+  const m = /^(\d{4})-(\d{2})/.exec(fecha);
+  return m ? `${m[1]}-${m[2]}` : null;
+}
+
+function siguienteMes(mes: string): string {
+  const [y, m] = mes.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+function etiquetaDe(mes: string): string {
+  const [y, m] = mes.split('-').map(Number);
+  return `${MESES_CORTOS[m - 1]} ${y}`;
+}
+
+function esColumnaProduccion(columna: Columna): boolean {
+  const nombre = columna.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return nombre === 'produccion' || columna.id === 'produccion';
+}
 
 export function diasRestantes(fechaHasta: string): number {
   return Math.max(0, Math.ceil((new Date(fechaHasta).getTime() - Date.now()) / 86400000));
@@ -198,6 +230,65 @@ export class ReporteService {
       };
     }),
   );
+
+  readonly datosMensuales = computed<DatoMensual[]>(() => {
+    const proyectos = this.proyectosFiltrados();
+    const plannings = proyectos.flatMap(p => this.planningsDe(p.id));
+
+    const meses = new Set<string>();
+    for (const pl of plannings) {
+      const m = mesDe(pl.fecha);
+      if (m) meses.add(m);
+    }
+    for (const p of proyectos) {
+      if (p.fechaDesde) {
+        const m = mesDe(p.fechaDesde);
+        if (m) meses.add(m);
+      }
+      if (p.fechaHasta) {
+        const m = mesDe(p.fechaHasta);
+        if (m) meses.add(m);
+      }
+    }
+    if (meses.size === 0) return [];
+
+    const ordenados = [...meses].sort();
+    const hasta = ordenados[ordenados.length - 1];
+    const columnaProduccionId = this.columnService.columnas().find(esColumnaProduccion)?.id;
+
+    const resultado: DatoMensual[] = [];
+    let actual = ordenados[0];
+    while (actual <= hasta) {
+      const tareasMes = plannings
+        .filter(pl => mesDe(pl.fecha) === actual)
+        .flatMap(pl => pl.tareas);
+      const completadas = tareasMes.filter(t => t.completada).length;
+      const puntos = tareasMes
+        .filter(t => t.completada)
+        .reduce((s, t) => s + (VALORES_COMPLEJIDAD[t.complejidad] ?? 0), 0);
+      const proyectosProduccion = columnaProduccionId
+        ? proyectos.filter(p => p.columnaId === columnaProduccionId && mesDe(p.fechaHasta) === actual).length
+        : 0;
+      const proyectosActivos = proyectos.filter(p => {
+        const desdeMes = p.fechaDesde ? mesDe(p.fechaDesde) : null;
+        const hastaMes = p.fechaHasta ? mesDe(p.fechaHasta) : null;
+        if (desdeMes && desdeMes > actual) return false;
+        if (hastaMes && hastaMes < actual) return false;
+        return true;
+      }).length;
+      resultado.push({
+        mes: actual,
+        etiqueta: etiquetaDe(actual),
+        completadas,
+        pendientes: tareasMes.length - completadas,
+        puntos,
+        proyectosProduccion,
+        proyectosActivos,
+      });
+      actual = siguienteMes(actual);
+    }
+    return resultado;
+  });
 
   limpiarFiltros(): void {
     this.fechaDesde.set('');

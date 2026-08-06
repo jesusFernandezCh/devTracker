@@ -1,5 +1,6 @@
 import {TestBed} from '@angular/core/testing';
 import {ReporteService, diasRestantes, urgenciaDe} from './reporte.service';
+import {ProyectoService} from './proyecto.service';
 
 describe('ReporteService', () => {
   let service: ReporteService;
@@ -119,6 +120,39 @@ describe('ReporteService', () => {
     expect(p1.totalTareas).toBe(3);
     expect(p1.completadas).toBe(1);
     expect(p1.puntos).toBe(9);
+  });
+
+  it('datosMensuales agrupa tareas y proyectos por mes', () => {
+    const datos = service.datosMensuales();
+    expect(datos.length).toBeGreaterThan(0);
+    expect(datos[0].mes).toBe('2026-01');
+    expect(datos[datos.length - 1].mes).toBe('2027-02');
+    const marzo = datos.find(d => d.mes === '2026-03')!;
+    expect(marzo.etiqueta).toBe('mar 2026');
+    expect(marzo.completadas).toBe(3);
+    expect(marzo.pendientes).toBe(2);
+    expect(marzo.puntos).toBe(3);
+    expect(marzo.proyectosProduccion).toBe(0);
+    expect(marzo.proyectosActivos).toBe(2);
+    expect(datos.find(d => d.mes === '2026-04')?.completadas).toBe(0);
+  });
+
+  it('datosMensuales cuenta proyectos en producción por mes de fechaHasta', () => {
+    const proyectoService = TestBed.inject(ProyectoService);
+    proyectoService.crear({
+      nombre: 'Prod A', descripcion: '', cliente: '', status: 'Activo', prioridad: 'baja',
+      columnaId: 'produccion', fechaDesde: '2026-03-01', fechaHasta: '2026-05-15', documentacion: '',
+    });
+    const datos = service.datosMensuales();
+    const mayo = datos.find(d => d.mes === '2026-05')!;
+    expect(mayo.proyectosProduccion).toBe(1);
+  });
+
+  it('datosMensuales respeta los filtros', () => {
+    service.proyectoId.set('p1');
+    const datos = service.datosMensuales();
+    expect(datos.find(d => d.mes === '2026-03')!.completadas).toBe(1);
+    expect(datos.every(d => d.proyectosActivos === 1)).toBe(true);
   });
 
   it('los filtros por proyecto y fecha limitan el resultado', () => {
