@@ -1,4 +1,4 @@
-import {Component, input, output, computed, inject, ChangeDetectionStrategy} from '@angular/core';
+import {Component, input, output, computed, inject, signal, ChangeDetectionStrategy} from '@angular/core';
 import {Proyecto} from '../../models/proyecto.model';
 import {PlanningTask} from '../../models/planning.model';
 import {Planning} from '../../models/planning.model';
@@ -7,11 +7,14 @@ import {EquipoService} from '../../services/equipo.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {complejidadEstilo, estimacionTotal, statusColor, prioridadColor} from '../../utils/estimacion';
 import {iniciales, tipoColor} from '../../utils/helpers';
+import {EquipoModalComponent} from '../equipo-modal/equipo-modal.component';
+import {PermisoDirective} from '../../directives/permiso.directive';
 
 @Component({
   selector: 'app-project-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [EquipoModalComponent, PermisoDirective],
   template: `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div class="p-2">
@@ -183,29 +186,45 @@ import {iniciales, tipoColor} from '../../utils/helpers';
           </div>
         }
 
-        @if (miembros().length > 0) {
-          <div class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
-            <div class="flex -space-x-1.5">
-              @for (m of miembros().slice(0, 3); track m.id) {
-                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
-                     [style.background-color]="tipoColor(m.tipo).bg"
-                     [style.color]="tipoColor(m.tipo).text"
-                     [attr.title]="m.usuario">
-                  {{ iniciales(m.usuario) }}
-                </div>
-              }
-              @if (miembros().length > 3) {
-                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
-                     style="background-color: var(--color-gray-100); color: var(--color-gray-600);"
-                     [attr.title]="'+' + (miembros().length - 3)">
-                  +{{ miembros().length - 3 }}
-                </div>
-              }
-            </div>
-            <span class="text-xs text-gray-400">{{ miembros().length }} miembro{{ miembros().length !== 1 ? 's' : '' }}</span>
+        <div class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
+          <div class="flex items-center gap-2 min-w-0">
+            @if (miembros().length > 0) {
+              <div class="flex -space-x-1.5">
+                @for (m of miembros().slice(0, 3); track m.id) {
+                  <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
+                       [style.background-color]="tipoColor(m.tipo).bg"
+                       [style.color]="tipoColor(m.tipo).text"
+                       [attr.title]="m.usuario">
+                    {{ iniciales(m.usuario) }}
+                  </div>
+                }
+                @if (miembros().length > 3) {
+                  <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
+                       style="background-color: var(--color-gray-100); color: var(--color-gray-600);"
+                       [attr.title]="'+' + (miembros().length - 3)">
+                    +{{ miembros().length - 3 }}
+                  </div>
+                }
+              </div>
+              <span class="text-xs text-gray-400">{{ miembros().length }} miembro{{ miembros().length !== 1 ? 's' : '' }}</span>
+            } @else {
+              <span class="text-xs text-gray-400">Sin equipo</span>
+            }
           </div>
-        }
+          <button *appPermiso="'editar'; recurso: 'proyectos'" (mousedown)="$event.stopPropagation()" (click)="equipoAbierto.set(true)"
+                  class="shrink-0 w-6 h-6 rounded-full border flex items-center justify-center transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-indigo-600)] hover:border-[var(--color-indigo-400)]"
+                  style="border-color: var(--color-gray-300);"
+                  [attr.aria-label]="'Asociar usuarios de ' + proyecto().nombre">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+          </button>
+        </div>
       </div>
+
+      @if (equipoAbierto()) {
+        <app-equipo-modal [proyecto]="proyecto()" (cerrar)="equipoAbierto.set(false)"/>
+      }
     </div>
   `,
   styles: [`
@@ -228,6 +247,8 @@ export class ProjectCardComponent {
       .map((id) => this.usuarioService.usuarioPorId(id))
       .filter((u): u is Usuario => !!u),
   );
+
+  protected readonly equipoAbierto = signal(false);
 
   protected expandido = false;
   protected mostrarPlanificaciones = false;

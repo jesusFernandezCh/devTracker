@@ -12,7 +12,7 @@ import {iniciales, tipoColor} from '../../utils/helpers';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrar.emit()">
+    <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrar.emit()">
       <div class="modal-enter rounded-xl shadow-xl w-full max-w-lg border overflow-hidden"
            style="background-color: var(--color-surface); border-color: var(--color-gray-200);"
            (click)="$event.stopPropagation()">

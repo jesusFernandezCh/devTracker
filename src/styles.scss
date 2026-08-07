@@ -211,8 +211,10 @@
     margin-left: 306px;
   }
 }
+
 /* ─── Impresión de reportes ─── */
 @media print {
+
   mat-sidenav,
   app-header,
   .no-print {
@@ -238,5 +240,12 @@
   .print-area {
     display: block;
     width: 100%;
+  }
+}
+
+@media (min-width: 1400px) {
+  .justify-center-modal {
+    justify-content: center;
+    margin-left: 306px;
   }
 }
