@@ -10,6 +10,7 @@ import {ReportesComponent} from './components/reportes/reportes.component';
 import {UsuariosComponent} from './components/usuarios/usuarios.component';
 import {RolesComponent} from './components/roles/roles.component';
 import {LoginComponent} from './components/login/login.component';
+import {PerfilComponent} from './components/perfil/perfil.component';
 import {authGuard} from './guards/auth.guard';
 import {permisoGuard} from './guards/permiso.guard';
 
@@ -26,5 +27,6 @@ export const routes: Routes = [
   {path: 'tarea/nueva', component: TaskFormComponent, canActivate: [authGuard, permisoGuard('crear', 'tareas')]},
   {path: 'tarea/:id', component: TaskDetailComponent, canActivate: [authGuard]},
   {path: 'tarea/:id/editar', component: TaskFormComponent, canActivate: [authGuard, permisoGuard('editar', 'tareas')]},
+  {path: 'perfil', component: PerfilComponent, canActivate: [authGuard]},
   {path: '**', redirectTo: ''},
 ];

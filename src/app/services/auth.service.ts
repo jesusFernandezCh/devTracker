@@ -8,9 +8,12 @@ const SESSION_KEY = 'devtracker-session';
 
 @Injectable({providedIn: 'root'})
 export class AuthService {
-  private readonly _currentUser = signal<Usuario | null>(null);
-  readonly currentUser = this._currentUser.asReadonly();
-  readonly isLoggedIn = computed(() => this._currentUser() !== null);
+  private readonly _currentUserId = signal<string | null>(null);
+  readonly currentUser = computed<Usuario | null>(() => {
+    const id = this._currentUserId();
+    return id ? this.usuarioService.usuarioPorId(id) ?? null : null;
+  });
+  readonly isLoggedIn = computed(() => this._currentUserId() !== null);
   private readonly router = inject(Router);
   private readonly usuarioService = inject(UsuarioService);
 
@@ -45,24 +48,26 @@ export class AuthService {
   }
 
   logout(): void {
-    this._currentUser.set(null);
+    this._currentUserId.set(null);
     localStorage.removeItem(SESSION_KEY);
     this.router.navigate(['/login']);
   }
 
   private _iniciarSesion(usuario: Usuario): void {
-    this._currentUser.set(usuario);
-    localStorage.setItem(SESSION_KEY, JSON.stringify(usuario));
+    this._currentUserId.set(usuario.id);
+    localStorage.setItem(SESSION_KEY, JSON.stringify(usuario.id));
     this.router.navigate(['/']);
   }
 
   private _cargarSesion(): void {
     const raw = localStorage.getItem(SESSION_KEY);
-    if (raw) {
-      try {
-        const usuario = JSON.parse(raw) as Usuario;
-        this._currentUser.set(usuario);
-      } catch { /* ignorar */ }
-    }
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as Usuario | string;
+      const id = typeof parsed === 'string' ? parsed : parsed.id;
+      if (id && this.usuarioService.usuarioPorId(id)) {
+        this._currentUserId.set(id);
+      }
+    } catch { /* ignorar */ }
   }
 }

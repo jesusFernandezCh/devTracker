@@ -105,10 +105,14 @@ import {ChatService} from '../../services/chat.service';
       <div class="border-t p-3 shrink-0" style="border-color: var(--color-gray-200);">
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+            <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shrink-0"
                  [style.background-color]="'var(--color-indigo-100)'"
                  style="color: var(--color-indigo-700);">
-              {{ authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U' }}
+              @if (authService.currentUser()?.foto) {
+                <img [src]="authService.currentUser()!.foto" alt="Foto de perfil" class="w-full h-full object-cover">
+              } @else {
+                {{ authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U' }}
+              }
             </div>
             <div class="min-w-0 leading-tight">
               <p class="text-sm font-medium truncate" style="color: var(--color-gray-900);">{{ authService.currentUser()?.usuario }}</p>

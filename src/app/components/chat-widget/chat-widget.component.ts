@@ -98,10 +98,14 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
 
             @for (c of contactos(); track c.usuario.id) {
               <button (click)="seleccionarContacto(c.usuario)" class="chat-list-item">
-                <span class="chat-avatar" [style.background-color]="tipoColor(c.usuario.tipo).bg"
-                      [style.color]="tipoColor(c.usuario.tipo).text">
-                  {{ iniciales(c.usuario.usuario) }}
-                </span>
+                @if (c.usuario.foto) {
+                  <img [src]="c.usuario.foto" [alt]="'Foto de ' + c.usuario.usuario" class="chat-avatar chat-avatar-img">
+                } @else {
+                  <span class="chat-avatar" [style.background-color]="tipoColor(c.usuario.tipo).bg"
+                        [style.color]="tipoColor(c.usuario.tipo).text">
+                    {{ iniciales(c.usuario.usuario) }}
+                  </span>
+                }
                 <span class="flex-1 min-w-0 text-left">
                   <span class="chat-list-name truncate">{{ c.usuario.usuario }}</span>
                   <span class="chat-list-sub truncate">{{ rolService.nombreDe(c.usuario.tipo) }}</span>
@@ -118,11 +122,15 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
               @for (m of mensajesActuales(); track m.id) {
                 <div class="chat-row" [class.chat-row-mio]="esMio(m.autorId)">
                   @if (!esMio(m.autorId)) {
-                    <span class="chat-avatar chat-avatar-sm"
-                          [style.background-color]="tipoColor(tipoDe(m.autorId)).bg"
-                          [style.color]="tipoColor(tipoDe(m.autorId)).text">
-                      {{ iniciales(nombreDe(m.autorId)) }}
-                    </span>
+                    @if (fotoDe(m.autorId)) {
+                      <img [src]="fotoDe(m.autorId)" [alt]="'Foto de ' + nombreDe(m.autorId)" class="chat-avatar chat-avatar-sm chat-avatar-img">
+                    } @else {
+                      <span class="chat-avatar chat-avatar-sm"
+                            [style.background-color]="tipoColor(tipoDe(m.autorId)).bg"
+                            [style.color]="tipoColor(tipoDe(m.autorId)).text">
+                        {{ iniciales(nombreDe(m.autorId)) }}
+                      </span>
+                    }
                   }
                   <div class="chat-bubble" [class.chat-bubble-mio]="esMio(m.autorId)" [class.chat-bubble-otro]="!esMio(m.autorId)">
                     @if (!esMio(m.autorId)) {
@@ -310,6 +318,10 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
       width: 1.5rem;
       height: 1.5rem;
       font-size: 0.5625rem;
+    }
+    .chat-avatar-img {
+      object-fit: cover;
+      display: block;
     }
 
     .chat-scroll {
@@ -522,6 +534,10 @@ export class ChatWidgetComponent {
 
   protected nombreDe(usuarioId: string): string {
     return this.usuarioService.usuarioPorId(usuarioId)?.usuario ?? 'Usuario';
+  }
+
+  protected fotoDe(usuarioId: string): string | undefined {
+    return this.usuarioService.usuarioPorId(usuarioId)?.foto;
   }
 
   protected tipoDe(usuarioId: string): string {

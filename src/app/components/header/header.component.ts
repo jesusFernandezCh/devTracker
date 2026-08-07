@@ -1,4 +1,5 @@
 import {Component, inject, output, ChangeDetectionStrategy, signal, HostListener, viewChild, ElementRef} from '@angular/core';
+import {Router} from '@angular/router';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {ThemeService} from '../../services/theme.service';
@@ -28,11 +29,15 @@ import {AuthService} from '../../services/auth.service';
             <!-- User avatar -->
             <div class="relative" #userMenu>
               <button (click)="toggleUserMenu()"
-                      class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
+                      class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold transition-colors"
                       [style.background-color]="'var(--color-indigo-100)'"
                       style="color: var(--color-indigo-700);"
                       [attr.aria-label]="'Menú de usuario'">
-                {{ authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U' }}
+                @if (authService.currentUser()?.foto) {
+                  <img [src]="authService.currentUser()!.foto" alt="Foto de perfil" class="w-full h-full object-cover">
+                } @else {
+                  {{ authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U' }}
+                }
               </button>
               @if (showUserMenu()) {
                 <div class="absolute top-full right-0 mt-1.5 w-52 rounded-xl border shadow-lg py-1 z-50"
@@ -41,6 +46,14 @@ import {AuthService} from '../../services/auth.service';
                     <p class="text-sm font-medium truncate" style="color: var(--color-gray-900);">{{ authService.currentUser()?.usuario }}</p>
                     <p class="text-xs truncate" style="color: var(--color-gray-500);">{{ authService.currentUser()?.correo }}</p>
                   </div>
+                  <button (click)="irAPerfil()"
+                          class="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors"
+                          style="color: var(--color-gray-700);">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                    </svg>
+                    Mi perfil
+                  </button>
                   <button (click)="cerrarSesion()"
                           class="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors"
                           style="color: var(--color-gray-700);">
@@ -72,12 +85,18 @@ import {AuthService} from '../../services/auth.service';
 export class HeaderComponent {
   protected readonly themeService = inject(ThemeService);
   protected readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   protected readonly showUserMenu = signal(false);
   private readonly userMenuEl = viewChild<ElementRef<HTMLElement>>('userMenu');
   readonly toggleMenu = output<void>();
 
   protected toggleUserMenu(): void {
     this.showUserMenu.update(v => !v);
+  }
+
+  protected irAPerfil(): void {
+    this.showUserMenu.set(false);
+    this.router.navigate(['/perfil']);
   }
 
   protected cerrarSesion(): void {

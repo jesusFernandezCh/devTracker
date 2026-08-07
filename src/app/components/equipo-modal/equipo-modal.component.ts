@@ -47,11 +47,16 @@ import {iniciales, tipoColor} from '../../utils/helpers';
                         class="w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left"
                         [class.selected]="estaAsignado(usuario.id)"
                         [style.background-color]="estaAsignado(usuario.id) ? 'var(--color-indigo-50)' : 'transparent'">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                       [style.background-color]="tipoColor(usuario.tipo).bg"
-                       [style.color]="tipoColor(usuario.tipo).text">
-                    {{ iniciales(usuario.usuario) }}
-                  </div>
+                  @if (usuario.foto) {
+                    <img [src]="usuario.foto" [alt]="'Foto de ' + usuario.usuario"
+                         class="w-8 h-8 rounded-full object-cover shrink-0">
+                  } @else {
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                         [style.background-color]="tipoColor(usuario.tipo).bg"
+                         [style.color]="tipoColor(usuario.tipo).text">
+                      {{ iniciales(usuario.usuario) }}
+                    </div>
+                  }
                   <div class="min-w-0 flex-1">
                     <p class="text-sm font-medium truncate" style="color: var(--color-gray-900);">{{ usuario.usuario }}</p>
                     <p class="text-xs truncate" style="color: var(--color-gray-500);">

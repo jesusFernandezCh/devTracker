@@ -2,6 +2,17 @@ import {TipoUsuario} from './permiso.model';
 
 export type {TipoUsuario} from './permiso.model';
 
+export interface Curriculum {
+  /** Nombre original del archivo. */
+  nombre: string;
+  /** MIME type (pdf/doc/docx). */
+  tipo: string;
+  /** Tamaño en bytes. */
+  tamano: number;
+  /** Contenido codificado como data URL base64. */
+  datos: string;
+}
+
 export interface Usuario {
   id: string;
   usuario: string;
@@ -9,6 +20,16 @@ export interface Usuario {
   /** Hash `salt:hash` (SHA-256). Se mantienen claves base64 legacy hasta migrar. */
   clave: string;
   tipo: TipoUsuario;
+  nombres?: string;
+  apellidos?: string;
+  cedula?: string;
+  telefono?: string;
+  telefonoContacto?: string;
+  direccion?: string;
+  /** Foto de perfil como data URL (imagen JPEG redimensionada). */
+  foto?: string;
+  /** Curriculum vitae adjunto. */
+  curriculum?: Curriculum;
 }
 
 export const USUARIOS_DEFAULT: Usuario[] = [

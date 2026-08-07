@@ -75,11 +75,16 @@ function tipoColor(tipo: string): {text: string; bg: string} {
                 <tr class="usuario-row" style="transition: background-color 0.15s;">
                   <td class="px-4 sm:px-6 py-2.5">
                     <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                           [style.background-color]="tipoColor(usuario.tipo).bg"
-                           [style.color]="tipoColor(usuario.tipo).text">
-                        {{ usuario.usuario.charAt(0).toUpperCase() }}
-                      </div>
+                      @if (usuario.foto) {
+                        <img [src]="usuario.foto" [alt]="'Foto de ' + usuario.usuario"
+                             class="w-8 h-8 rounded-full object-cover shrink-0">
+                      } @else {
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                             [style.background-color]="tipoColor(usuario.tipo).bg"
+                             [style.color]="tipoColor(usuario.tipo).text">
+                          {{ usuario.usuario.charAt(0).toUpperCase() }}
+                        </div>
+                      }
                       <span class="text-sm font-medium" style="color: var(--color-gray-900);">{{ usuario.usuario }}</span>
                     </div>
                   </td>
