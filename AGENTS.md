@@ -62,6 +62,13 @@ No `lint` or `typecheck` scripts are configured.
 - Story points: Simple=1, Media=3, Compleja=5 (coincide con `utils/estimacion.ts`).
 - Impresión: botones "Imprimir" llaman `window.print()`; `@media print` global en `styles.scss` oculta `mat-sidenav`, `app-header` y `.no-print`, dejando visible `.print-area`.
 
+## Chat
+
+- `ChatService` (persistido en `devtracker-chat`) guarda mensajes como `Mensaje[]` (`{id, canal:'general'|'privado', autorId, destinoId?, texto, fecha ISO, leido}`). API: `mensajes`, `abierto`, `noLeidosTotal(yoId)`, `noLeidosEn(yoId, canal, destinoId?)`, `mensajesGeneral(yoId)`, `mensajesPrivados(yoId, otroId)` (pareja simétrica), `enviarGeneral/Privado`, `marcarLeidosGeneral/Privados`, `toggle/abrir/cerrar`. Sync entre pestañas vía evento `storage`.
+- `ChatWidgetComponent` (montado en `AppComponent` dentro de `@if (authService.isLoggedIn())`): FAB flotante con badge de no leídos, lista de conversaciones (canal General + contactos con badge), burbujas mías/otras, input con Enter. `effect` marca leído al abrir una conversación y hace auto-scroll. `@for` con `@empty` para contactos y mensajes.
+- Item "Chat" en `sidebar.component.ts` (icono `forum`): botón que llama `chatService.toggle()` + badge `noLeidosChat` (total del usuario actual). No es `RouterLink` — abre el widget flotante.
+- Contactos = todos los usuarios salvo el actual (de `UsuarioService.usuarios()`), ordenados por no-leídos desc y luego nombre; el rol se resuelve con `RolService.nombreDe`.
+
 ## Dark mode
 
 - `ThemeService` stores boolean in `localStorage` key `dev-tracker-theme`.

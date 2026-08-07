@@ -5,12 +5,13 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {BreakpointObserver} from '@angular/cdk/layout';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {HeaderComponent} from './components/header/header.component';
+import {ChatWidgetComponent} from './components/chat-widget/chat-widget.component';
 import {AuthService} from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent],
+  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent, ChatWidgetComponent],
   template: `
     @if (authService.isLoggedIn()) {
     <mat-sidenav-container>
@@ -30,6 +31,7 @@ import {AuthService} from './services/auth.service';
         </main>
       </mat-sidenav-content>
     </mat-sidenav-container>
+    <app-chat-widget />
     } @else {
       <router-outlet />
     }
