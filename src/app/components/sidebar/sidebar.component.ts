@@ -1,9 +1,10 @@
-import {Component, inject, input, output} from '@angular/core';
+import {Component, inject, input, output, computed} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
 import {AuthService} from '../../services/auth.service';
 import {ThemeService} from '../../services/theme.service';
 import {PermisoService} from '../../services/permiso.service';
+import {ChatService} from '../../services/chat.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -64,6 +65,13 @@ import {PermisoService} from '../../services/permiso.service';
           <mat-icon class="sidebar-nav-icon">query_stats</mat-icon>
           <span>Reportes</span>
         </a>
+        <button (click)="onChatClick()" class="sidebar-nav-item w-full">
+          <mat-icon class="sidebar-nav-icon">forum</mat-icon>
+          <span class="flex-1 text-left">Chat</span>
+          @if (noLeidosChat() > 0) {
+            <span class="sidebar-chat-badge">{{ noLeidosChat() }}</span>
+          }
+        </button>
 
         <div class="border-t my-2" style="border-color: var(--color-gray-200);"></div>
 
@@ -155,6 +163,19 @@ import {PermisoService} from '../../services/permiso.service';
     .sidebar-nav-item:hover .sidebar-nav-icon {
       color: var(--color-gray-600);
     }
+    .sidebar-chat-badge {
+      min-width: 1.25rem;
+      height: 1.25rem;
+      padding: 0 0.3rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: #ffffff;
+      background-color: var(--color-rose-500);
+    }
     [data-theme="dark"] .sidebar-nav-item:hover {
       background-color: var(--color-gray-100);
     }
@@ -171,11 +192,21 @@ export class SidebarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly themeService = inject(ThemeService);
   protected readonly permisoService = inject(PermisoService);
+  protected readonly chatService = inject(ChatService);
   protected mobileAdminOpen = false;
   readonly isMobile = input(false);
   readonly navigate = output<void>();
 
+  protected readonly noLeidosChat = computed(() =>
+    this.chatService.noLeidosTotal(this.authService.currentUser()?.id ?? ''),
+  );
+
   protected onNavClick(): void {
+    this.navigate.emit();
+  }
+
+  protected onChatClick(): void {
+    this.chatService.toggle();
     this.navigate.emit();
   }
 }
