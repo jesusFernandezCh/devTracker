@@ -1,8 +1,12 @@
-import {Component, input, output, computed, ChangeDetectionStrategy} from '@angular/core';
+import {Component, input, output, computed, inject, ChangeDetectionStrategy} from '@angular/core';
 import {Proyecto} from '../../models/proyecto.model';
 import {PlanningTask} from '../../models/planning.model';
 import {Planning} from '../../models/planning.model';
+import {Usuario} from '../../models/usuario.model';
+import {EquipoService} from '../../services/equipo.service';
+import {UsuarioService} from '../../services/usuario.service';
 import {complejidadEstilo, estimacionTotal, statusColor, prioridadColor} from '../../utils/estimacion';
+import {iniciales, tipoColor} from '../../utils/helpers';
 
 @Component({
   selector: 'app-project-card',
@@ -178,6 +182,29 @@ import {complejidadEstilo, estimacionTotal, statusColor, prioridadColor} from '.
             </div>
           </div>
         }
+
+        @if (miembros().length > 0) {
+          <div class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
+            <div class="flex -space-x-1.5">
+              @for (m of miembros().slice(0, 3); track m.id) {
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
+                     [style.background-color]="tipoColor(m.tipo).bg"
+                     [style.color]="tipoColor(m.tipo).text"
+                     [attr.title]="m.usuario">
+                  {{ iniciales(m.usuario) }}
+                </div>
+              }
+              @if (miembros().length > 3) {
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
+                     style="background-color: var(--color-gray-100); color: var(--color-gray-600);"
+                     [attr.title]="'+' + (miembros().length - 3)">
+                  +{{ miembros().length - 3 }}
+                </div>
+              }
+            </div>
+            <span class="text-xs text-gray-400">{{ miembros().length }} miembro{{ miembros().length !== 1 ? 's' : '' }}</span>
+          </div>
+        }
       </div>
     </div>
   `,
@@ -193,6 +220,15 @@ export class ProjectCardComponent {
   deleteProject = output<string>();
   toggleCompletada = output<string>();
 
+  private readonly equipoService = inject(EquipoService);
+  private readonly usuarioService = inject(UsuarioService);
+
+  protected readonly miembros = computed(() =>
+    this.equipoService.miembrosDe(this.proyecto().id)
+      .map((id) => this.usuarioService.usuarioPorId(id))
+      .filter((u): u is Usuario => !!u),
+  );
+
   protected expandido = false;
   protected mostrarPlanificaciones = false;
   protected mostrarTareas = false;
@@ -200,6 +236,8 @@ export class ProjectCardComponent {
   protected readonly estimacionTotal = estimacionTotal;
   protected readonly statusColor = statusColor;
   protected readonly prioridadColor = prioridadColor;
+  protected readonly iniciales = iniciales;
+  protected readonly tipoColor = tipoColor;
 
   protected readonly porcentajeAvance = computed(() => {
     const lista = this.tareas();
