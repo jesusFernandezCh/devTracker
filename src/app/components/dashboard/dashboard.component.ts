@@ -7,6 +7,8 @@ import { ProyectoService } from '../../services/proyecto.service';
 import { PlanningService } from '../../services/planning.service';
 import { ColumnService } from '../../services/column.service';
 import { ThemeService } from '../../services/theme.service';
+import { EquipoService } from '../../services/equipo.service';
+import { AuthService } from '../../services/auth.service';
 import { estimacionTotal, prioridadColor } from '../../utils/estimacion';
 
 const PALETA_CLARA = {fondo: '#ffffff', texto: '#374151', suave: '#6b7280', grid: '#f1f5f9'};
@@ -71,7 +73,15 @@ const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', gri
       <div class="row g-4 mt-6">
         <div class="col-lg-6 col-12">
           <section class="db-card h-full">
-            <h2 class="db-card-heading">Progreso por proyecto</h2>
+            <h2 class="db-card-heading">
+              Progreso por proyecto
+              <button (click)="soloMios.set(!soloMios())"
+                      class="db-solo-mios"
+                      [style.background-color]="soloMios() ? 'var(--color-indigo-600)' : 'var(--color-gray-100)'"
+                      [style.color]="soloMios() ? '#ffffff' : 'var(--color-gray-600)'">
+                Solo míos
+              </button>
+            </h2>
             @if (avancePorProyecto().length > 0) {
               <div class="db-bars">
                 @for (item of avancePorProyecto(); track item.proyecto.id) {
@@ -256,6 +266,24 @@ const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', gri
       text-transform: uppercase;
       color: var(--color-gray-400);
       margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .db-solo-mios {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s;
+      border: none;
     }
 
     .db-card-head-row {
@@ -459,8 +487,19 @@ export class DashboardComponent {
   private readonly planningService = inject(PlanningService);
   private readonly columnService = inject(ColumnService);
   private readonly themeService = inject(ThemeService);
+  private readonly equipoService = inject(EquipoService);
+  private readonly authService = inject(AuthService);
 
   protected readonly animacionIniciada = signal(false);
+  protected readonly soloMios = signal(false);
+
+  protected readonly proyectosVisibles = computed(() => {
+    const lista = this.proyectoService.proyectos();
+    if (!this.soloMios()) return lista;
+    const id = this.authService.currentUser()?.id;
+    if (!id) return [];
+    return lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
+  });
 
   /* ── counter animators ── */
   protected readonly countTareas = signal(0);
@@ -565,7 +604,7 @@ export class DashboardComponent {
   }
 
   protected readonly avancePorProyecto = computed(() =>
-    this.proyectoService.proyectos()
+    this.proyectosVisibles()
       .map(p => {
         const tareas = this.planningService.plannings().filter(pl => pl.proyectoId === p.id).flatMap(pl => pl.tareas);
         const total = tareas.length;
@@ -578,7 +617,7 @@ export class DashboardComponent {
   );
 
   protected readonly proyectosPorColumna = computed(() => {
-    const proyectos = this.proyectoService.proyectos();
+    const proyectos = this.proyectosVisibles();
     const columnas = this.columnService.columnas();
     const total = proyectos.length;
     return columnas.map(c => ({

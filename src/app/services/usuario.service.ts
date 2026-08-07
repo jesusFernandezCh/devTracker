@@ -1,6 +1,7 @@
-import {Injectable, signal} from '@angular/core';
+import {Injectable, signal, inject} from '@angular/core';
 import {Usuario, USUARIOS_DEFAULT} from '../models/usuario.model';
 import {esClaveLegacy, hashClave} from '../utils/cripto';
+import {EquipoService} from './equipo.service';
 
 const STORAGE_KEY = 'devtracker-usuarios';
 
@@ -8,6 +9,7 @@ const STORAGE_KEY = 'devtracker-usuarios';
 export class UsuarioService {
   private readonly _usuarios = signal<Usuario[]>([]);
   readonly usuarios = this._usuarios.asReadonly();
+  private readonly equipoService = inject(EquipoService);
 
   constructor() {
     this._cargar();
@@ -45,6 +47,7 @@ export class UsuarioService {
 
   eliminar(id: string): void {
     this._usuarios.update(list => list.filter(u => u.id !== id));
+    this.equipoService.eliminarUsuarioDeTodos(id);
     this._guardar();
   }
 

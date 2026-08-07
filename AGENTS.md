@@ -44,6 +44,14 @@ No `lint` or `typecheck` scripts are configured.
 - Contraseñas: hash **SHA-256 + salt** (`salt:hash` en hex) vía `utils/cripto.ts` (Web Crypto). Las claves legacy en base64 se migran automáticamente al cargar.
 - **Seguridad:** el RBAC se evalúa en el navegador y es solo UX. La autorización real debe validarse en un backend.
 
+## Equipo de proyectos
+
+- `EquipoService` (persistido en `devtracker-equipo-proyecto`) mantiene la relación N:N proyecto ↔ usuario como `Record<proyectoId, string[]>` (ids de `Usuario`). API: `miembrosDe`, `proyectosDe(usuarioId)`, `asignar`, `quitar`, `establecer`, `eliminarUsuarioDeTodos`.
+- `UsuarioService.eliminar(id)` también llama `equipoService.eliminarUsuarioDeTodos(id)` para no dejar referencias huérfanas.
+- Modal `EquipoModalComponent` (en `/proyectos`, botón personas con `*appPermiso="'editar'; recurso: 'proyectos'"`): toggle inmediato de usuarios (checkbox en fila + chips con botón quitar). Aplicación inmediata como el modal de columnas.
+- La tabla de proyectos muestra stack de avatares (iniciales vía `utils/helpers.iniciales`) + contador. Filtro "Solo mis proyectos" (y toggle "Solo míos" en el dashboard) filtra por membresía del `AuthService.currentUser()`, aplicado antes de paginación (`proyectosFiltrados`/`proyectosVisibles`).
+- `utils/helpers.ts` exporta `iniciales(nombre)` y `tipoColor(tipo)` (compartidos entre componentes; un identificador importado NO es visible en templates — aliasear como miembro de clase `protected readonly x = x`).
+
 ## Reportes
 
 - `ReporteService` (persistencia de filtros en signals, no en localStorage): `proyectosDetalle`, `productividadPorProyecto`, `estimacionPorComplejidad`, `estimacionPorProyecto`, `vencimientos`, `pipelinePorColumna`, `calidadPorColumna` y `datosMensuales` (todos `computed`), filtros `fechaDesde`/`fechaHasta`/`proyectoId` (comparación de strings ISO, no de Date) y `exportarCSV(nombre, filas, columnas)` con BOM + Blob.

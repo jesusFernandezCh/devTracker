@@ -4,9 +4,15 @@ import {Router} from '@angular/router';
 import {ProyectoService} from '../../services/proyecto.service';
 import {PlanningService} from '../../services/planning.service';
 import {ColumnService} from '../../services/column.service';
+import {EquipoService} from '../../services/equipo.service';
+import {UsuarioService} from '../../services/usuario.service';
+import {AuthService} from '../../services/auth.service';
 import {Proyecto, ProyectoConDatos} from '../../models/proyecto.model';
+import {Usuario} from '../../models/usuario.model';
 import {statusColor, prioridadColor, estimacionTotal} from '../../utils/estimacion';
+import {iniciales, tipoColor} from '../../utils/helpers';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
+import {EquipoModalComponent} from '../equipo-modal/equipo-modal.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
 
 const PAGINA_SIZE = 10;
@@ -15,7 +21,7 @@ const PAGINA_SIZE = 10;
   selector: 'app-proyectos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ProyectoFormComponent, PermisoDirective],
+  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -23,10 +29,20 @@ const PAGINA_SIZE = 10;
           Proyectos
         </h1>
         <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
-          {{ proyectos().length }} proyecto{{ proyectos().length !== 1 ? 's' : '' }}
+          {{ proyectosFiltrados().length }} proyecto{{ proyectosFiltrados().length !== 1 ? 's' : '' }}
         </p>
       </div>
-      <div class="col-12 col-md-auto mt-3 mt-md-0">
+      <div class="col-12 col-md-auto mt-3 mt-md-0 d-flex align-items-center gap-2">
+        <button (click)="soloMios.set(!soloMios())"
+                class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors border"
+                [style.background-color]="soloMios() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
+                [style.color]="soloMios() ? '#ffffff' : 'var(--color-gray-700)'"
+                [style.border-color]="soloMios() ? 'var(--color-indigo-600)' : 'var(--color-gray-300)'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Mis proyectos
+        </button>
         <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -37,13 +53,18 @@ const PAGINA_SIZE = 10;
       </div>
     </div>
 
-      @if (proyectos().length === 0) {
+      @if (proyectosFiltrados().length === 0) {
         <div class="text-center py-20">
           <svg class="w-16 h-16 mx-auto mb-4" style="color: var(--color-gray-300)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"/>
           </svg>
-          <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500)">No hay proyectos</h3>
-          <p class="text-sm mb-6" style="color: var(--color-gray-400)">Crea tu primer proyecto para empezar.</p>
+          @if (soloMios() && proyectos().length > 0) {
+            <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500)">No tienes proyectos asignados</h3>
+            <p class="text-sm mb-6" style="color: var(--color-gray-400)">Usa el filtro "Solo mis proyectos" desactivado para ver todos.</p>
+          } @else {
+            <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500)">No hay proyectos</h3>
+            <p class="text-sm mb-6" style="color: var(--color-gray-400)">Crea tu primer proyecto para empezar.</p>
+          }
           <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
                   class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -55,7 +76,7 @@ const PAGINA_SIZE = 10;
       } @else {
         <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[900px]">
+            <table class="w-full min-w-[1050px]">
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Nombre</th>
@@ -63,6 +84,7 @@ const PAGINA_SIZE = 10;
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Prioridad</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Equipo</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Figma</th>
                   <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
                 </tr>
@@ -109,6 +131,34 @@ const PAGINA_SIZE = 10;
                       }
                     </td>
                     <td class="px-4 sm:px-6 py-2.5">
+                      @let miembros = miembrosDeProyecto(proyecto.id);
+                      @if (miembros.length > 0) {
+                        <div class="flex items-center">
+                          <div class="flex -space-x-1.5">
+                            @for (m of miembros.slice(0, 3); track m.id) {
+                              <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 shrink-0"
+                                   [style.background-color]="tipoColor(m.tipo).bg"
+                                   [style.color]="tipoColor(m.tipo).text"
+                                   [style.border-color]="'var(--color-surface)'"
+                                   [attr.title]="m.usuario">
+                                {{ iniciales(m.usuario) }}
+                              </div>
+                            }
+                            @if (miembros.length > 3) {
+                              <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 shrink-0"
+                                   style="background-color: var(--color-gray-100); color: var(--color-gray-600); border-color: var(--color-surface);"
+                                   [attr.title]="'+' + (miembros.length - 3)">
+                                +{{ miembros.length - 3 }}
+                              </div>
+                            }
+                          </div>
+                          <span class="ml-2 text-xs" style="color: var(--color-gray-400);">{{ miembros.length }}</span>
+                        </div>
+                      } @else {
+                        <span class="text-sm" style="color: var(--color-gray-300);">—</span>
+                      }
+                    </td>
+                    <td class="px-4 sm:px-6 py-2.5">
                       @if (proyecto.documentacion) {
                          <a [href]="proyecto.documentacion" target="_blank" rel="noopener"
                             class="inline-flex items-center gap-1.5 text-sm transition-colors text-[var(--color-teal-600)] hover:text-[var(--color-teal-700)]">
@@ -128,6 +178,13 @@ const PAGINA_SIZE = 10;
                                 [attr.aria-label]="'Ir a planning de ' + proyecto.nombre">
                           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                        </button>
+                        <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirEquipo(proyecto)"
+                                class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-indigo-600)] hover:bg-[var(--color-gray-100)]"
+                                [attr.aria-label]="'Gestionar equipo de ' + proyecto.nombre">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                           </svg>
                         </button>
                         <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirEditar(proyecto)"
@@ -328,6 +385,10 @@ const PAGINA_SIZE = 10;
                            (guardar)="onGuardar($event)"
                            (cerrar)="cerrarForm()"/>
       }
+
+      @if (equipoProyecto(); as proyecto) {
+        <app-equipo-modal [proyecto]="proyecto" (cerrar)="cerrarEquipo()"/>
+      }
   `,
   styles: [`
     .proyecto-row:hover {
@@ -339,16 +400,32 @@ export class ProyectosComponent {
   private proyectoService = inject(ProyectoService);
   private planningService = inject(PlanningService);
   private columnService = inject(ColumnService);
+  private equipoService = inject(EquipoService);
+  private usuarioService = inject(UsuarioService);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   proyectos = this.proyectoService.proyectos;
   protected readonly statusColor = statusColor;
   protected readonly prioridadColor = prioridadColor;
   protected readonly estimacionTotal = estimacionTotal;
+  protected readonly iniciales = iniciales;
+  protected readonly tipoColor = tipoColor;
 
   showForm = false;
   editandoProyecto: Proyecto | null = null;
   deleteConfirmId: string | null = null;
+
+  protected readonly soloMios = signal(false);
+  protected readonly equipoProyecto = signal<Proyecto | null>(null);
+
+  protected readonly proyectosFiltrados = computed(() => {
+    const lista = this.proyectos();
+    if (!this.soloMios()) return lista;
+    const id = this.authService.currentUser()?.id;
+    if (!id) return [];
+    return lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
+  });
 
   protected readonly detalleId = signal<string | null>(null);
   protected readonly detalleProyecto = computed<ProyectoConDatos | null>(() => {
@@ -362,11 +439,11 @@ export class ProyectosComponent {
   });
 
   protected readonly paginaActual = signal(1);
-  protected readonly totalProyectos = computed(() => this.proyectos().length);
+  protected readonly totalProyectos = computed(() => this.proyectosFiltrados().length);
   protected readonly paginasTotales = computed(() => Math.max(1, Math.ceil(this.totalProyectos() / PAGINA_SIZE)));
   protected readonly paginaInicio = computed(() => (this.paginaActual() - 1) * PAGINA_SIZE + 1);
   protected readonly paginaFin = computed(() => Math.min(this.paginaActual() * PAGINA_SIZE, this.totalProyectos()));
-  protected readonly proyectosPagina = computed(() => this.proyectos().slice(this.paginaInicio() - 1, this.paginaFin()));
+  protected readonly proyectosPagina = computed(() => this.proyectosFiltrados().slice(this.paginaInicio() - 1, this.paginaFin()));
   protected readonly rangoPaginas = computed<(number | null)[]>(() => {
     const total = this.paginasTotales();
     const actual = this.paginaActual();
@@ -422,6 +499,20 @@ export class ProyectosComponent {
 
   tareasCompletadas(detalle: ProyectoConDatos): number {
     return detalle.tareas.filter((t) => t.completada).length;
+  }
+
+  miembrosDeProyecto(proyectoId: string): Usuario[] {
+    return this.equipoService.miembrosDe(proyectoId)
+      .map((id) => this.usuarioService.usuarioPorId(id))
+      .filter((u): u is Usuario => !!u);
+  }
+
+  abrirEquipo(proyecto: Proyecto): void {
+    this.equipoProyecto.set(proyecto);
+  }
+
+  cerrarEquipo(): void {
+    this.equipoProyecto.set(null);
   }
 
   irPagina(pagina: number): void {
