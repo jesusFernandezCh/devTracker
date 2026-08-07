@@ -21,13 +21,14 @@ export class ChatService {
     return this._mensajes().filter((m) => m.autorId !== yoId && !m.leido).length;
   }
 
-  noLeidosEn(yoId: string, canal: CanalChat, destinoId?: string): number {
+  noLeidosEn(yoId: string, canal: CanalChat, destinoId?: string, proyectoId?: string): number {
     return this._mensajes().filter(
       (m) =>
         m.autorId !== yoId &&
         !m.leido &&
         m.canal === canal &&
-        (canal !== 'privado' || this._mismaPareja(m, yoId, destinoId ?? '')),
+        (canal !== 'privado' || this._mismaPareja(m, yoId, destinoId ?? '')) &&
+        (canal !== 'grupo' || m.proyectoId === proyectoId),
     ).length;
   }
 
@@ -43,6 +44,12 @@ export class ChatService {
       .sort((a, b) => a.fecha.localeCompare(b.fecha));
   }
 
+  mensajesGrupo(yoId: string, proyectoId: string): Mensaje[] {
+    return this._mensajes()
+      .filter((m) => m.canal === 'grupo' && m.proyectoId === proyectoId)
+      .sort((a, b) => a.fecha.localeCompare(b.fecha));
+  }
+
   enviarGeneral(autorId: string, texto: string): void {
     this._agregar({canal: 'general', autorId, texto});
   }
@@ -51,12 +58,20 @@ export class ChatService {
     this._agregar({canal: 'privado', autorId, destinoId, texto});
   }
 
+  enviarGrupo(autorId: string, proyectoId: string, texto: string): void {
+    this._agregar({canal: 'grupo', autorId, proyectoId, texto});
+  }
+
   marcarLeidosGeneral(yoId: string): void {
     this._marcar((m) => m.canal === 'general' && m.autorId !== yoId);
   }
 
   marcarLeidosPrivados(yoId: string, otroId: string): void {
     this._marcar((m) => m.canal === 'privado' && this._mismaPareja(m, yoId, otroId) && m.autorId !== yoId);
+  }
+
+  marcarLeidosGrupo(yoId: string, proyectoId: string): void {
+    this._marcar((m) => m.canal === 'grupo' && m.proyectoId === proyectoId && m.autorId !== yoId);
   }
 
   toggle(): void {
@@ -75,7 +90,7 @@ export class ChatService {
     return (m.autorId === a && m.destinoId === b) || (m.autorId === b && m.destinoId === a);
   }
 
-  private _agregar(data: {canal: CanalChat; autorId: string; destinoId?: string; texto: string}): void {
+  private _agregar(data: {canal: CanalChat; autorId: string; destinoId?: string; proyectoId?: string; texto: string}): void {
     const texto = data.texto.trim();
     if (!texto) return;
     const mensaje: Mensaje = {
@@ -83,6 +98,7 @@ export class ChatService {
       canal: data.canal,
       autorId: data.autorId,
       destinoId: data.destinoId,
+      proyectoId: data.proyectoId,
       texto,
       fecha: new Date().toISOString(),
       leido: false,

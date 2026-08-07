@@ -4,11 +4,13 @@ import {ChatService} from '../../services/chat.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {AuthService} from '../../services/auth.service';
 import {RolService} from '../../services/rol.service';
+import {EquipoService} from '../../services/equipo.service';
+import {ProyectoService} from '../../services/proyecto.service';
 import {CanalChat} from '../../models/mensaje.model';
 import {Usuario} from '../../models/usuario.model';
 import {iniciales, tipoColor} from '../../utils/helpers';
 
-type Conversacion = {canal: CanalChat; destinoId?: string} | null;
+type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} | null;
 
 @Component({
   selector: 'app-chat-widget',
@@ -70,6 +72,27 @@ type Conversacion = {canal: CanalChat; destinoId?: string} | null;
                 <span class="chat-badge">{{ noLeidosGeneral() }}</span>
               }
             </button>
+
+            @if (grupos().length > 0) {
+              <div class="chat-list-section">Grupos</div>
+
+              @for (g of grupos(); track g.proyecto.id) {
+                <button (click)="seleccionarGrupo(g.proyecto.id)" class="chat-list-item">
+                  <span class="chat-avatar" style="background-color: var(--color-indigo-100); color: var(--color-indigo-700);">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                  </span>
+                  <span class="flex-1 min-w-0 text-left">
+                    <span class="chat-list-name truncate">{{ g.proyecto.nombre }}</span>
+                    <span class="chat-list-sub truncate">{{ g.miembros }} miembro{{ g.miembros !== 1 ? 's' : '' }}</span>
+                  </span>
+                  @if (g.noLeidos > 0) {
+                    <span class="chat-badge">{{ g.noLeidos }}</span>
+                  }
+                </button>
+              }
+            }
 
             <div class="chat-list-section">Contactos</div>
 
@@ -396,6 +419,8 @@ export class ChatWidgetComponent {
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly authService = inject(AuthService);
   protected readonly rolService = inject(RolService);
+  protected readonly equipoService = inject(EquipoService);
+  protected readonly proyectoService = inject(ProyectoService);
   protected readonly iniciales = iniciales;
   protected readonly tipoColor = tipoColor;
 
@@ -416,6 +441,19 @@ export class ChatWidgetComponent {
       .sort((a, b) => b.noLeidos - a.noLeidos || a.usuario.usuario.localeCompare(b.usuario.usuario));
   });
 
+  protected readonly grupos = computed(() => {
+    const yoId = this.yo()?.id;
+    if (!yoId) return [];
+    return this.equipoService.proyectosDe(yoId)
+      .map((proyectoId) => ({
+        proyecto: this.proyectoService.proyectoPorId(proyectoId)!,
+        miembros: this.equipoService.miembrosDe(proyectoId).length,
+        noLeidos: this.chatService.noLeidosEn(yoId, 'grupo', undefined, proyectoId),
+      }))
+      .filter((g) => g.proyecto !== undefined)
+      .sort((a, b) => b.noLeidos - a.noLeidos || a.proyecto.nombre.localeCompare(b.proyecto.nombre));
+  });
+
   protected readonly totalNoLeidos = computed(() => {
     const yoId = this.yo()?.id;
     return yoId ? this.chatService.noLeidosTotal(yoId) : 0;
@@ -430,15 +468,16 @@ export class ChatWidgetComponent {
     const yoId = this.yo()?.id;
     const conv = this.conversacion();
     if (!yoId || !conv) return [];
-    return conv.canal === 'general'
-      ? this.chatService.mensajesGeneral(yoId)
-      : conv.destinoId ? this.chatService.mensajesPrivados(yoId, conv.destinoId) : [];
+    if (conv.canal === 'general') return this.chatService.mensajesGeneral(yoId);
+    if (conv.canal === 'grupo') return conv.proyectoId ? this.chatService.mensajesGrupo(yoId, conv.proyectoId) : [];
+    return conv.destinoId ? this.chatService.mensajesPrivados(yoId, conv.destinoId) : [];
   });
 
   protected readonly tituloConversacion = computed(() => {
     const conv = this.conversacion();
     if (!conv) return '';
     if (conv.canal === 'general') return 'General';
+    if (conv.canal === 'grupo') return this.proyectoService.proyectoPorId(conv.proyectoId!)?.nombre ?? 'Chat';
     return this.usuarioService.usuarioPorId(conv.destinoId!)?.usuario ?? 'Chat';
   });
 
@@ -451,6 +490,8 @@ export class ChatWidgetComponent {
       if (!conv || !yoId) return;
       if (conv.canal === 'general') {
         this.chatService.marcarLeidosGeneral(yoId);
+      } else if (conv.canal === 'grupo' && conv.proyectoId) {
+        this.chatService.marcarLeidosGrupo(yoId, conv.proyectoId);
       } else if (conv.destinoId) {
         this.chatService.marcarLeidosPrivados(yoId, conv.destinoId);
       }
@@ -469,6 +510,10 @@ export class ChatWidgetComponent {
 
   protected seleccionarContacto(usuario: Usuario): void {
     this.conversacion.set({canal: 'privado', destinoId: usuario.id});
+  }
+
+  protected seleccionarGrupo(proyectoId: string): void {
+    this.conversacion.set({canal: 'grupo', proyectoId});
   }
 
   protected esMio(autorId: string): boolean {
@@ -494,6 +539,8 @@ export class ChatWidgetComponent {
     if (!yoId || !texto.trim() || !conv) return;
     if (conv.canal === 'general') {
       this.chatService.enviarGeneral(yoId, texto);
+    } else if (conv.canal === 'grupo' && conv.proyectoId) {
+      this.chatService.enviarGrupo(yoId, conv.proyectoId, texto);
     } else if (conv.destinoId) {
       this.chatService.enviarPrivado(yoId, conv.destinoId, texto);
     }

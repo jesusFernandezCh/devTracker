@@ -130,6 +130,61 @@ describe('ChatService', () => {
     expect(b.leido).toBeFalse();
   });
 
+  it('enviarGrupo agrega un mensaje con proyectoId', () => {
+    service.enviarGrupo('u1', 'p1', 'hola equipo');
+    const m = service.mensajes()[0];
+    expect(m.canal).toBe('grupo');
+    expect(m.proyectoId).toBe('p1');
+    expect(m.autorId).toBe('u1');
+  });
+
+  it('enviarGrupo ignora textos vacíos o en blanco', () => {
+    service.enviarGrupo('u1', 'p1', '   ');
+    expect(service.mensajes()).toHaveSize(0);
+  });
+
+  it('mensajesGrupo filtra por proyecto y ordena por fecha', () => {
+    localStorage.setItem('devtracker-chat', JSON.stringify([
+      mensaje({id: 'a', canal: 'grupo', proyectoId: 'p1', fecha: '2026-01-02T00:00:00.000Z'}),
+      mensaje({id: 'b', canal: 'grupo', proyectoId: 'p2', fecha: '2026-01-03T00:00:00.000Z'}),
+      mensaje({id: 'c', canal: 'grupo', proyectoId: 'p1', fecha: '2026-01-01T00:00:00.000Z'}),
+      mensaje({id: 'd', canal: 'general'}),
+    ]));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({providers: [ChatService]});
+    service = TestBed.inject(ChatService);
+    expect(service.mensajesGrupo('u1', 'p1').map(m => m.id)).toEqual(['c', 'a']);
+  });
+
+  it('noLeidosEn con canal grupo filtra por proyecto', () => {
+    localStorage.setItem('devtracker-chat', JSON.stringify([
+      mensaje({id: 'a', canal: 'grupo', autorId: 'u2', proyectoId: 'p1'}),
+      mensaje({id: 'b', canal: 'grupo', autorId: 'u2', proyectoId: 'p2'}),
+      mensaje({id: 'c', canal: 'grupo', autorId: 'u1', proyectoId: 'p1'}),
+    ]));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({providers: [ChatService]});
+    service = TestBed.inject(ChatService);
+    expect(service.noLeidosEn('u1', 'grupo', undefined, 'p1')).toBe(1);
+    expect(service.noLeidosEn('u1', 'grupo', undefined, 'p2')).toBe(1);
+  });
+
+  it('marcarLeidosGrupo marca solo los del proyecto', () => {
+    localStorage.setItem('devtracker-chat', JSON.stringify([
+      mensaje({id: 'a', canal: 'grupo', autorId: 'u2', proyectoId: 'p1'}),
+      mensaje({id: 'b', canal: 'grupo', autorId: 'u2', proyectoId: 'p2'}),
+      mensaje({id: 'c', canal: 'grupo', autorId: 'u1', proyectoId: 'p1'}),
+    ]));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({providers: [ChatService]});
+    service = TestBed.inject(ChatService);
+    service.marcarLeidosGrupo('u1', 'p1');
+    const [a, b, c] = service.mensajes();
+    expect(a.leido).toBeTrue();
+    expect(b.leido).toBeFalse();
+    expect(c.leido).toBeFalse();
+  });
+
   it('toggle/abrir/cerrar controlan el panel', () => {
     expect(service.abierto()).toBeFalse();
     service.toggle();
