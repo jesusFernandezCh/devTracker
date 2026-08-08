@@ -1,7 +1,14 @@
 import {Injectable, signal} from '@angular/core';
-import {Planning} from '../models/planning.model';
+import {Planning, PlanningTask} from '../models/planning.model';
 
 const STORAGE_KEY = 'devtracker-planning';
+
+function fechaHoyLocal(): string {
+  const hoy = new Date();
+  const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoy.getDate()).padStart(2, '0');
+  return `${hoy.getFullYear()}-${mes}-${dia}`;
+}
 
 @Injectable({providedIn: 'root'})
 export class PlanningService {
@@ -37,6 +44,22 @@ export class PlanningService {
   eliminar(id: string): void {
     this._plannings.update((list) => list.filter((p) => p.id !== id));
     this._guardar();
+  }
+
+  clonar(id: string): void {
+    const original = this._plannings().find((p) => p.id === id);
+    if (!original) return;
+    const tareas: PlanningTask[] = original.tareas.map((t) => ({
+      ...t,
+      id: crypto.randomUUID(),
+      completada: false,
+    }));
+    this.crear({
+      fecha: fechaHoyLocal(),
+      proyectoId: original.proyectoId,
+      descripcion: `${original.descripcion || 'Planning'} (copia)`,
+      tareas,
+    });
   }
 
   agregarTarea(planningId: string, tarea: import('../models/planning.model').PlanningTask): void {

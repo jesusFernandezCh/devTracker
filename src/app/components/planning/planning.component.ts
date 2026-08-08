@@ -109,6 +109,13 @@ const PAGINA_SIZE = 10;
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/>
                           </svg>
                         </button>
+                        <button *appPermiso="'crear'; recurso: 'planning'" (click)="clonarPlanning(planning)"
+                                class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-indigo-600)] hover:bg-[var(--color-gray-100)]"
+                                [attr.aria-label]="'Clonar planning'">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"/>
+                          </svg>
+                        </button>
                         <button *appPermiso="'eliminar'; recurso: 'planning'" (click)="confirmarEliminar(planning.id)"
                                 class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
                                 [attr.aria-label]="'Eliminar planning'">
@@ -319,6 +326,10 @@ export class PlanningComponent {
       this.planningService.crear({...data, tareas: []});
     }
     this.cerrarForm();
+  }
+
+  clonarPlanning(planning: Planning): void {
+    this.planningService.clonar(planning.id);
   }
 
   confirmarEliminar(id: string): void {
