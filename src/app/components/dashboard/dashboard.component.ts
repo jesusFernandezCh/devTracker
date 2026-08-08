@@ -9,10 +9,14 @@ import { ColumnService } from '../../services/column.service';
 import { ThemeService } from '../../services/theme.service';
 import { EquipoService } from '../../services/equipo.service';
 import { AuthService } from '../../services/auth.service';
+import { ReporteService } from '../../services/reporte.service';
+import { ROL_SUPER_ADMIN_ID } from '../../models/permiso.model';
 import { estimacionTotal, prioridadColor } from '../../utils/estimacion';
 
 const PALETA_CLARA = {fondo: '#ffffff', texto: '#374151', suave: '#6b7280', grid: '#f1f5f9'};
 const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', grid: '#334155'};
+
+const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '#0ea5e9', '#10b981', '#f43f5e'];
 
 @Component({
   selector: 'app-dashboard',
@@ -169,6 +173,99 @@ const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', gri
           </section>
         </div>
       </div>
+      <br>
+      @if (esAdmin()) {
+        <div class="row g-4 mt-6">
+          <div class="col-lg-6 col-12">
+            <section class="db-card h-full">
+              <h2 class="db-card-heading">Avance general por cliente</h2>
+              @if (avancePorCliente().length > 0) {
+                <div class="db-bars">
+                  @for (item of avancePorCliente(); track item.cliente) {
+                    <div class="db-bar-row">
+                      <div class="db-bar-head">
+                        <span class="db-bar-label">
+                          {{ item.cliente }}
+                          <span class="db-bar-sub">{{ item.proyectos }} proyecto{{ item.proyectos !== 1 ? 's' : '' }} · {{ item.completadas }}/{{ item.tareas }} tareas</span>
+                        </span>
+                        <span class="db-bar-value">{{ item.porcentaje }}<span class="db-percent-sign">%</span></span>
+                      </div>
+                      <div class="db-bar-track">
+                        <div class="db-bar-fill"
+                             [style.width.%]="animacionIniciada() ? item.porcentaje : 0"
+                             [style.background-color]="barColor(item.porcentaje)">
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="db-empty">Sin proyectos por cliente.</p>
+              }
+            </section>
+          </div>
+              
+          <div class="col-lg-6 col-12">
+            <section class="db-card h-full">
+              <h2 class="db-card-heading">Avance mensual por cliente</h2>
+              @if (hayMensualPorCliente()) {
+                <highcharts-chart [options]="graficaMensualCliente()" class="db-mensual"></highcharts-chart>
+              } @else {
+                <p class="db-empty">Sin datos mensuales por cliente.</p>
+              }
+            </section>
+          </div>
+
+          <div class="col-lg-4 col-12">
+            <section class="db-card h-full">
+              <h2 class="db-card-heading">Usuarios por tipo</h2>
+              @if (usuariosPorTipo().length > 0) {
+                <div class="db-usuarios">
+                  @for (item of usuariosPorTipo(); track item.rol) {
+                    <div class="db-usuario-row">
+                      <span class="db-usuario-dot"></span>
+                      <span class="db-usuario-nombre">{{ item.nombre }}</span>
+                      <span class="db-usuario-count">{{ item.cantidad }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="db-empty">Sin usuarios registrados.</p>
+              }
+            </section>
+          </div>
+
+          <div class="col-lg-8 col-12">
+            <section class="db-card h-full">
+              <h2 class="db-card-heading">Plannings y tareas por usuario</h2>
+              @if (productividadPorUsuario().length > 0) {
+                <div class="db-tabla">
+                  <div class="db-tabla-head">
+                    <span>Usuario</span>
+                    <span>Plannings</span>
+                    <span>Tareas</span>
+                    <span>Completadas</span>
+                    <span>Pendientes</span>
+                    <span>Avance</span>
+                  </div>
+                  @for (u of productividadPorUsuario(); track u.usuarioId) {
+                    <div class="db-tabla-row">
+                      <span class="db-tabla-user">{{ u.nombre }}</span>
+                      <span class="db-tabla-num">{{ u.plannings }}</span>
+                      <span class="db-tabla-num">{{ u.tareas }}</span>
+                      <span class="db-tabla-num" style="color: var(--color-emerald-600);">{{ u.completadas }}</span>
+                      <span class="db-tabla-num">{{ u.pendientes }}</span>
+                      <span class="db-tabla-pct" [style.color]="barColor(u.porcentaje)">{{ u.porcentaje }}%</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="db-empty">Sin plannings por usuario.</p>
+              }
+            </section>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -474,6 +571,108 @@ const PALETA_OSCURA = {fondo: '#1E293B', texto: '#E2E8F0', suave: '#94A3B8', gri
       padding: 2rem 0;
     }
 
+    /* ─── Admin: clientes y usuarios ─── */
+    .db-bar-sub {
+      font-size: 0.6875rem;
+      font-weight: 400;
+      color: var(--color-gray-400);
+      white-space: nowrap;
+    }
+
+    .db-mensual {
+      width: 100%;
+      height: 300px;
+      display: block;
+    }
+
+    .db-usuarios { display: flex; flex-direction: column; }
+
+    .db-usuario-row {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+    .db-usuario-row:last-child { border-bottom: none; }
+
+    .db-usuario-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-indigo-400);
+      flex-shrink: 0;
+    }
+
+    .db-usuario-nombre {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--color-gray-700);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .db-usuario-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-100);
+      border-radius: 9999px;
+      min-width: 2rem;
+      text-align: center;
+      padding: 0.125rem 0.5rem;
+    }
+
+    .db-tabla { display: flex; flex-direction: column; }
+
+    .db-tabla-head,
+    .db-tabla-row {
+      display: grid;
+      grid-template-columns: 1.6fr 0.9fr 0.9fr 1fr 1fr 0.8fr;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.625rem 0;
+    }
+
+    .db-tabla-head {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-400);
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+
+    .db-tabla-row {
+      font-size: 0.8125rem;
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+    .db-tabla-row:last-child { border-bottom: none; }
+
+    .db-tabla-user {
+      font-weight: 500;
+      color: var(--color-gray-800);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .db-tabla-num {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--color-gray-600);
+      text-align: right;
+    }
+
+    .db-tabla-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      text-align: right;
+    }
+
     /* ─── Animations ─── */
     @keyframes dbFadeIn {
       from { opacity: 0; transform: translateY(12px); }
@@ -489,9 +688,15 @@ export class DashboardComponent {
   private readonly themeService = inject(ThemeService);
   private readonly equipoService = inject(EquipoService);
   private readonly authService = inject(AuthService);
+  private readonly reporteService = inject(ReporteService);
 
   protected readonly animacionIniciada = signal(false);
   protected readonly soloMios = signal(false);
+
+  protected readonly esAdmin = computed(() => {
+    const tipo = this.authService.currentUser()?.tipo;
+    return tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador';
+  });
 
   protected readonly proyectosVisibles = computed(() => {
     const lista = this.proyectoService.proyectos();
@@ -695,6 +900,66 @@ export class DashboardComponent {
   protected getDiasRestantes(fechaHasta: string): number {
     return Math.max(0, Math.ceil((new Date(fechaHasta).getTime() - Date.now()) / 86400000));
   }
+
+  /* ── Admin: avance por cliente, usuarios y productividad ── */
+  protected readonly avancePorCliente = computed(() => this.reporteService.avancePorCliente());
+
+  protected readonly avanceMensualPorCliente = computed(() =>
+    this.reporteService.avanceMensualPorCliente(),
+  );
+
+  protected readonly hayMensualPorCliente = computed(() => {
+    const datos = this.reporteService.avanceMensualPorCliente();
+    return Object.keys(datos).length > 0 && (Object.values(datos)[0]?.length ?? 0) > 0;
+  });
+
+  protected readonly usuariosPorTipo = computed(() => this.reporteService.usuariosPorTipo());
+
+  protected readonly productividadPorUsuario = computed(() =>
+    this.reporteService.productividadPorUsuario(),
+  );
+
+  protected readonly graficaMensualCliente = computed<HighchartsOptions>(() => {
+    const p = this.themeService.isDark() ? PALETA_OSCURA : PALETA_CLARA;
+    const datos = this.reporteService.avanceMensualPorCliente();
+    const clientes = Object.keys(datos);
+    const categorias = clientes[0]
+      ? datos[clientes[0]].map(d => d.etiqueta)
+      : [];
+    const series = clientes
+      .filter(c => (datos[c]?.length ?? 0) > 0)
+      .map((c, i) => ({
+        name: c,
+        data: datos[c].map(d => d.completadas),
+        color: COLORES_SERIES[i % COLORES_SERIES.length],
+      }));
+
+    return {
+      chart: {
+        type: 'column',
+        backgroundColor: p.fondo,
+        height: 300,
+        style: {fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif"},
+      },
+      title: {text: undefined},
+      credits: {enabled: false},
+      legend: {enabled: true, itemStyle: {color: p.texto}, itemHoverStyle: {color: p.texto}},
+      tooltip: {shared: true},
+      xAxis: {
+        categories: categorias,
+        labels: {style: {color: p.suave}},
+        lineColor: p.grid,
+        tickColor: p.grid,
+      },
+      yAxis: {
+        title: {text: undefined},
+        labels: {style: {color: p.suave}},
+        gridLineColor: p.grid,
+      },
+      plotOptions: {column: {borderRadius: 3, pointPadding: 0.15, groupPadding: 0.1}},
+      series: series as SeriesOptionsType[],
+    };
+  });
 
   constructor() {
     afterNextRender(() => {

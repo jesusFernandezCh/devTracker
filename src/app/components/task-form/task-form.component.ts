@@ -3,6 +3,7 @@ import {ReactiveFormsModule, NonNullableFormBuilder, Validators} from '@angular/
 import {ActivatedRoute, Router} from '@angular/router';
 import {PlanningService} from '../../services/planning.service';
 import {ProyectoService} from '../../services/proyecto.service';
+import {NotificacionService} from '../../services/notificacion.service';
 import {PlanningTask} from '../../models/planning.model';
 import {CommonModule} from '@angular/common';
 
@@ -106,6 +107,7 @@ export class TaskFormComponent {
   private readonly route = inject(ActivatedRoute);
   protected readonly planningService = inject(PlanningService);
   protected readonly proyectoService = inject(ProyectoService);
+  private readonly notificacionService = inject(NotificacionService);
 
   protected editTaskId = this.route.snapshot.paramMap.get('id') ?? null;
 
@@ -169,6 +171,7 @@ export class TaskFormComponent {
           t.id === this.editTaskId ? {...t, tarea: values.nombre, complejidad: values.complejidad as PlanningTask['complejidad']} : t,
         ),
       });
+      this.notificacionService.notificar({tipo: 'info', descripcion: `Tarea «${values.nombre}» actualizada`, url: '/'});
     } else {
       const nuevaTarea: PlanningTask = {
         id: crypto.randomUUID(),
@@ -177,6 +180,7 @@ export class TaskFormComponent {
         completada: false,
       };
       this.planningService.agregarTarea(values.planningId, nuevaTarea);
+      this.notificacionService.notificar({tipo: 'exito', descripcion: `Tarea «${values.nombre}» creada`, url: '/'});
     }
 
     this.router.navigate(['/']);

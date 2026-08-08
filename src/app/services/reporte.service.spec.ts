@@ -188,4 +188,117 @@ describe('ReporteService', () => {
     expect(urgenciaDe(60)).toBe('normal');
     expect(diasRestantes('2099-01-01')).toBeGreaterThan(0);
   });
+
+  function configurar(data: Record<string, string>): ReporteService {
+    localStorage.clear();
+    for (const [k, v] of Object.entries(data)) localStorage.setItem(k, v);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({providers: [ReporteService]});
+    return TestBed.inject(ReporteService);
+  }
+
+  it('avancePorCliente agrupa proyectos y tareas por cliente', () => {
+    const res = service.avancePorCliente();
+    const clienteA = res.find(c => c.cliente === 'Cliente A')!;
+    const clienteB = res.find(c => c.cliente === 'Cliente B')!;
+    expect(clienteA.proyectos).toBe(1);
+    expect(clienteA.tareas).toBe(3);
+    expect(clienteA.completadas).toBe(1);
+    expect(clienteA.pendientes).toBe(2);
+    expect(clienteA.porcentaje).toBe(33);
+    expect(clienteB.porcentaje).toBe(100);
+  });
+
+  it('avancePorCliente usa "Sin cliente" cuando el proyecto no tiene cliente', () => {
+    const s = configurar({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify([
+        {
+          id: 'p3', nombre: 'Sin cliente', descripcion: '', cliente: '', status: 'Activo',
+          prioridad: 'baja', columnaId: 'desarrollo', fechaDesde: '2026-01-01', fechaHasta: '2026-12-31',
+          documentacion: '', createdAt: '',
+        },
+      ]),
+      'devtracker-planning': JSON.stringify([
+        {
+          id: 'pl9', fecha: '2026-03-01', proyectoId: 'p3', descripcion: '', createdAt: '',
+          tareas: [{id: 't9', tarea: 'x', complejidad: 'Simple', completada: true}],
+        },
+      ]),
+    });
+    const res = s.avancePorCliente();
+    expect(res[0].cliente).toBe('Sin cliente');
+    expect(res[0].porcentaje).toBe(100);
+  });
+
+  it('avanceMensualPorCliente devuelve series mensuales por cliente', () => {
+    const res = service.avanceMensualPorCliente();
+    expect(Object.keys(res)).toContain('Cliente A');
+    expect(Object.keys(res)).toContain('Cliente B');
+    const marzoA = res['Cliente A'].find(d => d.mes === '2026-03')!;
+    const marzoB = res['Cliente B'].find(d => d.mes === '2026-03')!;
+    expect(marzoA.completadas).toBe(1);
+    expect(marzoA.pendientes).toBe(2);
+    expect(marzoB.completadas).toBe(2);
+    expect(marzoB.pendientes).toBe(0);
+    expect(res['Cliente A'].length).toBe(res['Cliente B'].length);
+  });
+
+  it('usuariosPorTipo cuenta usuarios por rol y resuelve el nombre', () => {
+    const s = configurar({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify(proyectos),
+      'devtracker-planning': JSON.stringify(plannings),
+      'devtracker-usuarios': JSON.stringify([
+        {id: 'u1', usuario: 'a', correo: 'a@a.com', clave: 'x', tipo: 'administrador'},
+        {id: 'u2', usuario: 'b', correo: 'b@b.com', clave: 'x', tipo: 'administrador'},
+        {id: 'u3', usuario: 'c', correo: 'c@c.com', clave: 'x', tipo: 'qa'},
+      ]),
+    });
+    const res = s.usuariosPorTipo();
+    const admin = res.find(r => r.rol === 'administrador')!;
+    expect(admin.cantidad).toBe(2);
+    expect(admin.nombre).toBe('Administrador');
+    const qa = res.find(r => r.rol === 'qa')!;
+    expect(qa.cantidad).toBe(1);
+    expect(res[0].cantidad).toBe(2);
+  });
+
+  it('productividadPorUsuario agrupa por usuarioId y marca "Sin asignar"', () => {
+    const s = configurar({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify(proyectos),
+      'devtracker-planning': JSON.stringify([
+        {
+          id: 'pl1', fecha: '2026-03-01', proyectoId: 'p1', descripcion: '', createdAt: '',
+          usuarioId: 'u1',
+          tareas: [
+            {id: 't1', tarea: 'a', complejidad: 'Simple', completada: true},
+            {id: 't2', tarea: 'b', complejidad: 'Media', completada: false},
+          ],
+        },
+        {
+          id: 'pl2', fecha: '2026-03-10', proyectoId: 'p2', descripcion: '', createdAt: '',
+          tareas: [
+            {id: 't3', tarea: 'c', complejidad: 'Simple', completada: true},
+          ],
+        },
+      ]),
+      'devtracker-usuarios': JSON.stringify([
+        {id: 'u1', usuario: 'Ana', correo: 'ana@a.com', clave: 'x', tipo: 'administrador'},
+      ]),
+    });
+    const res = s.productividadPorUsuario();
+    const ana = res.find(r => r.usuarioId === 'u1')!;
+    expect(ana.nombre).toBe('Ana');
+    expect(ana.plannings).toBe(1);
+    expect(ana.tareas).toBe(2);
+    expect(ana.completadas).toBe(1);
+    expect(ana.pendientes).toBe(1);
+    expect(ana.porcentaje).toBe(50);
+    expect(ana.puntos).toBe(4);
+    const sinAsignar = res.find(r => r.usuarioId === '')!;
+    expect(sinAsignar.nombre).toBe('Sin asignar');
+    expect(sinAsignar.tareas).toBe(1);
+  });
 });

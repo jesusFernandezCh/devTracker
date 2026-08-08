@@ -1,5 +1,6 @@
-import {Injectable, signal} from '@angular/core';
+import {Injectable, signal, inject} from '@angular/core';
 import {Planning, PlanningTask} from '../models/planning.model';
+import {AuthService} from './auth.service';
 
 const STORAGE_KEY = 'devtracker-planning';
 
@@ -14,6 +15,7 @@ function fechaHoyLocal(): string {
 export class PlanningService {
   private readonly _plannings = signal<Planning[]>([]);
   readonly plannings = this._plannings.asReadonly();
+  private readonly authService = inject(AuthService);
 
   constructor() {
     this._cargar();
@@ -27,6 +29,7 @@ export class PlanningService {
     const planning: Planning = {
       ...data,
       tareas: data.tareas ?? [],
+      usuarioId: data.usuarioId ?? this.authService.currentUser()?.id,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };

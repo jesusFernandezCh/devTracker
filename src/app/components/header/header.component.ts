@@ -4,12 +4,13 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {ThemeService} from '../../services/theme.service';
 import {AuthService} from '../../services/auth.service';
+import {NotificacionesPanelComponent} from '../notificaciones-panel/notificaciones-panel.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, NotificacionesPanelComponent],
   template: `
     <header style="background-color: var(--color-surface); border-color: var(--color-gray-200);" class="border-b shadow-sm">
       <div class="container">
@@ -20,6 +21,8 @@ import {AuthService} from '../../services/auth.service';
             </span>
           </div>
           <div class="flex items-center space-x-1 sm:space-x-2">
+            <app-notificaciones-panel />
+
             <button mat-icon-button (click)="themeService.toggle()"
                     style="color: var(--color-gray-500);"
                     [attr.aria-label]="themeService.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'">

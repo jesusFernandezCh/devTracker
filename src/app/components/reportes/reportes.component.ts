@@ -7,7 +7,7 @@ import {ColumnService} from '../../services/column.service';
 import {ThemeService} from '../../services/theme.service';
 import {estimacionTotal} from '../../utils/estimacion';
 
-type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'graficas';
+type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'clientes' | 'usuarios' | 'graficas';
 type GraficaId = 'cerradas' | 'balance' | 'puntos' | 'produccion' | 'activos';
 
 const PAGINA_SIZE = 10;
@@ -389,6 +389,126 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
           </div>
         }
 
+        @case ('clientes') {
+          @let porCliente = reporteService.avancePorCliente();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Avance por cliente</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarClientes()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+
+          <div class="rounded-xl border shadow-sm overflow-hidden mb-6" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[700px] text-sm">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                    <th class="th-cell">Cliente</th>
+                    <th class="th-cell">Proyectos</th>
+                    <th class="th-cell">Tareas</th>
+                    <th class="th-cell">Completadas</th>
+                    <th class="th-cell">Pendientes</th>
+                    <th class="th-cell">Avance</th>
+                  </tr>
+                </thead>
+                <tbody style="border-top: 1px solid var(--color-gray-100);">
+                  @for (c of porCliente; track c.cliente) {
+                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ c.cliente }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.proyectos }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.tareas }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.completadas }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.pendientes }}</td>
+                      <td class="td-cell">
+                        <span class="font-semibold" [style.color]="colorPorcentaje(c.porcentaje)">{{ c.porcentaje }}%</span>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="6" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rounded-xl border shadow-sm p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <h3 class="text-sm font-semibold mb-3" style="color: var(--color-gray-900);">Tareas completadas por mes y cliente</h3>
+            @if (hayMensualCliente()) {
+              <highcharts-chart [options]="graficaMensualCliente()" class="grafica"></highcharts-chart>
+            } @else {
+              <div class="rounded-xl border p-10 text-center text-sm" style="background-color: var(--color-surface); border-color: var(--color-gray-200); color: var(--color-gray-400);">
+                No hay datos mensuales por cliente para los filtros aplicados.
+              </div>
+            }
+          </div>
+        }
+
+        @case ('usuarios') {
+          @let porUsuario = reporteService.productividadPorUsuario();
+          @let porTipo = reporteService.usuariosPorTipo();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Productividad por usuario</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarUsuarios()" class="btn-accion">Exportar CSV</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+
+          <div class="rounded-xl border shadow-sm overflow-hidden mb-6" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[700px] text-sm">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                    <th class="th-cell">Usuario</th>
+                    <th class="th-cell">Plannings</th>
+                    <th class="th-cell">Tareas</th>
+                    <th class="th-cell">Completadas</th>
+                    <th class="th-cell">Pendientes</th>
+                    <th class="th-cell">Story points</th>
+                    <th class="th-cell">Avance</th>
+                  </tr>
+                </thead>
+                <tbody style="border-top: 1px solid var(--color-gray-100);">
+                  @for (u of porUsuario; track u.usuarioId) {
+                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ u.nombre }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.plannings }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.tareas }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.completadas }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.pendientes }}</td>
+                      <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ u.puntos }}</td>
+                      <td class="td-cell">
+                        <span class="font-semibold" [style.color]="colorPorcentaje(u.porcentaje)">{{ u.porcentaje }}%</span>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="7" class="empty-row">No hay plannings para los filtros aplicados.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rounded-xl border shadow-sm p-5" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <h3 class="text-sm font-semibold mb-3" style="color: var(--color-gray-900);">Usuarios por tipo</h3>
+            @if (porTipo.length > 0) {
+              <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+                @for (t of porTipo; track t.rol) {
+                  <div class="flex items-center justify-between gap-3 rounded-lg border p-3" style="border-color: var(--color-gray-200); background-color: var(--color-gray-50);">
+                    <span class="text-sm font-medium" style="color: var(--color-gray-800);">{{ t.nombre }}</span>
+                    <span class="badge" style="background-color: var(--color-indigo-100); color: var(--color-indigo-700);">{{ t.cantidad }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="rounded-xl border p-10 text-center text-sm" style="background-color: var(--color-surface); border-color: var(--color-gray-200); color: var(--color-gray-400);">
+                Sin usuarios registrados.
+              </div>
+            }
+          </div>
+        }
+
         @case ('graficas') {
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Gráficas</h2>
@@ -492,6 +612,8 @@ export class ReportesComponent {
     {id: 'vencimientos', label: 'Vencimientos'},
     {id: 'pipeline', label: 'Pipeline'},
     {id: 'calidad', label: 'Calidad'},
+    {id: 'clientes', label: 'Clientes'},
+    {id: 'usuarios', label: 'Usuarios'},
     {id: 'graficas', label: 'Gráficas'},
   ];
 
@@ -563,6 +685,32 @@ export class ReportesComponent {
   }
 
   protected readonly hayDatosMensuales = computed(() => this.reporteService.datosMensuales().length > 0);
+
+  protected readonly hayMensualCliente = computed(() => {
+    const datos = this.reporteService.avanceMensualPorCliente();
+    return Object.keys(datos).length > 0 && (Object.values(datos)[0]?.length ?? 0) > 0;
+  });
+
+  protected readonly graficaMensualCliente = computed<HighchartsOptions>(() => {
+    const p = this.themeService.isDark() ? PALETA_OSCURA : PALETA_CLARA;
+    const datos = this.reporteService.avanceMensualPorCliente();
+    const clientes = Object.keys(datos);
+    const categorias = clientes[0] ? datos[clientes[0]].map(d => d.etiqueta) : [];
+    const colores = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '#0ea5e9', '#10b981', '#f43f5e'];
+    const series = clientes
+      .filter(c => (datos[c]?.length ?? 0) > 0)
+      .map((c, i) => ({
+        nombre: c,
+        datos: datos[c].map(d => d.completadas),
+        color: colores[i % colores.length],
+      }));
+    return this.construirOpcionesGrafica({
+      titulo: 'Tareas completadas por mes y cliente',
+      tipo: 'column',
+      categorias,
+      series,
+    });
+  });
 
   protected readonly graficas = computed<Record<GraficaId, HighchartsOptions>>(() => {
     const datos = this.reporteService.datosMensuales();
@@ -734,6 +882,35 @@ export class ReportesComponent {
     }));
     this.reporteService.exportarCSV('reporte-calidad', filas, [
       'Ambiente', 'Total', 'Completadas', 'Pendientes', 'Porcentaje',
+    ]);
+  }
+
+  protected exportarClientes(): void {
+    const filas = this.reporteService.avancePorCliente().map(c => ({
+      Cliente: c.cliente,
+      Proyectos: c.proyectos,
+      Tareas: c.tareas,
+      Completadas: c.completadas,
+      Pendientes: c.pendientes,
+      Porcentaje: `${c.porcentaje}%`,
+    }));
+    this.reporteService.exportarCSV('reporte-clientes', filas, [
+      'Cliente', 'Proyectos', 'Tareas', 'Completadas', 'Pendientes', 'Porcentaje',
+    ]);
+  }
+
+  protected exportarUsuarios(): void {
+    const filas = this.reporteService.productividadPorUsuario().map(u => ({
+      Usuario: u.nombre,
+      Plannings: u.plannings,
+      Tareas: u.tareas,
+      Completadas: u.completadas,
+      Pendientes: u.pendientes,
+      'Story points': u.puntos,
+      Porcentaje: `${u.porcentaje}%`,
+    }));
+    this.reporteService.exportarCSV('reporte-usuarios', filas, [
+      'Usuario', 'Plannings', 'Tareas', 'Completadas', 'Pendientes', 'Story points', 'Porcentaje',
     ]);
   }
 }

@@ -2,6 +2,8 @@ import {Injectable, computed, inject, signal} from '@angular/core';
 import {ProyectoService} from './proyecto.service';
 import {PlanningService} from './planning.service';
 import {ColumnService} from './column.service';
+import {UsuarioService} from './usuario.service';
+import {RolService} from './rol.service';
 import {Proyecto} from '../models/proyecto.model';
 import {Planning, PlanningTask} from '../models/planning.model';
 import {Columna} from '../models/columna.model';
@@ -72,6 +74,39 @@ export interface DatoMensual {
   proyectosActivos: number;
 }
 
+export interface AvanceClienteReporte {
+  cliente: string;
+  proyectos: number;
+  tareas: number;
+  completadas: number;
+  pendientes: number;
+  porcentaje: number;
+}
+
+export interface AvanceMensualCliente {
+  mes: string;
+  etiqueta: string;
+  completadas: number;
+  pendientes: number;
+}
+
+export interface UsuarioPorTipoReporte {
+  rol: string;
+  nombre: string;
+  cantidad: number;
+}
+
+export interface ProductividadUsuarioReporte {
+  usuarioId: string;
+  nombre: string;
+  plannings: number;
+  tareas: number;
+  completadas: number;
+  pendientes: number;
+  puntos: number;
+  porcentaje: number;
+}
+
 const VALORES_COMPLEJIDAD: Record<string, number> = {Simple: 1, Media: 3, Compleja: 5};
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -115,6 +150,8 @@ export class ReporteService {
   private readonly proyectoService = inject(ProyectoService);
   private readonly planningService = inject(PlanningService);
   private readonly columnService = inject(ColumnService);
+  private readonly usuarioService = inject(UsuarioService);
+  private readonly rolService = inject(RolService);
 
   private readonly proyectosFiltrados = computed(() => {
     const desde = this.fechaDesde();
@@ -288,6 +325,118 @@ export class ReporteService {
       actual = siguienteMes(actual);
     }
     return resultado;
+  });
+
+  readonly avancePorCliente = computed<AvanceClienteReporte[]>(() => {
+    const grupos = new Map<string, Proyecto[]>();
+    for (const p of this.proyectosFiltrados()) {
+      const cliente = p.cliente?.trim() || 'Sin cliente';
+      grupos.set(cliente, [...(grupos.get(cliente) ?? []), p]);
+    }
+    return [...grupos.entries()]
+      .map(([cliente, proyectos]) => {
+        const tareas = proyectos.flatMap(p => this.planningsDe(p.id)).flatMap(pl => pl.tareas);
+        const completadas = tareas.filter(t => t.completada).length;
+        return {
+          cliente,
+          proyectos: proyectos.length,
+          tareas: tareas.length,
+          completadas,
+          pendientes: tareas.length - completadas,
+          porcentaje: tareas.length > 0 ? Math.round((completadas / tareas.length) * 100) : 0,
+        };
+      })
+      .sort((a, b) => b.porcentaje - a.porcentaje);
+  });
+
+  readonly avanceMensualPorCliente = computed<Record<string, AvanceMensualCliente[]>>(() => {
+    const proyectos = this.proyectosFiltrados();
+    const porCliente = new Map<string, Proyecto[]>();
+    for (const p of proyectos) {
+      const cliente = p.cliente?.trim() || 'Sin cliente';
+      porCliente.set(cliente, [...(porCliente.get(cliente) ?? []), p]);
+    }
+
+    const meses = new Set<string>();
+    for (const p of proyectos) {
+      if (p.fechaDesde) {
+        const m = mesDe(p.fechaDesde);
+        if (m) meses.add(m);
+      }
+      if (p.fechaHasta) {
+        const m = mesDe(p.fechaHasta);
+        if (m) meses.add(m);
+      }
+      for (const pl of this.planningsDe(p.id)) {
+        const m = mesDe(pl.fecha);
+        if (m) meses.add(m);
+      }
+    }
+    if (meses.size === 0) return {};
+
+    const ordenados = [...meses].sort();
+    const hasta = ordenados[ordenados.length - 1];
+    const resultado: Record<string, AvanceMensualCliente[]> = {};
+
+    let actual = ordenados[0];
+    while (actual <= hasta) {
+      for (const [cliente, ps] of porCliente) {
+        const tareasMes = ps
+          .flatMap(p => this.planningsDe(p.id))
+          .filter(pl => mesDe(pl.fecha) === actual)
+          .flatMap(pl => pl.tareas);
+        const completadas = tareasMes.filter(t => t.completada).length;
+        (resultado[cliente] ??= []).push({
+          mes: actual,
+          etiqueta: etiquetaDe(actual),
+          completadas,
+          pendientes: tareasMes.length - completadas,
+        });
+      }
+      actual = siguienteMes(actual);
+    }
+    return resultado;
+  });
+
+  readonly usuariosPorTipo = computed<UsuarioPorTipoReporte[]>(() => {
+    const conteo = new Map<string, number>();
+    for (const u of this.usuarioService.usuarios()) {
+      conteo.set(u.tipo, (conteo.get(u.tipo) ?? 0) + 1);
+    }
+    return [...conteo.entries()]
+      .map(([tipo, cantidad]) => ({rol: tipo, nombre: this.rolService.nombreDe(tipo), cantidad}))
+      .sort((a, b) => b.cantidad - a.cantidad);
+  });
+
+  readonly productividadPorUsuario = computed<ProductividadUsuarioReporte[]>(() => {
+    const proyectosVisibles = this.proyectosFiltrados();
+    const plannings = this.planningService.plannings().filter(pl =>
+      proyectosVisibles.some(p => p.id === pl.proyectoId),
+    );
+
+    const grupos = new Map<string, Planning[]>();
+    for (const pl of plannings) {
+      const clave = pl.usuarioId ?? '';
+      grupos.set(clave, [...(grupos.get(clave) ?? []), pl]);
+    }
+
+    return [...grupos.entries()]
+      .map(([usuarioId, pls]) => {
+        const tareas = pls.flatMap(pl => pl.tareas);
+        const completadas = tareas.filter(t => t.completada).length;
+        const usuario = this.usuarioService.usuarioPorId(usuarioId);
+        return {
+          usuarioId,
+          nombre: usuario?.usuario ?? 'Sin asignar',
+          plannings: pls.length,
+          tareas: tareas.length,
+          completadas,
+          pendientes: tareas.length - completadas,
+          puntos: pls.reduce((s, pl) => s + estimacionTotal(pl.tareas), 0),
+          porcentaje: tareas.length > 0 ? Math.round((completadas / tareas.length) * 100) : 0,
+        };
+      })
+      .sort((a, b) => b.tareas - a.tareas);
   });
 
   limpiarFiltros(): void {

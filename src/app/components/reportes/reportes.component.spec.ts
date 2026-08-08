@@ -95,4 +95,32 @@ describe('ReportesComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.grafica').length).toBe(0);
     expect(fixture.nativeElement.textContent).toContain('No hay datos mensuales');
   });
+
+  it('muestra las pestañas Clientes y Usuarios', () => {
+    const labels = [...fixture.nativeElement.querySelectorAll('button')].map((b: HTMLButtonElement) => b.textContent!.trim());
+    expect(labels).toContain('Clientes');
+    expect(labels).toContain('Usuarios');
+  });
+
+  it('la pestaña Clientes muestra la tabla de avance por cliente', () => {
+    const boton = [...fixture.nativeElement.querySelectorAll('button')]
+      .find((b: HTMLButtonElement) => b.textContent!.trim() === 'Clientes');
+    (boton as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Avance por cliente');
+    expect(fixture.nativeElement.textContent).toContain('Cliente A');
+    expect(fixture.nativeElement.textContent).toContain('Cliente B');
+  });
+
+  it('la pestaña Usuarios muestra la productividad por usuario', () => {
+    (component as unknown as {reporteService: {proyectoId: {set: (v: string) => void}}})
+      .reporteService.proyectoId.set('p1');
+    fixture.detectChanges();
+    const boton = [...fixture.nativeElement.querySelectorAll('button')]
+      .find((b: HTMLButtonElement) => b.textContent!.trim() === 'Usuarios');
+    (boton as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Productividad por usuario');
+    expect(fixture.nativeElement.textContent).toContain('Sin asignar');
+  });
 });

@@ -116,4 +116,44 @@ describe('DashboardComponent', () => {
     expect(g.series[0].data).toEqual([50]);
     expect(g.series[0].color).toBe('var(--color-amber-500)');
   });
+
+  it('oculta las secciones de administración sin sesión', () => {
+    configurarCon({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify(proyectos),
+      'devtracker-planning': JSON.stringify(plannings),
+    });
+    expect(fixture.nativeElement.querySelectorAll('.db-tabla').length).toBe(0);
+    expect(fixture.nativeElement.textContent).not.toContain('Avance general por cliente');
+  });
+
+  it('muestra las secciones de administración para super-administrador', () => {
+    configurarCon({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify(proyectos),
+      'devtracker-planning': JSON.stringify(plannings),
+      'devtracker-usuarios': JSON.stringify([
+        {id: 'super-admin', usuario: 'admin', correo: 'admin@devtracker.app', clave: 'x', tipo: 'super-administrador'},
+      ]),
+      'devtracker-session': JSON.stringify('super-admin'),
+    });
+    expect(fixture.nativeElement.textContent).toContain('Avance general por cliente');
+    expect(fixture.nativeElement.textContent).toContain('Avance mensual por cliente');
+    expect(fixture.nativeElement.textContent).toContain('Usuarios por tipo');
+    expect(fixture.nativeElement.textContent).toContain('Plannings y tareas por usuario');
+  });
+
+  it('muestra las secciones de administración para administrador', () => {
+    configurarCon({
+      'dev-tracker-columns': JSON.stringify(columnas),
+      'devtracker-proyectos': JSON.stringify(proyectos),
+      'devtracker-planning': JSON.stringify(plannings),
+      'devtracker-usuarios': JSON.stringify([
+        {id: 'u1', usuario: 'ana', correo: 'ana@correo.com', clave: 'x', tipo: 'administrador'},
+      ]),
+      'devtracker-session': JSON.stringify('u1'),
+    });
+    expect(fixture.nativeElement.querySelectorAll('.db-tabla').length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Cliente A');
+  });
 });

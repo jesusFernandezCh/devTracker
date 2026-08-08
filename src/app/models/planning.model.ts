@@ -12,4 +12,6 @@ export interface Planning {
   descripcion: string;
   tareas: PlanningTask[];
   createdAt: string;
+  /** Id del usuario que creó el planning. */
+  usuarioId?: string;
 }

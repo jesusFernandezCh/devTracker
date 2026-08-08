@@ -1,6 +1,8 @@
-import {Injectable, signal} from '@angular/core';
+import {Injectable, signal, inject} from '@angular/core';
 import {Proyecto} from '../models/proyecto.model';
 import {PROYECTOS_DEMO} from '../data/demo-proyectos';
+import {AuthService} from './auth.service';
+import {EquipoService} from './equipo.service';
 
 const STORAGE_KEY = 'devtracker-proyectos';
 
@@ -10,6 +12,8 @@ const COLUMNA_POR_DEFECTO = 'desarrollo';
 export class ProyectoService {
   private readonly _proyectos = signal<Proyecto[]>([]);
   readonly proyectos = this._proyectos.asReadonly();
+  private readonly authService = inject(AuthService);
+  private readonly equipoService = inject(EquipoService);
 
   constructor() {
     this._cargar();
@@ -30,6 +34,8 @@ export class ProyectoService {
     };
     this._proyectos.update((list) => [...list, proyecto]);
     this._guardar();
+    const creadorId = this.authService.currentUser()?.id;
+    if (creadorId) this.equipoService.asignar(proyecto.id, creadorId);
   }
 
   actualizar(id: string, data: Partial<Omit<Proyecto, 'id' | 'createdAt'>>): void {

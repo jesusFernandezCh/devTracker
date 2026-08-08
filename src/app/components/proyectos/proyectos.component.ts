@@ -7,6 +7,7 @@ import {ColumnService} from '../../services/column.service';
 import {EquipoService} from '../../services/equipo.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {AuthService} from '../../services/auth.service';
+import {NotificacionService} from '../../services/notificacion.service';
 import {Proyecto, ProyectoConDatos} from '../../models/proyecto.model';
 import {Usuario} from '../../models/usuario.model';
 import {statusColor, prioridadColor, estimacionTotal} from '../../utils/estimacion';
@@ -403,6 +404,7 @@ export class ProyectosComponent {
   private equipoService = inject(EquipoService);
   private usuarioService = inject(UsuarioService);
   private authService = inject(AuthService);
+  private notificacionService = inject(NotificacionService);
   private router = inject(Router);
 
   proyectos = this.proyectoService.proyectos;
@@ -532,8 +534,10 @@ export class ProyectosComponent {
   onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): void {
     if (this.editandoProyecto) {
       this.proyectoService.actualizar(this.editandoProyecto.id, data);
+      this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
     } else {
       this.proyectoService.crear(data);
+      this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
     }
     this.cerrarForm();
   }
@@ -544,7 +548,9 @@ export class ProyectosComponent {
 
   ejecutarEliminar(): void {
     if (this.deleteConfirmId) {
+      const nombre = this.proyectoService.proyectoPorId(this.deleteConfirmId)?.nombre;
       this.proyectoService.eliminar(this.deleteConfirmId);
+      this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
     }
     this.deleteConfirmId = null;
   }

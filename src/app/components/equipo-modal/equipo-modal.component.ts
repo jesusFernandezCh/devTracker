@@ -4,6 +4,7 @@ import {Proyecto} from '../../models/proyecto.model';
 import {UsuarioService} from '../../services/usuario.service';
 import {EquipoService} from '../../services/equipo.service';
 import {RolService} from '../../services/rol.service';
+import {NotificacionService} from '../../services/notificacion.service';
 import {iniciales, tipoColor} from '../../utils/helpers';
 
 @Component({
@@ -118,6 +119,7 @@ export class EquipoModalComponent {
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly equipoService = inject(EquipoService);
   protected readonly rolService = inject(RolService);
+  private readonly notificacionService = inject(NotificacionService);
   protected readonly iniciales = iniciales;
   protected readonly tipoColor = tipoColor;
 
@@ -141,14 +143,27 @@ export class EquipoModalComponent {
   }
 
   protected toggle(usuarioId: string): void {
-    if (this.estaAsignado(usuarioId)) {
-      this.equipoService.quitar(this.proyecto().id, usuarioId);
-    } else {
+    const nombre = this.usuarioService.usuarioPorId(usuarioId)?.usuario ?? usuarioId;
+    const asignando = !this.estaAsignado(usuarioId);
+    if (asignando) {
       this.equipoService.asignar(this.proyecto().id, usuarioId);
+    } else {
+      this.equipoService.quitar(this.proyecto().id, usuarioId);
     }
+    this.notificacionService.notificar({
+      tipo: 'info',
+      descripcion: `«${nombre}» ${asignando ? 'agregado al' : 'quitado del'} equipo de «${this.proyecto().nombre}»`,
+      url: '/proyectos',
+    });
   }
 
   protected quitar(usuarioId: string): void {
+    const nombre = this.usuarioService.usuarioPorId(usuarioId)?.usuario ?? usuarioId;
     this.equipoService.quitar(this.proyecto().id, usuarioId);
+    this.notificacionService.notificar({
+      tipo: 'info',
+      descripcion: `«${nombre}» quitado del equipo de «${this.proyecto().nombre}»`,
+      url: '/proyectos',
+    });
   }
 }

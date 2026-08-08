@@ -4,6 +4,10 @@ import {FormsModule} from '@angular/forms';
 import {ColumnService} from '../../services/column.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {PlanningService} from '../../services/planning.service';
+import {NotificacionService} from '../../services/notificacion.service';
+import {EquipoService} from '../../services/equipo.service';
+import {AuthService} from '../../services/auth.service';
+import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {ProyectoConDatos} from '../../models/proyecto.model';
 import {PlanningTask} from '../../models/planning.model';
 import {Columna} from '../../models/columna.model';
@@ -145,10 +149,13 @@ export class BoardComponent {
   protected readonly columnService = inject(ColumnService);
   protected readonly proyectoService = inject(ProyectoService);
   protected readonly planningService = inject(PlanningService);
+  private readonly notificacionService = inject(NotificacionService);
+  private readonly equipoService = inject(EquipoService);
+  private readonly authService = inject(AuthService);
 
   protected readonly proyectosPorColumna = computed(() => {
     const columnas = this.columnService.columnas();
-    const proyectos = this.proyectoService.proyectos();
+    const proyectos = this.proyectosVisibles();
     const allPlannings = this.planningService.plannings();
     const map = new Map<string, ProyectoConDatos[]>();
 
@@ -165,6 +172,16 @@ export class BoardComponent {
       );
     }
     return map;
+  });
+
+  protected readonly proyectosVisibles = computed(() => {
+    const user = this.authService.currentUser();
+    if (!user) return [];
+    const verTodos = user.tipo === ROL_SUPER_ADMIN_ID || user.tipo === 'administrador';
+    if (verTodos) return this.proyectoService.proyectos();
+    return this.proyectoService.proyectos().filter((p) =>
+      this.equipoService.proyectosDe(user.id).includes(p.id),
+    );
   });
 
   protected puedeIzquierda = signal(false);
@@ -239,13 +256,26 @@ export class BoardComponent {
   }
 
   onMoverProyecto(event: { proyectoId: string; newStatus: string }): void {
+    const proyecto = this.proyectoService.proyectoPorId(event.proyectoId);
+    const columna = this.columnService.columnas().find((c) => c.id === event.newStatus)?.nombre ?? event.newStatus;
     this.proyectoService.actualizarColumna(event.proyectoId, event.newStatus);
+    this.notificacionService.notificar({
+      tipo: 'info',
+      descripcion: `«${proyecto?.nombre ?? event.proyectoId}» movido a ${columna}`,
+      url: '/',
+    });
   }
 
   onToggleCompletada(tareaId: string): void {
     for (const planning of this.planningService.plannings()) {
-      if (planning.tareas.some((t: PlanningTask) => t.id === tareaId)) {
+      const tarea = planning.tareas.find((t: PlanningTask) => t.id === tareaId);
+      if (tarea) {
         this.planningService.toggleCompletada(planning.id, tareaId);
+        this.notificacionService.notificar({
+          tipo: tarea.completada ? 'info' : 'exito',
+          descripcion: `Tarea «${tarea.tarea}» ${tarea.completada ? 'marcada como pendiente' : 'completada'}`,
+          url: '/',
+        });
         break;
       }
     }
@@ -257,9 +287,11 @@ export class BoardComponent {
 
   onEliminarProyecto(id: string): void {
     if (confirm('¿Estás seguro de eliminar este proyecto? Se eliminarán también sus planificaciones.')) {
+      const nombre = this.proyectoService.proyectoPorId(id)?.nombre;
       const plannings = this.planningService.plannings().filter(p => p.proyectoId === id);
       plannings.forEach(p => this.planningService.eliminar(p.id));
       this.proyectoService.eliminar(id);
+      this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? id}» eliminado`});
     }
   }
 
@@ -276,6 +308,7 @@ export class BoardComponent {
         });
     }
     this.columnService.eliminarColumna(col.id);
+    this.notificacionService.notificar({tipo: 'alerta', descripcion: `Columna «${col.nombre}» eliminada`});
   }
 
   nuevaTarea(): void {

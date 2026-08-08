@@ -1,6 +1,7 @@
 import {Injectable, signal, computed, inject} from '@angular/core';
 import {Router} from '@angular/router';
 import {UsuarioService} from './usuario.service';
+import {NotificacionService} from './notificacion.service';
 import {Usuario} from '../models/usuario.model';
 import {verificarClave} from '../utils/cripto';
 
@@ -16,6 +17,7 @@ export class AuthService {
   readonly isLoggedIn = computed(() => this._currentUserId() !== null);
   private readonly router = inject(Router);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly notificacionService = inject(NotificacionService);
 
   constructor() { this._cargarSesion(); }
 
@@ -56,6 +58,7 @@ export class AuthService {
   private _iniciarSesion(usuario: Usuario): void {
     this._currentUserId.set(usuario.id);
     localStorage.setItem(SESSION_KEY, JSON.stringify(usuario.id));
+    this.notificacionService.notificar({tipo: 'info', descripcion: `Sesión iniciada como «${usuario.usuario}»`, url: '/'});
     this.router.navigate(['/']);
   }
 
