@@ -1,8 +1,8 @@
-import {Component, inject, ChangeDetectionStrategy, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
-import {Router} from '@angular/router';
-import {AuthService} from '../../services/auth.service';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +13,8 @@ import {AuthService} from '../../services/auth.service';
     <div class="min-h-screen flex" style="background-color: var(--color-gray-50);">
       <!-- Left panel: branding -->
       <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12"
-           style="background: linear-gradient(135deg, var(--color-indigo-700), var(--color-purple-700));">
+          style="background-image: url('/images/portada.jpeg'); background-size: cover; background-position: center;">
+           
         <div class="absolute inset-0 opacity-10">
           <svg class="w-full h-full" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="50" cy="50" r="40" fill="white"/>
@@ -26,26 +27,17 @@ import {AuthService} from '../../services/auth.service';
             <rect x="250" y="250" width="70" height="70" rx="10" fill="white" opacity="0.25"/>
           </svg>
         </div>
-        <div class="relative z-10 text-center max-w-md">
-          <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm mb-8">
+        <div class="relative z-10 text-center max-w-md" style="text-shadow: 0 4px 6px rgb(0 0 0); margin-bottom: 546px;">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl text-indigo-700 backdrop-blur-sm mb-8">
             <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-3 4v6m-3-3h6"/>
             </svg>
           </div>
-          <h1 class="text-4xl font-bold text-white mb-4">DevTracker</h1>
-          <p class="text-lg text-white/80 leading-relaxed">
-            Sistema de Gestión de Desarrollos. Organiza tus proyectos, planifica tareas y da seguimiento a tu equipo de trabajo.
+          <h1 class="text-4xl font-bold text-indigo-700 mb-4">DevTracker</h1>
+          <p class="text-lg text-white leading-relaxed">
+             Sistema de Gestión de Desarrollos. Organiza tus proyectos, planifica tareas y da seguimiento a tu equipo de trabajo.
           </p>
-          <div class="flex items-center justify-center gap-4 mt-10">
-            <div class="flex -space-x-2">
-              <div class="w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center text-sm font-bold text-white bg-white/10">JD</div>
-              <div class="w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center text-sm font-bold text-white bg-white/10">MP</div>
-              <div class="w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center text-sm font-bold text-white bg-white/10">AL</div>
-              <div class="w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center text-sm font-bold text-white bg-white/10">+</div>
-            </div>
-            <span class="text-sm text-white/70">Más de 1,200 equipos activos</span>
-          </div>
-        </div>
+      </div>
       </div>
 
       <!-- Right panel: form -->
@@ -198,7 +190,7 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    const {correo, clave} = this.loginForm.getRawValue();
+    const { correo, clave } = this.loginForm.getRawValue();
 
     setTimeout(async () => {
       const ok = await this.authService.login(correo, clave);

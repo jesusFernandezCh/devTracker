@@ -869,7 +869,7 @@ export class DashboardComponent {
           innerSize: '60%',
           allowPointSelect: false,
           cursor: 'pointer',
-          dataLabels: { enabled: false },
+          dataLabels: { enabled: true },
         },
       },
       series: [
