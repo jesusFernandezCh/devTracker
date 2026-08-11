@@ -72,7 +72,8 @@
               "buildTarget": "dev-tracker:build:production"
             },
             "development": {
-              "buildTarget": "dev-tracker:build:development"
+              "buildTarget": "dev-tracker:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

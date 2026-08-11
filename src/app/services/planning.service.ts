@@ -1,8 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
 import {Planning, PlanningTask} from '../models/planning.model';
-import {AuthService} from './auth.service';
-
-const STORAGE_KEY = 'devtracker-planning';
 
 function fechaHoyLocal(): string {
   const hoy = new Date();
@@ -11,111 +10,110 @@ function fechaHoyLocal(): string {
   return `${hoy.getFullYear()}-${mes}-${dia}`;
 }
 
+interface PlanningDto {
+  id: string;
+  fecha: string;
+  proyectoId: string;
+  descripcion: string | null;
+  tareas: PlanningTask[];
+  createdAt: string;
+  usuarioId?: string | null;
+}
+
+function aPlanning(p: PlanningDto): Planning {
+  return {
+    id: p.id,
+    fecha: p.fecha,
+    proyectoId: p.proyectoId,
+    descripcion: p.descripcion ?? '',
+    tareas: (p.tareas ?? []).map(t => ({...t, completada: t.completada ?? false})),
+    createdAt: p.createdAt,
+    usuarioId: p.usuarioId ?? undefined,
+  };
+}
+
 @Injectable({providedIn: 'root'})
 export class PlanningService {
   private readonly _plannings = signal<Planning[]>([]);
   readonly plannings = this._plannings.asReadonly();
-  private readonly authService = inject(AuthService);
-
-  constructor() {
-    this._cargar();
-  }
+  private readonly http = inject(HttpClient);
 
   planningPorId(id: string): Planning | undefined {
     return this._plannings().find((p) => p.id === id);
   }
 
-  crear(data: Omit<Planning, 'id' | 'createdAt'>): void {
-    const planning: Planning = {
-      ...data,
-      tareas: data.tareas ?? [],
-      usuarioId: data.usuarioId ?? this.authService.currentUser()?.id,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    this._plannings.update((list) => [...list, planning]);
-    this._guardar();
-  }
-
-  actualizar(id: string, data: Partial<Omit<Planning, 'id' | 'createdAt'>>): void {
-    this._plannings.update((list) =>
-      list.map((p) => (p.id === id ? {...p, ...data} : p)),
-    );
-    this._guardar();
-  }
-
-  eliminar(id: string): void {
-    this._plannings.update((list) => list.filter((p) => p.id !== id));
-    this._guardar();
-  }
-
-  clonar(id: string): void {
-    const original = this._plannings().find((p) => p.id === id);
-    if (!original) return;
-    const tareas: PlanningTask[] = original.tareas.map((t) => ({
-      ...t,
-      id: crypto.randomUUID(),
-      completada: false,
-    }));
-    this.crear({
-      fecha: fechaHoyLocal(),
-      proyectoId: original.proyectoId,
-      descripcion: `${original.descripcion || 'Planning'} (copia)`,
-      tareas,
-    });
-  }
-
-  agregarTarea(planningId: string, tarea: import('../models/planning.model').PlanningTask): void {
-    this._plannings.update((list) =>
-      list.map((p) =>
-        p.id === planningId ? {...p, tareas: [...p.tareas, tarea]} : p,
-      ),
-    );
-    this._guardar();
-  }
-
-  toggleCompletada(planningId: string, tareaId: string): void {
-    this._plannings.update((list) =>
-      list.map((p) =>
-        p.id === planningId
-          ? {...p, tareas: p.tareas.map((t) => (t.id === tareaId ? {...t, completada: !t.completada} : t))}
-          : p,
-      ),
-    );
-    this._guardar();
-  }
-
-  eliminarTarea(planningId: string, tareaId: string): void {
-    this._plannings.update((list) =>
-      list.map((p) =>
-        p.id === planningId
-          ? {...p, tareas: p.tareas.filter((t) => t.id !== tareaId)}
-          : p,
-      ),
-    );
-    this._guardar();
-  }
-
-  private _guardar(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this._plannings()));
-  }
-
-  private _cargar(): void {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const data = JSON.parse(raw) as Planning[];
-        this._plannings.set(data.map(p => ({
-          ...p,
-          tareas: (p.tareas ?? []).map(t => ({...t, completada: t.completada ?? false})),
-        })));
-        this._guardar();
-        return;
-      } catch {
-        /* ignorar */
-      }
+  async cargar(): Promise<void> {
+    try {
+      const lista = await firstValueFrom(this.http.get<PlanningDto[]>('api/planings'));
+      this._plannings.set((lista ?? []).map(aPlanning));
+    } catch {
+      /* sin permiso: mantener estado actual */
     }
+  }
+
+  async crear(data: Omit<Planning, 'id' | 'createdAt'>): Promise<Planning> {
+    const creado = await firstValueFrom(
+      this.http.post<PlanningDto>('api/planings', {
+        fecha: data.fecha,
+        proyectoId: data.proyectoId,
+        descripcion: data.descripcion,
+        tareas: data.tareas ?? [],
+      }),
+    );
+    const planning = aPlanning(creado);
+    this._plannings.update((list) => [...list, planning]);
+    return planning;
+  }
+
+  async actualizar(id: string, data: Partial<Omit<Planning, 'id' | 'createdAt'>>): Promise<Planning> {
+    const actualizado = await firstValueFrom(
+      this.http.patch<PlanningDto>(`api/planings/${id}`, {
+        fecha: data.fecha,
+        descripcion: data.descripcion,
+        tareas: data.tareas,
+      }),
+    );
+    const planning = aPlanning(actualizado);
+    this._plannings.update((list) => list.map((p) => (p.id === id ? planning : p)));
+    return planning;
+  }
+
+  async eliminar(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete(`api/planings/${id}`));
+    this._plannings.update((list) => list.filter((p) => p.id !== id));
+  }
+
+  async clonar(id: string): Promise<Planning | undefined> {
+    const original = this._plannings().find((p) => p.id === id);
+    if (!original) return undefined;
+    const clonado = await firstValueFrom(
+      this.http.post<PlanningDto>(`api/planings/${id}/clonar`, {fecha: fechaHoyLocal()}),
+    );
+    const planning = aPlanning(clonado);
+    this._plannings.update((list) => [...list, planning]);
+    return planning;
+  }
+
+  async agregarTarea(planningId: string, tarea: PlanningTask): Promise<Planning> {
+    return this.actualizar(planningId, {tareas: [...this._plannings().find(p => p.id === planningId)?.tareas ?? [], tarea]});
+  }
+
+  async toggleCompletada(planningId: string, tareaId: string): Promise<Planning> {
+    const planning = this._plannings().find((p) => p.id === planningId);
+    if (!planning) return Promise.reject(new Error('Planning no encontrado'));
+    const tareas = planning.tareas.map((t) =>
+      t.id === tareaId ? {...t, completada: !t.completada} : t,
+    );
+    return this.actualizar(planningId, {tareas});
+  }
+
+  async eliminarTarea(planningId: string, tareaId: string): Promise<Planning> {
+    const planning = this._plannings().find((p) => p.id === planningId);
+    if (!planning) return Promise.reject(new Error('Planning no encontrado'));
+    return this.actualizar(planningId, {tareas: planning.tareas.filter((t) => t.id !== tareaId)});
+  }
+
+  limpiar(): void {
     this._plannings.set([]);
-    this._guardar();
   }
 }

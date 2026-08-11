@@ -1,4 +1,4 @@
-import {Component, inject, ChangeDetectionStrategy, signal} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, signal, effect} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
@@ -188,9 +188,11 @@ export class LoginComponent {
   });
 
   constructor() {
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/']);
-    }
+    effect(() => {
+      if (this.authService.isLoggedIn()) {
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   protected onLogin(): void {
