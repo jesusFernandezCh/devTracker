@@ -43,6 +43,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/devTracker/",
               "budgets": [
                 {
                   "type": "initial",
@@ -101,6 +102,9 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy"
         }
       }
     }
