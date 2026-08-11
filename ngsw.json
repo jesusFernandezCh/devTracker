@@ -1,7 +1,7 @@
 {
   "configVersion": 1,
-  "timestamp": 1786456225034,
-  "index": "/index.html",
+  "timestamp": 1786456250698,
+  "index": "C:/Program Files/Git/devTracker/index.html",
   "assetGroups": [
     {
       "name": "app-shell",
@@ -11,15 +11,15 @@
         "ignoreVary": true
       },
       "urls": [
-        "/chunk-4CLCTAJ7.js",
-        "/chunk-CBSN4X6T.js",
-        "/chunk-G6S4ZYIR.js",
-        "/chunk-WUIE6TFV.js",
-        "/chunk-XQID7XTY.js",
-        "/index.html",
-        "/main-3UXXU3QG.js",
-        "/polyfills-5CFQRCPP.js",
-        "/styles-TKIN4DF6.css"
+        "C:/Program Files/Git/devTracker/chunk-4CLCTAJ7.js",
+        "C:/Program Files/Git/devTracker/chunk-CBSN4X6T.js",
+        "C:/Program Files/Git/devTracker/chunk-G6S4ZYIR.js",
+        "C:/Program Files/Git/devTracker/chunk-WUIE6TFV.js",
+        "C:/Program Files/Git/devTracker/chunk-XQID7XTY.js",
+        "C:/Program Files/Git/devTracker/index.html",
+        "C:/Program Files/Git/devTracker/main-3UXXU3QG.js",
+        "C:/Program Files/Git/devTracker/polyfills-5CFQRCPP.js",
+        "C:/Program Files/Git/devTracker/styles-TKIN4DF6.css"
       ],
       "patterns": []
     },
@@ -31,43 +31,43 @@
         "ignoreVary": true
       },
       "urls": [
-        "/favicon.ico",
-        "/favicon.svg",
-        "/icons/icon-128x128.png",
-        "/icons/icon-144x144.png",
-        "/icons/icon-152x152.png",
-        "/icons/icon-192x192.png",
-        "/icons/icon-384x384.png",
-        "/icons/icon-512x512.png",
-        "/icons/icon-72x72.png",
-        "/icons/icon-96x96.png",
-        "/icons/icon.svg"
+        "C:/Program Files/Git/devTracker/favicon.ico",
+        "C:/Program Files/Git/devTracker/favicon.svg",
+        "C:/Program Files/Git/devTracker/icons/icon-128x128.png",
+        "C:/Program Files/Git/devTracker/icons/icon-144x144.png",
+        "C:/Program Files/Git/devTracker/icons/icon-152x152.png",
+        "C:/Program Files/Git/devTracker/icons/icon-192x192.png",
+        "C:/Program Files/Git/devTracker/icons/icon-384x384.png",
+        "C:/Program Files/Git/devTracker/icons/icon-512x512.png",
+        "C:/Program Files/Git/devTracker/icons/icon-72x72.png",
+        "C:/Program Files/Git/devTracker/icons/icon-96x96.png",
+        "C:/Program Files/Git/devTracker/icons/icon.svg"
       ],
       "patterns": []
     }
   ],
   "dataGroups": [],
   "hashTable": {
-    "/chunk-4CLCTAJ7.js": "6cdb544d58baffeddb11018aac3c5c4ebcd615a3",
-    "/chunk-CBSN4X6T.js": "7230a72d3917e78c0f9cb26bdf24f6dd4533ed63",
-    "/chunk-G6S4ZYIR.js": "199ea5f0623abefab0754232e8069a43b529a8b5",
-    "/chunk-WUIE6TFV.js": "54c6f884a17bfc55b6aea9ee37c52e1e57854e16",
-    "/chunk-XQID7XTY.js": "90187ec0435e57bed0f117349e1e7fa2c766f367",
-    "/favicon.ico": "f6a1ef5ca92acdd0132b5bc57204b477026aee10",
-    "/favicon.svg": "1b701446a380f0461cbad81a4a9cfc18e6043d5b",
-    "/icons/icon-128x128.png": "86ecb557a05e7d0a82faa3d5e270e49febf753ca",
-    "/icons/icon-144x144.png": "03255224cab02d6d8628d71f63ffce15a2cc4d36",
-    "/icons/icon-152x152.png": "35aadfe2ad0d38a5fd122de6ba28bbdfd03f3c57",
-    "/icons/icon-192x192.png": "a67c73816b81fb7b12a03eff79fd4b759da3de3a",
-    "/icons/icon-384x384.png": "e7ad7e123f1ff7ae464925a43c148aa97f8c8ce3",
-    "/icons/icon-512x512.png": "461a12acb78a47e10b964f6120d015722db46e03",
-    "/icons/icon-72x72.png": "82cd336255408164da6287a21241477622c65a00",
-    "/icons/icon-96x96.png": "5d60a9d85ebfa7a893ea6030600ae34497af05b0",
-    "/icons/icon.svg": "74058b0e0c7d79b3f35896495f3629145b09f41d",
-    "/index.html": "feca9b33531c1a4c6b12057bebef9aec58ef5538",
-    "/main-3UXXU3QG.js": "007560035aa2f817acbe74118161e5975571f75b",
-    "/polyfills-5CFQRCPP.js": "f2241e9a25858f895ce299d15f6f22e849e2fd72",
-    "/styles-TKIN4DF6.css": "f5e860f859f48d22b777afbe8c163dbbf0dbbe54"
+    "C:/Program Files/Git/devTracker/chunk-4CLCTAJ7.js": "6cdb544d58baffeddb11018aac3c5c4ebcd615a3",
+    "C:/Program Files/Git/devTracker/chunk-CBSN4X6T.js": "7230a72d3917e78c0f9cb26bdf24f6dd4533ed63",
+    "C:/Program Files/Git/devTracker/chunk-G6S4ZYIR.js": "199ea5f0623abefab0754232e8069a43b529a8b5",
+    "C:/Program Files/Git/devTracker/chunk-WUIE6TFV.js": "54c6f884a17bfc55b6aea9ee37c52e1e57854e16",
+    "C:/Program Files/Git/devTracker/chunk-XQID7XTY.js": "90187ec0435e57bed0f117349e1e7fa2c766f367",
+    "C:/Program Files/Git/devTracker/favicon.ico": "f6a1ef5ca92acdd0132b5bc57204b477026aee10",
+    "C:/Program Files/Git/devTracker/favicon.svg": "1b701446a380f0461cbad81a4a9cfc18e6043d5b",
+    "C:/Program Files/Git/devTracker/icons/icon-128x128.png": "86ecb557a05e7d0a82faa3d5e270e49febf753ca",
+    "C:/Program Files/Git/devTracker/icons/icon-144x144.png": "03255224cab02d6d8628d71f63ffce15a2cc4d36",
+    "C:/Program Files/Git/devTracker/icons/icon-152x152.png": "35aadfe2ad0d38a5fd122de6ba28bbdfd03f3c57",
+    "C:/Program Files/Git/devTracker/icons/icon-192x192.png": "a67c73816b81fb7b12a03eff79fd4b759da3de3a",
+    "C:/Program Files/Git/devTracker/icons/icon-384x384.png": "e7ad7e123f1ff7ae464925a43c148aa97f8c8ce3",
+    "C:/Program Files/Git/devTracker/icons/icon-512x512.png": "461a12acb78a47e10b964f6120d015722db46e03",
+    "C:/Program Files/Git/devTracker/icons/icon-72x72.png": "82cd336255408164da6287a21241477622c65a00",
+    "C:/Program Files/Git/devTracker/icons/icon-96x96.png": "5d60a9d85ebfa7a893ea6030600ae34497af05b0",
+    "C:/Program Files/Git/devTracker/icons/icon.svg": "74058b0e0c7d79b3f35896495f3629145b09f41d",
+    "C:/Program Files/Git/devTracker/index.html": "23c02390feaaa1de70be9aa466bb9b1fc0fba6fb",
+    "C:/Program Files/Git/devTracker/main-3UXXU3QG.js": "007560035aa2f817acbe74118161e5975571f75b",
+    "C:/Program Files/Git/devTracker/polyfills-5CFQRCPP.js": "f2241e9a25858f895ce299d15f6f22e849e2fd72",
+    "C:/Program Files/Git/devTracker/styles-TKIN4DF6.css": "f5e860f859f48d22b777afbe8c163dbbf0dbbe54"
   },
   "navigationUrls": [
     {
