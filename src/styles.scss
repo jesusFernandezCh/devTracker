@@ -1,1 +1,251 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'tailwindcss';
+@use 'bootstrap/scss/bootstrap-grid';
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-enter {
+  animation: modal-in 0.2s ease-out;
+}
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --color-surface: #ffffff;
+
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-track: transparent;
+
+  --estimation-bg: #e0e7ff;
+  --estimation-text: #4338ca;
+
+  --color-priority-baja-bg: #F3F4F6;
+  --color-priority-baja-text: #374151;
+  --color-priority-media-bg: #DBEAFE;
+  --color-priority-media-text: #1D4ED8;
+  --color-priority-alta-bg: #FFEDD5;
+  --color-priority-alta-text: #C2410C;
+  --color-priority-critica-bg: #FEE2E2;
+  --color-priority-critica-text: #B91C1C;
+}
+
+[data-theme="dark"] {
+  --scrollbar-thumb: #4b5563;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 3px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+[data-theme="dark"] {
+  --color-gray-50: #0B1120;
+  --color-gray-100: #1E293B;
+  --color-gray-200: #334155;
+  --color-gray-300: #475569;
+  --color-gray-400: #64748B;
+  --color-gray-500: #94A3B8;
+  --color-gray-600: #CBD5E1;
+  --color-gray-700: #E2E8F0;
+  --color-gray-800: #F1F5F9;
+  --color-gray-900: #F8FAFC;
+
+  --color-indigo-50: #1E1B4B;
+  --color-indigo-500: #818CF8;
+  --color-indigo-600: #6366F1;
+  --color-indigo-700: #4F46E5;
+
+  --color-red-50: #450A0A;
+  --color-red-500: #F87171;
+  --color-red-600: #F87171;
+
+  --color-purple-100: #3B0764;
+  --color-purple-700: #D8B4FE;
+
+  --color-surface: #1E293B;
+
+  --estimation-bg: #1E1B4B;
+  --estimation-text: #818CF8;
+
+  --color-priority-baja-bg: #334155;
+  --color-priority-baja-text: #CBD5E1;
+  --color-priority-media-bg: #1E3A5F;
+  --color-priority-media-text: #93C5FD;
+  --color-priority-alta-bg: #431407;
+  --color-priority-alta-text: #FDBA74;
+  --color-priority-critica-bg: #450A0A;
+  --color-priority-critica-text: #FCA5A5;
+}
+
+[data-theme="dark"] .bg-white {
+  background-color: var(--color-surface);
+}
+
+.badge-priority-baja {
+  background-color: var(--color-priority-baja-bg);
+  color: var(--color-priority-baja-text);
+}
+
+.badge-priority-media {
+  background-color: var(--color-priority-media-bg);
+  color: var(--color-priority-media-text);
+}
+
+.badge-priority-alta {
+  background-color: var(--color-priority-alta-bg);
+  color: var(--color-priority-alta-text);
+}
+
+.badge-priority-critica {
+  background-color: var(--color-priority-critica-bg);
+  color: var(--color-priority-critica-text);
+}
+
+/* ── Drag & drop animations ── */
+
+.cdk-drag-preview {
+  opacity: 0.85;
+  rotate: 3deg;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.25;
+  border: 2px dashed var(--color-gray-300);
+  border-radius: 0.5rem;
+}
+
+.cdk-drop-list-receiving {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s ease;
+}
+
+[data-theme="dark"] .cdk-drop-list-receiving {
+  background-color: rgba(129, 140, 248, 0.12) !important;
+}
+
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.fc .fc-daygrid-day-number {
+  padding: 4px;
+  position: relative;
+  z-index: 4;
+  color: var(--color-gray-900);
+}
+
+.fc .fc-col-header-cell-cushion {
+  display: inline-block;
+  padding: 2px 4px;
+  color: var(--color-gray-900);
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.75em;
+  margin: 0px;
+  color: var(--color-gray-900);
+}
+
+/* ── Sidebar (mat-sidenav) ── */
+
+.mat-drawer-side {
+  border-right: 1px solid var(--color-gray-200);
+  box-shadow: none !important;
+}
+
+/* Ensure sidebar content doesn't overflow */
+.mat-drawer-inner-container {
+  overflow: hidden;
+}
+
+.mat-drawer {
+  width: var(--mat-sidenav-container-width, 300px) !important;
+}
+
+@media (min-width: 1400px) {
+
+  .container-xxl,
+  .container-xl,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container {
+    max-width: 98%;
+  }
+
+  .justify-center-modal {
+    justify-content: center;
+    margin-left: 306px;
+  }
+}
+
+/* ─── Impresión de reportes ─── */
+@media print {
+
+  mat-sidenav,
+  app-header,
+  .no-print {
+    display: none !important;
+  }
+
+  mat-sidenav-container {
+    display: block;
+    min-height: 0 !important;
+  }
+
+  mat-sidenav-content {
+    margin-left: 0 !important;
+    min-height: 0 !important;
+    transform: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .print-area {
+    display: block;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1400px) {
+  .justify-center-modal {
+    justify-content: center;
+    margin-left: 306px;
+  }
+}

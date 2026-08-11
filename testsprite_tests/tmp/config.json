@@ -1,0 +1,17 @@
+{
+  "status": "init",
+  "scope": "codebase",
+  "type": "frontend",
+  "localEndpoint": "http://localhost:4200/",
+  "serverPort": 62975,
+  "executionArgs": {
+    "projectName": "devtraker",
+    "projectPath": "D:\\AngularWorkSpace\\devtraker",
+    "testIds": [],
+    "additionalInstruction": "Aplicación Angular gestionada con datos en localStorage. Usar credencial por defecto admin@devtracker.app / admin123 para login.",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-2DJoQ0SXLVOEmYqc2SE3VpMd-xhY485PeUDatdB9m0rEHTUu0T5lvNXZbyHNJzIjhXZPfbKRJEmpewoWAJ7cNWRGBcoBKjFYaTq6oXDAJjYLDxD7uUFIIzUnEXpFKyTE4fY"
+    }
+  }
+}
