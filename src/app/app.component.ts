@@ -6,12 +6,13 @@ import {BreakpointObserver} from '@angular/cdk/layout';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {HeaderComponent} from './components/header/header.component';
 import {ChatWidgetComponent} from './components/chat-widget/chat-widget.component';
+import {BottomNavComponent} from './components/bottom-nav/bottom-nav.component';
 import {AuthService} from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent, ChatWidgetComponent],
+  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent, ChatWidgetComponent, BottomNavComponent],
   template: `
     @if (authService.isLoggedIn()) {
     <mat-sidenav-container>
@@ -26,9 +27,10 @@ import {AuthService} from './services/auth.service';
 
       <mat-sidenav-content>
         <app-header (toggleMenu)="toggleSidenav()" />
-        <main class="w-full px-5 md:max-w-7xl md:mx-auto py-8">
+        <main class="w-full px-2 md:max-w-7xl md:mx-auto pt-8 pb-24 md:pb-8" style="padding-top: 21px;">
           <router-outlet />
         </main>
+        <app-bottom-nav (navigate)="onSidenavNavigate()" />
       </mat-sidenav-content>
     </mat-sidenav-container>
     <app-chat-widget />
