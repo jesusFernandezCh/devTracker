@@ -7,7 +7,7 @@ import {MatIconModule} from '@angular/material/icon';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, MatIconModule],
   template: `
-    <nav class="md:hidden bottom-nav" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+    <nav class="bottom-nav" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
       <a routerLink="/" routerLinkActive="bottom-nav-active" [routerLinkActiveOptions]="{exact: true}"
          (click)="onNavClick()"
          class="bottom-nav-item">

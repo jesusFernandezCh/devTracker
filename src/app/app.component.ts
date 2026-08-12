@@ -30,7 +30,9 @@ import {AuthService} from './services/auth.service';
         <main class="w-full px-2 md:max-w-7xl md:mx-auto pt-8 pb-24 md:pb-8" style="padding-top: 21px;">
           <router-outlet />
         </main>
-        <app-bottom-nav (navigate)="onSidenavNavigate()" />
+        @if (isMobile()) {
+          <app-bottom-nav (navigate)="onSidenavNavigate()" />
+        }
       </mat-sidenav-content>
     </mat-sidenav-container>
     <app-chat-widget />
