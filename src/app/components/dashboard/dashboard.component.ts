@@ -77,15 +77,7 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
       <div class="row g-4 mt-6">
         <div class="col-lg-6 col-12">
           <section class="db-card h-full">
-            <h2 class="db-card-heading">
-              Progreso por proyecto
-              <button (click)="soloMios.set(!soloMios())"
-                      class="db-solo-mios"
-                      [style.background-color]="soloMios() ? 'var(--color-indigo-600)' : 'var(--color-gray-100)'"
-                      [style.color]="soloMios() ? '#ffffff' : 'var(--color-gray-600)'">
-                Solo míos
-              </button>
-            </h2>
+            <h2 class="db-card-heading">Progreso por proyecto</h2>
             @if (avancePorProyecto().length > 0) {
               <div class="db-bars">
                 @for (item of avancePorProyecto(); track item.proyecto.id) {
@@ -691,7 +683,6 @@ export class DashboardComponent {
   private readonly reporteService = inject(ReporteService);
 
   protected readonly animacionIniciada = signal(false);
-  protected readonly soloMios = signal(false);
 
   protected readonly esAdmin = computed(() => {
     const tipo = this.authService.currentUser()?.tipo;
@@ -700,7 +691,7 @@ export class DashboardComponent {
 
   protected readonly proyectosVisibles = computed(() => {
     const lista = this.proyectoService.proyectos();
-    if (!this.soloMios()) return lista;
+    if (this.esAdmin()) return lista;
     const id = this.authService.currentUser()?.id;
     if (!id) return [];
     return lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
