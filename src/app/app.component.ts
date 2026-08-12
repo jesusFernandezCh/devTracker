@@ -7,12 +7,13 @@ import {SwUpdate} from '@angular/service-worker';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {HeaderComponent} from './components/header/header.component';
 import {ChatWidgetComponent} from './components/chat-widget/chat-widget.component';
+import {BottomNavComponent} from './components/bottom-nav/bottom-nav.component';
 import {AuthService} from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent, ChatWidgetComponent],
+  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent, ChatWidgetComponent, BottomNavComponent],
   template: `
     @if (actualizacionDisponible()) {
     <div class="fixed top-0 inset-x-0 z-[100] flex items-center justify-between gap-4 px-4 py-2.5 shadow-lg"
@@ -44,9 +45,12 @@ import {AuthService} from './services/auth.service';
 
       <mat-sidenav-content>
         <app-header (toggleMenu)="toggleSidenav()" />
-        <main class="w-full px-5 md:max-w-7xl md:mx-auto py-8">
+        <main class="w-full px-2 md:max-w-7xl md:mx-auto pt-8 pb-24 md:pb-8" style="padding-top: 21px;">
           <router-outlet />
         </main>
+        @if (isMobile()) {
+          <app-bottom-nav (navigate)="onSidenavNavigate()" />
+        }
       </mat-sidenav-content>
     </mat-sidenav-container>
     <app-chat-widget />
