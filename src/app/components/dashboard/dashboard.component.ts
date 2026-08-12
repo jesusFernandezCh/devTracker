@@ -1,6 +1,9 @@
 import { Component, inject, computed, signal, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { map } from 'rxjs';
 import { HighchartsChartComponent, providePartialHighcharts } from 'highcharts-angular';
 import type { Options as HighchartsOptions, SeriesOptionsType } from 'highcharts';
 import { ProyectoService } from '../../services/proyecto.service';
@@ -684,6 +687,13 @@ export class DashboardComponent {
 
   protected readonly animacionIniciada = signal(false);
 
+  protected readonly esMovil = toSignal(
+    inject(BreakpointObserver)
+      .observe('(max-width: 767px)')
+      .pipe(map((r) => r.matches)),
+    {initialValue: false},
+  );
+
   protected readonly esAdmin = computed(() => {
     const tipo = this.authService.currentUser()?.tipo;
     return tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador';
@@ -824,7 +834,7 @@ export class DashboardComponent {
   });
 
   protected readonly proximosVencimientos = computed(() =>
-    [...this.proyectoService.proyectos()]
+    [...this.proyectosVisibles()]
       .filter(p => p.fechaHasta)
       .sort((a, b) => new Date(a.fechaHasta).getTime() - new Date(b.fechaHasta).getTime())
       .slice(0, 5)
@@ -836,6 +846,7 @@ export class DashboardComponent {
 
   protected readonly graficaAmbiente = computed<HighchartsOptions>(() => {
     const p = this.themeService.isDark() ? PALETA_OSCURA : PALETA_CLARA;
+    const esMovil = this.esMovil();
     const data = this.proyectosPorColumna()
       .filter(i => i.cantidad > 0)
       .map(i => ({ name: i.columna.nombre, y: i.cantidad, color: i.columna.color }));
@@ -860,7 +871,7 @@ export class DashboardComponent {
           innerSize: '60%',
           allowPointSelect: false,
           cursor: 'pointer',
-          dataLabels: { enabled: true },
+          dataLabels: { enabled: !esMovil },
         },
       },
       series: [
@@ -870,19 +881,21 @@ export class DashboardComponent {
           // borderWidth: 3,
           innerSize: '70%', // Turning the pie into a donut
           // We can show multiple data labels per point
-          dataLabels: [
-            {
-              format: '{point.name}'
-            },
-            {
-              format: '{point.percentage:.1f}%',
-              distance: '-15%', // Placing the label inside
-              backgroundColor: 'contrast',
-              style: {
-                textOutline: 'none'
-              }
-            }
-          ],
+          dataLabels: !esMovil
+            ? [
+                {
+                  format: '{point.name}'
+                },
+                {
+                  format: '{point.percentage:.1f}%',
+                  distance: '-15%', // Placing the label inside
+                  backgroundColor: 'contrast',
+                  style: {
+                    textOutline: 'none'
+                  }
+                }
+              ]
+            : [{enabled: false}],
           data,
         }] as SeriesOptionsType[],
     };
