@@ -43,6 +43,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/dev-tracker/",
               "budgets": [
                 {
                   "type": "initial",
