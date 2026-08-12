@@ -2,7 +2,6 @@ import {Component, inject, ChangeDetectionStrategy, signal, computed, effect} fr
 import {HighchartsChartComponent} from 'highcharts-angular';
 import type {Options as HighchartsOptions, SeriesOptionsType} from 'highcharts';
 import {ReporteService} from '../../services/reporte.service';
-import {ProyectoService} from '../../services/proyecto.service';
 import {ColumnService} from '../../services/column.service';
 import {ThemeService} from '../../services/theme.service';
 import {estimacionTotal} from '../../utils/estimacion';
@@ -62,7 +61,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                 class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                 style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
           <option value="">Todos los proyectos</option>
-          @for (p of proyectoService.proyectos(); track p.id) {
+          @for (p of reporteService.proyectosAccesibles(); track p.id) {
             <option [value]="p.id">{{ p.nombre }}</option>
           }
         </select>
@@ -600,7 +599,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
 })
 export class ReportesComponent {
   protected readonly reporteService = inject(ReporteService);
-  protected readonly proyectoService = inject(ProyectoService);
   protected readonly columnService = inject(ColumnService);
   protected readonly themeService = inject(ThemeService);
 
