@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "build:gh": "ng build --configuration production",
-    "deploy": "npm run build:gh && npx angular-cli-ghpages --directory=dist/devTraker/browser"
+    "deploy": "npm run build:gh && npx angular-cli-ghpages --dir dist/dev-tracker/browser"
   },
   "private": true,
   "dependencies": {
