@@ -1,7 +1,7 @@
 {
   "configVersion": 1,
-  "timestamp": 1786636427971,
-  "index": "https://jesusfernandezch.github.io/devTracker/index.html",
+  "timestamp": 1786647200736,
+  "index": "/devTracker/index.html",
   "assetGroups": [
     {
       "name": "app-shell",
@@ -11,15 +11,15 @@
         "ignoreVary": true
       },
       "urls": [
-        "https://jesusfernandezch.github.io/devTracker/chunk-4CLCTAJ7.js",
-        "https://jesusfernandezch.github.io/devTracker/chunk-CBSN4X6T.js",
-        "https://jesusfernandezch.github.io/devTracker/chunk-G6S4ZYIR.js",
-        "https://jesusfernandezch.github.io/devTracker/chunk-WUIE6TFV.js",
-        "https://jesusfernandezch.github.io/devTracker/chunk-XQID7XTY.js",
-        "https://jesusfernandezch.github.io/devTracker/index.html",
-        "https://jesusfernandezch.github.io/devTracker/main-2YVT6G6Q.js",
-        "https://jesusfernandezch.github.io/devTracker/polyfills-5CFQRCPP.js",
-        "https://jesusfernandezch.github.io/devTracker/styles-BZ7RRXV5.css"
+        "/devTracker/chunk-4CLCTAJ7.js",
+        "/devTracker/chunk-CBSN4X6T.js",
+        "/devTracker/chunk-G6S4ZYIR.js",
+        "/devTracker/chunk-WUIE6TFV.js",
+        "/devTracker/chunk-XQID7XTY.js",
+        "/devTracker/index.html",
+        "/devTracker/main-IGMNZSIW.js",
+        "/devTracker/polyfills-5CFQRCPP.js",
+        "/devTracker/styles-BZ7RRXV5.css"
       ],
       "patterns": []
     },
@@ -31,43 +31,43 @@
         "ignoreVary": true
       },
       "urls": [
-        "https://jesusfernandezch.github.io/devTracker/favicon.ico",
-        "https://jesusfernandezch.github.io/devTracker/favicon.svg",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-128x128.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-144x144.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-152x152.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-192x192.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-384x384.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-512x512.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-72x72.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon-96x96.png",
-        "https://jesusfernandezch.github.io/devTracker/icons/icon.svg"
+        "/devTracker/favicon.ico",
+        "/devTracker/favicon.svg",
+        "/devTracker/icons/icon-128x128.png",
+        "/devTracker/icons/icon-144x144.png",
+        "/devTracker/icons/icon-152x152.png",
+        "/devTracker/icons/icon-192x192.png",
+        "/devTracker/icons/icon-384x384.png",
+        "/devTracker/icons/icon-512x512.png",
+        "/devTracker/icons/icon-72x72.png",
+        "/devTracker/icons/icon-96x96.png",
+        "/devTracker/icons/icon.svg"
       ],
       "patterns": []
     }
   ],
   "dataGroups": [],
   "hashTable": {
-    "https://jesusfernandezch.github.io/devTracker/chunk-4CLCTAJ7.js": "6cdb544d58baffeddb11018aac3c5c4ebcd615a3",
-    "https://jesusfernandezch.github.io/devTracker/chunk-CBSN4X6T.js": "7230a72d3917e78c0f9cb26bdf24f6dd4533ed63",
-    "https://jesusfernandezch.github.io/devTracker/chunk-G6S4ZYIR.js": "199ea5f0623abefab0754232e8069a43b529a8b5",
-    "https://jesusfernandezch.github.io/devTracker/chunk-WUIE6TFV.js": "54c6f884a17bfc55b6aea9ee37c52e1e57854e16",
-    "https://jesusfernandezch.github.io/devTracker/chunk-XQID7XTY.js": "90187ec0435e57bed0f117349e1e7fa2c766f367",
-    "https://jesusfernandezch.github.io/devTracker/favicon.ico": "f6a1ef5ca92acdd0132b5bc57204b477026aee10",
-    "https://jesusfernandezch.github.io/devTracker/favicon.svg": "1b701446a380f0461cbad81a4a9cfc18e6043d5b",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-128x128.png": "86ecb557a05e7d0a82faa3d5e270e49febf753ca",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-144x144.png": "03255224cab02d6d8628d71f63ffce15a2cc4d36",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-152x152.png": "35aadfe2ad0d38a5fd122de6ba28bbdfd03f3c57",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-192x192.png": "a67c73816b81fb7b12a03eff79fd4b759da3de3a",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-384x384.png": "e7ad7e123f1ff7ae464925a43c148aa97f8c8ce3",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-512x512.png": "461a12acb78a47e10b964f6120d015722db46e03",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-72x72.png": "82cd336255408164da6287a21241477622c65a00",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon-96x96.png": "5d60a9d85ebfa7a893ea6030600ae34497af05b0",
-    "https://jesusfernandezch.github.io/devTracker/icons/icon.svg": "74058b0e0c7d79b3f35896495f3629145b09f41d",
-    "https://jesusfernandezch.github.io/devTracker/index.html": "9a4b2dd5f408122a461d8d7b093ec5c70494778f",
-    "https://jesusfernandezch.github.io/devTracker/main-2YVT6G6Q.js": "a8adfa7d94635c0496311ba101691e460d0f05bc",
-    "https://jesusfernandezch.github.io/devTracker/polyfills-5CFQRCPP.js": "f2241e9a25858f895ce299d15f6f22e849e2fd72",
-    "https://jesusfernandezch.github.io/devTracker/styles-BZ7RRXV5.css": "487f4dc9a04df83faebf0ddcbcbb020664cdd51d"
+    "/devTracker/chunk-4CLCTAJ7.js": "6cdb544d58baffeddb11018aac3c5c4ebcd615a3",
+    "/devTracker/chunk-CBSN4X6T.js": "7230a72d3917e78c0f9cb26bdf24f6dd4533ed63",
+    "/devTracker/chunk-G6S4ZYIR.js": "199ea5f0623abefab0754232e8069a43b529a8b5",
+    "/devTracker/chunk-WUIE6TFV.js": "54c6f884a17bfc55b6aea9ee37c52e1e57854e16",
+    "/devTracker/chunk-XQID7XTY.js": "90187ec0435e57bed0f117349e1e7fa2c766f367",
+    "/devTracker/favicon.ico": "f6a1ef5ca92acdd0132b5bc57204b477026aee10",
+    "/devTracker/favicon.svg": "1b701446a380f0461cbad81a4a9cfc18e6043d5b",
+    "/devTracker/icons/icon-128x128.png": "86ecb557a05e7d0a82faa3d5e270e49febf753ca",
+    "/devTracker/icons/icon-144x144.png": "03255224cab02d6d8628d71f63ffce15a2cc4d36",
+    "/devTracker/icons/icon-152x152.png": "35aadfe2ad0d38a5fd122de6ba28bbdfd03f3c57",
+    "/devTracker/icons/icon-192x192.png": "a67c73816b81fb7b12a03eff79fd4b759da3de3a",
+    "/devTracker/icons/icon-384x384.png": "e7ad7e123f1ff7ae464925a43c148aa97f8c8ce3",
+    "/devTracker/icons/icon-512x512.png": "461a12acb78a47e10b964f6120d015722db46e03",
+    "/devTracker/icons/icon-72x72.png": "82cd336255408164da6287a21241477622c65a00",
+    "/devTracker/icons/icon-96x96.png": "5d60a9d85ebfa7a893ea6030600ae34497af05b0",
+    "/devTracker/icons/icon.svg": "74058b0e0c7d79b3f35896495f3629145b09f41d",
+    "/devTracker/index.html": "9cc2fd40a56144b5f1df4de7c39dd00da6b11c07",
+    "/devTracker/main-IGMNZSIW.js": "309eb3dc7d3183cd27830bfda4110ea6e78dc852",
+    "/devTracker/polyfills-5CFQRCPP.js": "f2241e9a25858f895ce299d15f6f22e849e2fd72",
+    "/devTracker/styles-BZ7RRXV5.css": "487f4dc9a04df83faebf0ddcbcbb020664cdd51d"
   },
   "navigationUrls": [
     {
