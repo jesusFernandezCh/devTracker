@@ -3,7 +3,11 @@ import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PlanningService} from '../../services/planning.service';
 import {ProyectoService} from '../../services/proyecto.service';
+import {EquipoService} from '../../services/equipo.service';
+import {AuthService} from '../../services/auth.service';
 import {Planning, PlanningTask} from '../../models/planning.model';
+import {Proyecto} from '../../models/proyecto.model';
+import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {estimacionTotal} from '../../utils/estimacion';
 import {PlanningFormComponent} from '../planning-form/planning-form.component';
@@ -189,7 +193,7 @@ const PAGINA_SIZE = 10;
 
       @if (showForm) {
         <app-planning-form [editando]="editandoPlanning"
-                           [proyectos]="proyectos()"
+                           [proyectos]="proyectosDisponibles()"
                            (guardar)="onGuardar($event)"
                            (cerrar)="cerrarForm()"/>
       }
@@ -223,12 +227,30 @@ const PAGINA_SIZE = 10;
 export class PlanningComponent {
   private planningService = inject(PlanningService);
   private proyectoService = inject(ProyectoService);
+  private equipoService = inject(EquipoService);
+  private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   plannings = this.planningService.plannings;
   proyectos = this.proyectoService.proyectos;
   protected readonly estimacionTotal = estimacionTotal;
+
+  protected readonly proyectosDisponibles = computed(() => {
+    const lista = this.proyectos();
+    const tipo = this.authService.currentUser()?.tipo;
+    if (tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador') return lista;
+    const id = this.authService.currentUser()?.id;
+    const filtrados = !id ? [] : lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
+    const edit = this.editandoPlanning;
+    if (edit) {
+      const actual = lista.find((p) => p.id === edit.proyectoId);
+      if (actual && !filtrados.some((p) => p.id === actual.id)) {
+        return [...filtrados, actual];
+      }
+    }
+    return filtrados;
+  });
 
   showForm = false;
   editandoPlanning: Planning | null = null;
@@ -303,7 +325,7 @@ export class PlanningComponent {
   abrirNuevo(proyectoId?: string): void {
     this.editandoPlanning = null;
     this.showForm = true;
-    if (proyectoId) {
+    if (proyectoId && this.proyectosDisponibles().some((p) => p.id === proyectoId)) {
       setTimeout(() => {
         const form = document.querySelector('app-planning-form');
         if (form) {

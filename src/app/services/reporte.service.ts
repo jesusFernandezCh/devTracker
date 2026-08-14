@@ -4,10 +4,13 @@ import {PlanningService} from './planning.service';
 import {ColumnService} from './column.service';
 import {UsuarioService} from './usuario.service';
 import {RolService} from './rol.service';
+import {EquipoService} from './equipo.service';
+import {AuthService} from './auth.service';
 import {Proyecto} from '../models/proyecto.model';
 import {Planning, PlanningTask} from '../models/planning.model';
 import {Columna} from '../models/columna.model';
 import {estimacionTotal} from '../utils/estimacion';
+import {ROL_SUPER_ADMIN_ID} from '../models/permiso.model';
 
 export interface ProyectoReporte {
   proyecto: Proyecto;
@@ -152,12 +155,28 @@ export class ReporteService {
   private readonly columnService = inject(ColumnService);
   private readonly usuarioService = inject(UsuarioService);
   private readonly rolService = inject(RolService);
+  private readonly equipoService = inject(EquipoService);
+  private readonly authService = inject(AuthService);
+
+  private readonly esAdmin = computed(() => {
+    const tipo = this.authService.currentUser()?.tipo;
+    return tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador';
+  });
+
+  readonly proyectosAccesibles = computed(() => {
+    const lista = this.proyectoService.proyectos();
+    if (this.esAdmin()) return lista;
+    const usuarioId = this.authService.currentUser()?.id;
+    if (!usuarioId) return lista;
+    const ids = this.equipoService.proyectosDe(usuarioId);
+    return lista.filter(p => ids.includes(p.id));
+  });
 
   private readonly proyectosFiltrados = computed(() => {
     const desde = this.fechaDesde();
     const hasta = this.fechaHasta();
     const id = this.proyectoId();
-    return this.proyectoService.proyectos().filter(p => {
+    return this.proyectosAccesibles().filter(p => {
       if (id && p.id !== id) return false;
       if (desde && p.fechaDesde && p.fechaDesde < desde) return false;
       if (hasta && p.fechaHasta && p.fechaHasta > hasta) return false;

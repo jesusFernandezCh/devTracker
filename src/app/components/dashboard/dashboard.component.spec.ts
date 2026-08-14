@@ -57,6 +57,10 @@ describe('DashboardComponent', () => {
       'dev-tracker-columns': JSON.stringify(columnas),
       'devtracker-proyectos': JSON.stringify(proyectos),
       'devtracker-planning': JSON.stringify(plannings),
+      'devtracker-usuarios': JSON.stringify([
+        {id: 'super-admin', usuario: 'admin', correo: 'admin@devtracker.app', clave: 'x', tipo: 'super-administrador'},
+      ]),
+      'devtracker-session': JSON.stringify('super-admin'),
     });
     expect(fixture.nativeElement.querySelectorAll('.db-dona').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('Progreso por ambiente');
@@ -67,6 +71,10 @@ describe('DashboardComponent', () => {
       'dev-tracker-columns': JSON.stringify(columnas),
       'devtracker-proyectos': JSON.stringify(proyectos),
       'devtracker-planning': JSON.stringify(plannings),
+      'devtracker-usuarios': JSON.stringify([
+        {id: 'super-admin', usuario: 'admin', correo: 'admin@devtracker.app', clave: 'x', tipo: 'super-administrador'},
+      ]),
+      'devtracker-session': JSON.stringify('super-admin'),
     });
     const g = (component as unknown as {
       graficaAmbiente: () => {plotOptions: unknown; series: {data: {name: string; y: number; color: string}[]}[]};

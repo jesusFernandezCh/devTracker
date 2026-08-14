@@ -424,6 +424,16 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
       opacity: 0.4;
       cursor: not-allowed;
     }
+
+    @media (max-width: 767px) {
+      .chat-fab {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom));
+      }
+      .chat-panel {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom));
+        height: min(34rem, calc(100dvh - 7.5rem));
+      }
+    }
   `],
 })
 export class ChatWidgetComponent {
