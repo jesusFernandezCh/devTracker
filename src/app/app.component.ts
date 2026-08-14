@@ -45,7 +45,7 @@ import {AuthService} from './services/auth.service';
 
       <mat-sidenav-content>
         <app-header (toggleMenu)="toggleSidenav()" />
-        <main class="w-full px-2 md:max-w-7xl md:mx-auto pt-8 pb-24 md:pb-8" style="padding-top: 21px;">
+        <main class="w-full px-3 md:max-w-7xl md:mx-auto pt-8 pb-24 md:pb-8" style="padding-top: 21px;">
           <router-outlet />
         </main>
         @if (isMobile()) {
