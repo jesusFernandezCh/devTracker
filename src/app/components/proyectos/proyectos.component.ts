@@ -238,10 +238,10 @@ const PAGINA_SIZE = 10;
 
       @if (detalleProyecto(); as detalle) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarDetalle()">
-          <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
-            <div class="flex items-start justify-between gap-4 px-6 py-3 border-b" style="border-color: var(--color-gray-100);">
+          <div class="modal-enter rounded-xl shadow-xl w-full max-w-sm border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+            <div class="flex items-start justify-between gap-4 px-4 py-2.5 border-b" style="border-color: var(--color-gray-100);">
               <div class="min-w-0">
-                <h3 class="text-lg font-semibold leading-tight" style="color: var(--color-gray-900);">{{ detalle.proyecto.nombre }}</h3>
+                <h3 class="text-base font-semibold leading-tight" style="color: var(--color-gray-900);">{{ detalle.proyecto.nombre }}</h3>
                 @if (detalle.proyecto.cliente) {
                   <p class="text-sm mt-0.5" style="color: var(--color-gray-500);">{{ detalle.proyecto.cliente }}</p>
                 }
@@ -249,20 +249,20 @@ const PAGINA_SIZE = 10;
               <button (click)="cerrarDetalle()"
                       class="shrink-0 p-1.5 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)]"
                       aria-label="Cerrar detalle">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
 
-            <div class="px-6 py-3">
+            <div class="px-4 py-2.5">
               @if (detalle.proyecto.descripcion) {
-                <div class="rounded-lg p-3 mb-5" style="background-color: var(--color-gray-50);">
-                  <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ detalle.proyecto.descripcion }}</p>
+                <div class="rounded-lg p-2.5 mb-4" style="background-color: var(--color-gray-50);">
+                  <p class="text-sm leading-relaxed max-h-[91px] overflow-y-auto custom-scrollbar pr-1" style="color: var(--color-gray-600);">{{ detalle.proyecto.descripcion }}</p>
                 </div>
               }
 
-              <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+              <div class="grid grid-cols-2 gap-x-3 gap-y-3">
                 <div>
                   <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</span>
                   <div class="mt-1">
@@ -314,33 +314,33 @@ const PAGINA_SIZE = 10;
                 </div>
               </div>
 
-              <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-gray-900);">{{ detalle.plannings.length }}</p>
+              <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-gray-900);">{{ detalle.plannings.length }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Planning</p>
                 </div>
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-gray-900);">{{ detalle.tareas.length }}</p>
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-gray-900);">{{ detalle.tareas.length }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Tareas</p>
                 </div>
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-teal-600);">{{ tareasCompletadas(detalle) }}</p>
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-teal-600);">{{ tareasCompletadas(detalle) }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Completadas</p>
                 </div>
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-indigo-600);">{{ estimacionTotal(detalle.tareas) }}</p>
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-indigo-600);">{{ estimacionTotal(detalle.tareas) }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Story points</p>
                 </div>
               </div>
             </div>
 
-            <div class="flex justify-end gap-3 px-6 py-4 border-t" style="border-color: var(--color-gray-100);">
+            <div class="flex justify-end gap-3 px-4 py-3 border-t" style="border-color: var(--color-gray-100);">
               <button (click)="cerrarDetalle()"
-                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
                 Cerrar
               </button>
               <button (click)="irAPlanning(detalle.proyecto.id)"
-                      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                      class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
