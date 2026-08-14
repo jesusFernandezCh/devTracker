@@ -16,6 +16,11 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
       <div class="container">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center gap-3 min-w-0">
+            <span class="md:hidden">
+              <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-gray-500);" aria-label="Abrir menú">
+                <mat-icon>menu</mat-icon>
+              </button>
+            </span>
             <span class="text-xs sm:text-sm hidden sm:block truncate" style="color: var(--color-indigo-700); text-align:left !important;">
               Sistema de Gestión de Desarrollos
             </span>
@@ -69,11 +74,6 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
               }
             </div>
 
-            <span class="md:hidden">
-              <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-gray-500);" aria-label="Abrir menú">
-                <mat-icon>menu</mat-icon>
-              </button>
-            </span>
           </div>
         </div>
       </div>
