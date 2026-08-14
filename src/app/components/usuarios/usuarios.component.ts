@@ -1,6 +1,15 @@
 import {Component, inject, ChangeDetectionStrategy, effect} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
+import {TableModule} from 'primeng/table';
+import {Dialog} from 'primeng/dialog';
+import {InputText} from 'primeng/inputtext';
+import {Password} from 'primeng/password';
+import {Select} from 'primeng/select';
+import {Button} from 'primeng/button';
+import {Tag} from 'primeng/tag';
+import {Avatar} from 'primeng/avatar';
+import {ConfirmationService} from 'primeng/api';
 import {UsuarioService} from '../../services/usuario.service';
 import {RolService} from '../../services/rol.service';
 import {PermisoDirective} from '../../directives/permiso.directive';
@@ -21,7 +30,7 @@ function tipoColor(tipo: string): {text: string; bg: string} {
   selector: 'app-usuarios',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, PermisoDirective],
+  imports: [CommonModule, ReactiveFormsModule, PermisoDirective, TableModule, Dialog, InputText, Password, Select, Button, Tag, Avatar],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -60,178 +69,130 @@ function tipoColor(tipo: string): {text: string; bg: string} {
       </div>
     } @else {
       <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Usuario</th>
-                <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Correo</th>
-                <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Tipo</th>
-                <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
-              </tr>
-            </thead>
-            <tbody style="border-top: 1px solid var(--color-gray-100);">
-              @for (usuario of usuarios(); track usuario.id) {
-                <tr class="usuario-row" style="transition: background-color 0.15s;">
-                  <td class="px-4 sm:px-6 py-2.5">
-                    <div class="flex items-center gap-3">
-                      @if (usuario.foto) {
-                        <img [src]="usuario.foto" [alt]="'Foto de ' + usuario.usuario"
-                             class="w-8 h-8 rounded-full object-cover shrink-0">
-                      } @else {
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                             [style.background-color]="tipoColor(usuario.tipo).bg"
-                             [style.color]="tipoColor(usuario.tipo).text">
-                          {{ usuario.usuario.charAt(0).toUpperCase() }}
-                        </div>
-                      }
-                      <span class="text-sm font-medium" style="color: var(--color-gray-900);">{{ usuario.usuario }}</span>
-                    </div>
-                  </td>
-                  <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell">
-                    <span class="text-sm" style="color: var(--color-gray-500);">{{ usuario.correo }}</span>
-                  </td>
-                  <td class="px-4 sm:px-6 py-2.5">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          [style.color]="tipoColor(usuario.tipo).text"
-                          [style.background-color]="tipoColor(usuario.tipo).bg">
-                      {{ rolService.nombreDe(usuario.tipo) }}
-                    </span>
-                  </td>
-                  <td class="px-4 sm:px-6 py-2.5 text-right">
-                    <div class="flex items-center justify-end gap-1">
-                      <button *appPermiso="'editar'; recurso: 'usuarios'" (click)="abrirEditar(usuario)"
-                              class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
-                              [attr.aria-label]="'Editar ' + usuario.usuario">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
-                        </svg>
-                      </button>
-                      <button *appPermiso="'eliminar'; recurso: 'usuarios'" (click)="confirmarEliminar(usuario.id)"
-                              class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
-                              [attr.aria-label]="'Eliminar ' + usuario.usuario">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
-
-    <!-- Delete confirmation -->
-    @if (deleteConfirmId) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);">
-        <div class="modal-enter rounded-xl shadow-xl p-6 w-full max-w-sm border" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-          <h3 class="text-lg font-semibold mb-2" style="color: var(--color-gray-900);">Eliminar usuario</h3>
-          <p class="text-sm mb-6" style="color: var(--color-gray-500);">
-            ¿Eliminar este usuario? Esta acción no se puede deshacer.
-          </p>
-          <div class="flex justify-end gap-3">
-            <button (click)="cancelarEliminar()"
-                    class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
-              Cancelar
-            </button>
-            <button (click)="ejecutarEliminar()"
-                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-rose-600)] hover:bg-[var(--color-rose-700)]">
-              Eliminar
-            </button>
-          </div>
-        </div>
+        <p-table [value]="usuarios()" [tableStyle]="{'min-width': '50rem'}" [rowHover]="true" [stripedRows]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style="color: var(--color-gray-400);">Usuario</th>
+              <th class="text-xs font-semibold uppercase tracking-wider hidden sm:table-cell whitespace-nowrap" style="color: var(--color-gray-400);">Correo</th>
+              <th class="text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style="color: var(--color-gray-400);">Tipo</th>
+              <th class="text-right text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style="color: var(--color-gray-400);">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-usuario>
+            <tr class="usuario-row" style="transition: background-color 0.15s;">
+              <td>
+                <div class="flex items-center gap-3">
+                  @if (usuario.foto) {
+                    <p-avatar [image]="usuario.foto" shape="circle" [style]="{width: '2rem', height: '2rem'}" />
+                  } @else {
+                    <p-avatar [label]="usuario.usuario.charAt(0).toUpperCase()" shape="circle"
+                              [style]="{'width': '2rem', 'height': '2rem', backgroundColor: tipoColor(usuario.tipo).bg, color: tipoColor(usuario.tipo).text}" />
+                  }
+                  <span class="text-sm font-medium whitespace-nowrap" style="color: var(--color-gray-900);">{{ usuario.usuario }}</span>
+                </div>
+              </td>
+              <td class="hidden sm:table-cell">
+                <span class="text-sm" style="color: var(--color-gray-500);">{{ usuario.correo }}</span>
+              </td>
+              <td>
+                <p-tag [value]="rolService.nombreDe(usuario.tipo)"
+                       [style]="{backgroundColor: tipoColor(usuario.tipo).bg, color: tipoColor(usuario.tipo).text}" />
+              </td>
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <p-button *appPermiso="'editar'; recurso: 'usuarios'" (onClick)="abrirEditar(usuario)"
+                            icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" size="small"
+                            [attr.aria-label]="'Editar ' + usuario.usuario" />
+                  <p-button *appPermiso="'eliminar'; recurso: 'usuarios'" (onClick)="confirmarEliminar(usuario)"
+                            icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small"
+                            [attr.aria-label]="'Eliminar ' + usuario.usuario" />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
     }
 
     <!-- Create/Edit form modal -->
-    @if (showForm) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarForm()">
-        <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
-          <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
-            <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">
-              {{ editandoUsuario ? 'Editar usuario' : 'Nuevo usuario' }}
-            </h2>
-            <button (click)="cerrarForm()"
-                    class="p-0.5 rounded transition-colors" style="color: var(--color-gray-400);">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
+    <p-dialog
+      [visible]="showForm"
+      (onHide)="cerrarForm()"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [closeOnEscape]="true"
+      [dismissableMask]="true"
+      [style]="{width: '26rem'}"
+      [breakpoints]="{'575px': '95vw'}"
+      [header]="editandoUsuario ? 'Editar usuario' : 'Nuevo usuario'">
+      @if (showForm) {
+        <form [formGroup]="userForm" (ngSubmit)="onGuardar()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Usuario</label>
+            <input pInputText formControlName="usuario" type="text" autocomplete="off" class="w-full" placeholder="Ej: jperez" autofocus>
+            @if (userForm.controls.usuario.touched && userForm.controls.usuario.invalid) {
+              <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                <i class="pi pi-exclamation-circle"></i> El usuario debe tener al menos 3 caracteres.
+              </small>
+            }
           </div>
 
-          <form [formGroup]="userForm" (ngSubmit)="onGuardar()" class="p-4 space-y-3">
-            <div>
-              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Usuario</label>
-              <input formControlName="usuario" type="text" autocomplete="off"
-                     class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                     style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                     placeholder="Ej: jperez">
-              @if (userForm.controls.usuario.touched && userForm.controls.usuario.invalid) {
-                <p class="mt-1 text-xs" style="color: var(--color-rose-500);">El usuario debe tener al menos 3 caracteres.</p>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Correo</label>
+            <input pInputText formControlName="correo" type="email" autocomplete="off" class="w-full" placeholder="ejemplo@correo.com">
+            @if (userForm.controls.correo.touched && userForm.controls.correo.invalid) {
+              <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                <i class="pi pi-exclamation-circle"></i> Ingresa un correo válido.
+              </small>
+            }
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">
+              Contraseña
+              @if (editandoUsuario) {
+                <span style="color: var(--color-gray-400); font-weight: 400;">(dejar en blanco para mantener)</span>
               }
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Correo</label>
-              <input formControlName="correo" type="email" autocomplete="off"
-                     class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                     style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                     placeholder="ejemplo@correo.com">
-              @if (userForm.controls.correo.touched && userForm.controls.correo.invalid) {
-                <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Ingresa un correo válido.</p>
+            </label>
+            <p-password formControlName="clave" [toggleMask]="true" [feedback]="false" [style]="{width: '100%'}"
+                        [inputStyle]="{width: '100%'}" class="w-full" fluid="true"
+                        [placeholder]="editandoUsuario ? 'Sin cambios' : 'Contraseña'"
+                        autocomplete="new-password" />
+            @if (userForm.controls.clave.touched && userForm.controls.clave.invalid) {
+              @if (userForm.controls.clave.errors?.['required']) {
+                <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                  <i class="pi pi-exclamation-circle"></i> La contraseña es requerida.
+                </small>
               }
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">
-                Contraseña
-                @if (editandoUsuario) {
-                  <span style="color: var(--color-gray-400); font-weight: 400;">(dejar en blanco para mantener)</span>
-                }
-              </label>
-              <input formControlName="clave" type="password" autocomplete="new-password"
-                     class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                     style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                     placeholder="{{ editandoUsuario ? 'Sin cambios' : 'Contraseña' }}">
-              @if (userForm.controls.clave.touched && userForm.controls.clave.invalid) {
-                @if (userForm.controls.clave.errors?.['required']) {
-                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">La contraseña es requerida.</p>
-                }
-                @if (userForm.controls.clave.errors?.['minlength']) {
-                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Mínimo 4 caracteres.</p>
-                }
+              @if (userForm.controls.clave.errors?.['minlength']) {
+                <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                  <i class="pi pi-exclamation-circle"></i> Mínimo 4 caracteres.
+                </small>
               }
-            </div>
+            }
+          </div>
 
-            <div>
-              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Tipo</label>
-              <select formControlName="tipo"
-                      class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                      style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
-                @for (rol of rolService.rolesUsables(); track rol.id) {
-                  <option [value]="rol.id">{{ rol.nombre }}</option>
-                }
-              </select>
-            </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Tipo</label>
+            <p-select formControlName="tipo"
+                      [options]="rolService.rolesUsables()"
+                      optionLabel="nombre"
+                      optionValue="id"
+                      placeholder="Selecciona un tipo"
+                      [style]="{width: '100%'}" />
+          </div>
 
-            <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
-              <button type="button" (click)="cerrarForm()"
-                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
-                Cancelar
-              </button>
-              <button type="submit"
-                      class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
-                      [disabled]="userForm.invalid">
-                {{ editandoUsuario ? 'Guardar' : 'Crear' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    }
+          <div class="flex justify-end gap-3 pt-3.5 border-t" style="border-color: var(--color-gray-200);">
+            <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="cerrarForm()" />
+            <p-button [label]="editandoUsuario ? 'Guardar' : 'Crear'"
+                      icon="pi pi-check"
+                      [disabled]="userForm.invalid"
+                      (onClick)="onGuardar()" />
+          </div>
+        </form>
+      }
+    </p-dialog>
   `,
   styles: [`
     .usuario-row:hover { background-color: var(--color-gray-50); }
@@ -239,6 +200,7 @@ function tipoColor(tipo: string): {text: string; bg: string} {
 })
 export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly confirmationService = inject(ConfirmationService);
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly rolService = inject(RolService);
 
@@ -247,7 +209,6 @@ export class UsuariosComponent {
 
   protected showForm = false;
   protected editandoUsuario: Usuario | null = null;
-  protected deleteConfirmId: string | null = null;
 
   protected userForm = this.fb.nonNullable.group({
     usuario: ['', [Validators.required, Validators.minLength(3)]],
@@ -323,18 +284,15 @@ export class UsuariosComponent {
     this.cerrarForm();
   }
 
-  confirmarEliminar(id: string): void {
-    this.deleteConfirmId = id;
-  }
-
-  ejecutarEliminar(): void {
-    if (this.deleteConfirmId) {
-      this.usuarioService.eliminar(this.deleteConfirmId);
-    }
-    this.deleteConfirmId = null;
-  }
-
-  cancelarEliminar(): void {
-    this.deleteConfirmId = null;
+  confirmarEliminar(usuario: Usuario): void {
+    this.confirmationService.confirm({
+      header: 'Eliminar usuario',
+      message: `¿Eliminar a «${usuario.usuario}»? Esta acción no se puede deshacer.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => this.usuarioService.eliminar(usuario.id),
+    });
   }
 }

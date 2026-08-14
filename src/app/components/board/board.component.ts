@@ -7,6 +7,8 @@ import {PlanningService} from '../../services/planning.service';
 import {NotificacionService} from '../../services/notificacion.service';
 import {EquipoService} from '../../services/equipo.service';
 import {AuthService} from '../../services/auth.service';
+import {ConfirmationService} from 'primeng/api';
+import {Tag} from 'primeng/tag';
 import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {ProyectoConDatos} from '../../models/proyecto.model';
 import {PlanningTask} from '../../models/planning.model';
@@ -19,7 +21,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
   selector: 'app-board',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ColumnComponent, ColumnManagerComponent, CdkDropList, CdkDrag, CdkDragHandle, FormsModule],
+  imports: [ColumnComponent, ColumnManagerComponent, CdkDropList, CdkDrag, CdkDragHandle, FormsModule, Tag],
   template: `
     <div class="space-y-6">
       <div class="row align-items-center justify-content-between">
@@ -92,7 +94,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
                       {{ col.nombre }}
                     </h2>
                   }
-                  <span class="bg-gray-200 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full shrink-0">{{ (proyectosPorColumna().get(col.id) ?? []).length }}</span>
+                  <p-tag value="{{ (proyectosPorColumna().get(col.id) ?? []).length }}" severity="secondary" styleClass="shrink-0" />
                 </div>
                 <div class="flex items-center gap-0.5">
                 <button (mousedown)="$event.stopPropagation()" (click)="nuevaTareaEnColumna(col.id)"
@@ -152,6 +154,7 @@ export class BoardComponent {
   private readonly notificacionService = inject(NotificacionService);
   private readonly equipoService = inject(EquipoService);
   private readonly authService = inject(AuthService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   protected readonly proyectosPorColumna = computed(() => {
     const columnas = this.columnService.columnas();
@@ -286,29 +289,44 @@ export class BoardComponent {
   }
 
   onEliminarProyecto(id: string): void {
-    if (confirm('¿Estás seguro de eliminar este proyecto? Se eliminarán también sus planificaciones.')) {
-      const nombre = this.proyectoService.proyectoPorId(id)?.nombre;
-      const plannings = this.planningService.plannings().filter(p => p.proyectoId === id);
-      plannings.forEach(p => this.planningService.eliminar(p.id));
-      this.proyectoService.eliminar(id);
-      this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? id}» eliminado`});
-    }
+    this.confirmationService.confirm({
+      header: 'Eliminar proyecto',
+      message: '¿Estás seguro de eliminar este proyecto? Se eliminarán también sus planificaciones.',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        const nombre = this.proyectoService.proyectoPorId(id)?.nombre;
+        const plannings = this.planningService.plannings().filter(p => p.proyectoId === id);
+        plannings.forEach(p => this.planningService.eliminar(p.id));
+        this.proyectoService.eliminar(id);
+        this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? id}» eliminado`});
+      },
+    });
   }
 
   onEliminarColumna(col: Columna): void {
     const count = this.proyectosEnColumna(col.id);
-    if (count > 0) {
-      if (!confirm(`"${col.nombre}" tiene ${count} proyecto(s). ¿Eliminar columna y todos sus proyectos?`)) return;
-      this.proyectoService.proyectos()
-        .filter(p => p.columnaId === col.id)
-        .forEach(p => {
-          const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
-          plannings.forEach(pl => this.planningService.eliminar(pl.id));
-          this.proyectoService.eliminar(p.id);
-        });
-    }
-    this.columnService.eliminarColumna(col.id);
-    this.notificacionService.notificar({tipo: 'alerta', descripcion: `Columna «${col.nombre}» eliminada`});
+    this.confirmationService.confirm({
+      header: 'Eliminar columna',
+      message: `«${col.nombre}» tiene ${count} proyecto(s). ¿Eliminar columna y todos sus proyectos?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.proyectoService.proyectos()
+          .filter(p => p.columnaId === col.id)
+          .forEach(p => {
+            const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
+            plannings.forEach(pl => this.planningService.eliminar(pl.id));
+            this.proyectoService.eliminar(p.id);
+          });
+        this.columnService.eliminarColumna(col.id);
+        this.notificacionService.notificar({tipo: 'alerta', descripcion: `Columna «${col.nombre}» eliminada`});
+      },
+    });
   }
 
   nuevaTarea(): void {

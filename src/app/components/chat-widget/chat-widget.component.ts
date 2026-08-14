@@ -1,5 +1,6 @@
 import {Component, inject, signal, computed, effect, viewChild, ElementRef, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {Avatar} from 'primeng/avatar';
 import {ChatService} from '../../services/chat.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {AuthService} from '../../services/auth.service';
@@ -16,7 +17,7 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
   selector: 'app-chat-widget',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, Avatar],
   template: `
     @if (!chatService.abierto()) {
       <button (click)="chatService.abrir()" class="chat-fab" aria-label="Abrir chat">
@@ -59,11 +60,8 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
         <div class="chat-body">
           @if (!conversacion()) {
             <button (click)="seleccionarGeneral()" class="chat-list-item">
-              <span class="chat-avatar" style="background-color: var(--color-indigo-100); color: var(--color-indigo-700);">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-                </svg>
-              </span>
+              <p-avatar icon="pi pi-comments" shape="circle"
+                        [style]="{'width': '2rem', 'height': '2rem', 'font-size': '0.75rem', 'background-color': 'var(--color-indigo-100)', 'color': 'var(--color-indigo-700)'}" />
               <span class="flex-1 min-w-0 text-left">
                 <span class="chat-list-name">General</span>
                 <span class="chat-list-sub">Canal para todos los usuarios</span>
@@ -78,11 +76,8 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
 
               @for (g of grupos(); track g.proyecto.id) {
                 <button (click)="seleccionarGrupo(g.proyecto.id)" class="chat-list-item">
-                  <span class="chat-avatar" style="background-color: var(--color-indigo-100); color: var(--color-indigo-700);">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                  </span>
+                  <p-avatar icon="pi pi-users" shape="circle"
+                            [style]="{'width': '2rem', 'height': '2rem', 'font-size': '0.75rem', 'background-color': 'var(--color-indigo-100)', 'color': 'var(--color-indigo-700)'}" />
                   <span class="flex-1 min-w-0 text-left">
                     <span class="chat-list-name truncate">{{ g.proyecto.nombre }}</span>
                     <span class="chat-list-sub truncate">{{ g.miembros }} miembro{{ g.miembros !== 1 ? 's' : '' }}</span>
@@ -99,12 +94,10 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
             @for (c of contactos(); track c.usuario.id) {
               <button (click)="seleccionarContacto(c.usuario)" class="chat-list-item">
                 @if (c.usuario.foto) {
-                  <img [src]="c.usuario.foto" [alt]="'Foto de ' + c.usuario.usuario" class="chat-avatar chat-avatar-img">
+                  <p-avatar [image]="c.usuario.foto" shape="circle" [style]="{'width': '2rem', 'height': '2rem'}" />
                 } @else {
-                  <span class="chat-avatar" [style.background-color]="tipoColor(c.usuario.tipo).bg"
-                        [style.color]="tipoColor(c.usuario.tipo).text">
-                    {{ iniciales(c.usuario.usuario) }}
-                  </span>
+                  <p-avatar [label]="iniciales(c.usuario.usuario)" shape="circle"
+                            [style]="{'width': '2rem', 'height': '2rem', 'font-size': '0.6875rem', 'background-color': tipoColor(c.usuario.tipo).bg, 'color': tipoColor(c.usuario.tipo).text}" />
                 }
                 <span class="flex-1 min-w-0 text-left">
                   <span class="chat-list-name truncate">{{ c.usuario.usuario }}</span>
@@ -123,13 +116,10 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
                 <div class="chat-row" [class.chat-row-mio]="esMio(m.autorId)">
                   @if (!esMio(m.autorId)) {
                     @if (fotoDe(m.autorId)) {
-                      <img [src]="fotoDe(m.autorId)" [alt]="'Foto de ' + nombreDe(m.autorId)" class="chat-avatar chat-avatar-sm chat-avatar-img">
+                      <p-avatar [image]="fotoDe(m.autorId)" shape="circle" [style]="{'width': '1.5rem', 'height': '1.5rem'}" />
                     } @else {
-                      <span class="chat-avatar chat-avatar-sm"
-                            [style.background-color]="tipoColor(tipoDe(m.autorId)).bg"
-                            [style.color]="tipoColor(tipoDe(m.autorId)).text">
-                        {{ iniciales(nombreDe(m.autorId)) }}
-                      </span>
+                      <p-avatar [label]="iniciales(nombreDe(m.autorId))" shape="circle"
+                                [style]="{'width': '1.5rem', 'height': '1.5rem', 'font-size': '0.5625rem', 'background-color': tipoColor(tipoDe(m.autorId)).bg, 'color': tipoColor(tipoDe(m.autorId)).text}" />
                     }
                   }
                   <div class="chat-bubble" [class.chat-bubble-mio]="esMio(m.autorId)" [class.chat-bubble-otro]="!esMio(m.autorId)">

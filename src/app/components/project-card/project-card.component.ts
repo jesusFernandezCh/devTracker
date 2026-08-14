@@ -9,12 +9,15 @@ import {complejidadEstilo, estimacionTotal, statusColor, prioridadColor} from '.
 import {iniciales, tipoColor} from '../../utils/helpers';
 import {EquipoModalComponent} from '../equipo-modal/equipo-modal.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
+import {Tag} from 'primeng/tag';
+import {Avatar} from 'primeng/avatar';
+import {ProgressBar} from 'primeng/progressbar';
 
 @Component({
   selector: 'app-project-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EquipoModalComponent, PermisoDirective],
+  imports: [EquipoModalComponent, PermisoDirective, Tag, Avatar, ProgressBar],
   template: `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div class="p-2">
@@ -25,18 +28,12 @@ import {PermisoDirective} from '../../directives/permiso.directive';
               {{ proyecto().nombre }}
             </h3>
             @if (proyecto().status) {
-              <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
-                    [style.color]="statusColor(proyecto().status).text"
-                    [style.background-color]="statusColor(proyecto().status).bg">
-                {{ proyecto().status }}
-              </span>
+              <p-tag [value]="proyecto().status"
+                     [style]="{backgroundColor: statusColor(proyecto().status).bg, color: statusColor(proyecto().status).text}" />
             }
             @if (proyecto().prioridad) {
-              <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
-                    [style.color]="prioridadColor(proyecto().prioridad).text"
-                    [style.background-color]="prioridadColor(proyecto().prioridad).bg">
-                {{ proyecto().prioridad }}
-              </span>
+              <p-tag [value]="proyecto().prioridad"
+                     [style]="{backgroundColor: prioridadColor(proyecto().prioridad).bg, color: prioridadColor(proyecto().prioridad).text}" />
             }
           </div>
           <button (click)="onDelete(); $event.stopPropagation()"
@@ -156,11 +153,8 @@ import {PermisoDirective} from '../../directives/permiso.directive';
                               [class.text-gray-400]="tarea.completada">{{ tarea.tarea }}</span>
                       </label>
                       <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-xs font-medium px-1.5 py-0.5 rounded"
-                              [style.background-color]="complejidadEstilo(tarea.complejidad).bg"
-                              [style.color]="complejidadEstilo(tarea.complejidad).text">
-                          {{ tarea.complejidad }}
-                        </span>
+                        <p-tag [value]="tarea.complejidad"
+                               [style]="{backgroundColor: complejidadEstilo(tarea.complejidad).bg, color: complejidadEstilo(tarea.complejidad).text}" />
                       </div>
                     </div>
                   } @empty {
@@ -168,12 +162,11 @@ import {PermisoDirective} from '../../directives/permiso.directive';
                   }
                 </div>
                 <div class="mt-2 flex items-center gap-2 px-2">
-                  <div class="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-300"
-                         [style.width.%]="porcentajeAvance()"
-                         [class.bg-green-500]="porcentajeAvance() === 100"
-                         [class.bg-indigo-500]="porcentajeAvance() > 0 && porcentajeAvance() < 100">
-                    </div>
+                  <div class="flex-1">
+                    <p-progressbar [value]="porcentajeAvance()"
+                                   [showValue]="false"
+                                   [color]="porcentajeAvance() === 100 ? 'var(--color-emerald-500)' : 'var(--color-indigo-500)'"
+                                   [style]="{height: '6px'}" />
                   </div>
                   <span class="text-xs font-medium shrink-0"
                         [class.text-green-600]="porcentajeAvance() === 100"
@@ -191,19 +184,14 @@ import {PermisoDirective} from '../../directives/permiso.directive';
             @if (miembros().length > 0) {
               <div class="flex -space-x-1.5">
                 @for (m of miembros().slice(0, 3); track m.id) {
-                  <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
-                       [style.background-color]="tipoColor(m.tipo).bg"
-                       [style.color]="tipoColor(m.tipo).text"
-                       [attr.title]="m.usuario">
-                    {{ iniciales(m.usuario) }}
-                  </div>
+                  <p-avatar [label]="iniciales(m.usuario)" shape="circle"
+                            [style]="{'width': '1.5rem', 'height': '1.5rem', 'font-size': '0.625rem', 'background-color': tipoColor(m.tipo).bg, 'color': tipoColor(m.tipo).text, 'border': '2px solid #ffffff'}"
+                            [attr.title]="m.usuario" />
                 }
                 @if (miembros().length > 3) {
-                  <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shrink-0"
-                       style="background-color: var(--color-gray-100); color: var(--color-gray-600);"
-                       [attr.title]="'+' + (miembros().length - 3)">
-                    +{{ miembros().length - 3 }}
-                  </div>
+                  <p-avatar [label]="'+' + (miembros().length - 3)" shape="circle"
+                            [style]="{'width': '1.5rem', 'height': '1.5rem', 'font-size': '0.625rem', 'background-color': 'var(--color-gray-100)', 'color': 'var(--color-gray-600)', 'border': '2px solid #ffffff'}"
+                            [attr.title]="'+' + (miembros().length - 3)" />
                 }
               </div>
               <span class="text-xs text-gray-400">{{ miembros().length }} miembro{{ miembros().length !== 1 ? 's' : '' }}</span>

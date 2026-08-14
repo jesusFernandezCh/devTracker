@@ -2,6 +2,11 @@ import {Component, input, output, inject, signal, ChangeDetectionStrategy} from 
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {DragDropModule, CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import {Dialog} from 'primeng/dialog';
+import {InputText} from 'primeng/inputtext';
+import {Select} from 'primeng/select';
+import {Button} from 'primeng/button';
+import {Tag} from 'primeng/tag';
 import {Planning, PlanningTask} from '../../models/planning.model';
 import {Proyecto} from '../../models/proyecto.model';
 import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
@@ -11,49 +16,34 @@ import {PermisoDirective} from '../../directives/permiso.directive';
   selector: 'app-planning-tasks',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule, PermisoDirective],
+  imports: [CommonModule, ReactiveFormsModule, DragDropModule, PermisoDirective, Dialog, InputText, Select, Button, Tag],
   template: `
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrar.emit()">
-      <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
-        <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
-          <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">
-            {{ nombreProyecto() }}
-          </h2>
-          <button (click)="cerrar.emit()"
-                  class="p-0.5 rounded transition-colors" style="color: var(--color-gray-400);">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
+    <p-dialog [visible]="true" (onHide)="cerrar.emit()"
+              [modal]="true" [draggable]="false" [resizable]="false"
+              [closeOnEscape]="true" [dismissableMask]="true"
+              [style]="{width: '30rem'}" [breakpoints]="{'575px': '95vw'}"
+              [header]="nombreProyecto()">
+
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Tarea</label>
+            <input pInputText [formControl]="tareaForm.controls.tarea" type="text" autocomplete="off" class="w-full"
+                   placeholder="Nombre de la tarea" autofocus>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Complejidad</label>
+            <p-select [formControl]="tareaForm.controls.complejidad"
+                      [options]="complejidadOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Selecciona"
+                      [style]="{width: '100%'}" />
+          </div>
         </div>
 
-        <div class="p-4 space-y-3">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Tarea</label>
-              <input [formControl]="tareaForm.controls.tarea" type="text" autocomplete="off"
-                     class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                     style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                     placeholder="Nombre de la tarea">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Complejidad</label>
-              <select [formControl]="tareaForm.controls.complejidad"
-                      class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                      style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
-                <option value="">Selecciona</option>
-                <option value="Simple">Simple</option>
-                <option value="Media">Media</option>
-                <option value="Compleja">Compleja</option>
-              </select>
-            </div>
-          </div>
-
-          <button *appPermiso="'crear'; recurso: 'tareas'" (click)="agregarTarea()"
-                  class="w-full px-3 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-indigo-600)] hover:bg-[var(--color-indigo-700)]"
-                  [disabled]="tareaForm.invalid">
-            Agregar tarea
-          </button>
+        <p-button *appPermiso="'crear'; recurso: 'tareas'" (onClick)="agregarTarea()"
+                  label="Agregar tarea" icon="pi pi-plus" [disabled]="tareaForm.invalid" [style]="{width: '100%'}" />
 
           @if (planning().tareas.length > 0) {
             <div class="border-t pt-3" style="border-color: var(--color-gray-200);">
@@ -92,12 +82,9 @@ import {PermisoDirective} from '../../directives/permiso.directive';
                           <option value="Compleja">Compleja</option>
                         </select>
                       } @else {
-                        <span (click)="iniciarEdicionComplejidad(task)"
-                              class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer transition-opacity"
-                              [style.color]="complejidadEstilo(task.complejidad).text"
-                              [style.background-color]="complejidadEstilo(task.complejidad).bg">
-                          {{ task.complejidad }}
-                        </span>
+                        <p-tag [value]="task.complejidad" (click)="iniciarEdicionComplejidad(task)"
+                               class="shrink-0 cursor-pointer"
+                               [style]="{color: complejidadEstilo(task.complejidad).text, backgroundColor: complejidadEstilo(task.complejidad).bg}" />
                       }
                     </div>
                     <button cdkDragHandle
@@ -135,14 +122,10 @@ import {PermisoDirective} from '../../directives/permiso.directive';
           }
 
           <div class="flex justify-end pt-0.5">
-            <button (click)="cerrar.emit()"
-                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
-              Cerrar
-            </button>
+            <p-button label="Cerrar" [text]="true" severity="secondary" (onClick)="cerrar.emit()" />
           </div>
         </div>
-      </div>
-    </div>
+    </p-dialog>
   `,
   styles: [`
   `]
@@ -157,6 +140,12 @@ export class PlanningTasksComponent {
 
   protected readonly complejidadEstilo = complejidadEstilo;
   protected readonly estimacionTotal = estimacionTotal;
+
+  protected readonly complejidadOptions = [
+    {label: 'Simple', value: 'Simple'},
+    {label: 'Media', value: 'Media'},
+    {label: 'Compleja', value: 'Compleja'},
+  ];
 
   protected editandoTaskId = signal<string | null>(null);
   protected editandoTaskValue = signal<string>('');

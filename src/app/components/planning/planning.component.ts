@@ -1,6 +1,9 @@
-import {Component, inject, ChangeDetectionStrategy, DestroyRef, signal, computed, effect} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
+import {TableModule} from 'primeng/table';
+import {Button} from 'primeng/button';
+import {ConfirmationService} from 'primeng/api';
 import {PlanningService} from '../../services/planning.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {Planning, PlanningTask} from '../../models/planning.model';
@@ -17,7 +20,7 @@ const PAGINA_SIZE = 10;
   selector: 'app-planning',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, PlanningFormComponent, PlanningTasksComponent, PlanningDetailComponent, PermisoDirective],
+  imports: [CommonModule, PlanningFormComponent, PlanningTasksComponent, PlanningDetailComponent, PermisoDirective, TableModule, Button],
   template: `
       <div class="row align-items-center mb-8">
         <div class="col-12 col-md">
@@ -56,134 +59,64 @@ const PAGINA_SIZE = 10;
         </div>
       } @else {
         <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead>
-                <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Descripción</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha</th>
-                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Proyecto</th>
-                  <th class="text-center px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Tareas</th>
-                  <th class="text-center px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estimación</th>
-                  <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
-                </tr>
-              </thead>
-              <tbody style="border-top: 1px solid var(--color-gray-100);">
-                @for (planning of planningsPagina(); track planning.id) {
-                  <tr class="planning-row" style="transition: background-color 0.15s;">
-                    <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell border-l-2 transition-all duration-200 cursor-pointer" style="border-color: rgba(13, 148, 136, 0.5);" (click)="abrirDetalle(planning)">
-                      <span class="text-sm truncate-desc transition-colors text-[var(--color-gray-700)] hover:text-[var(--color-teal-600)]">
-                        {{ planning.descripcion || '—' }}
-                      </span>
-                    </td>
-                    <td class="px-4 sm:px-6 py-2.5">
-                      <span class="text-sm whitespace-nowrap" style="color: var(--color-gray-900);">{{ planning.fecha }}</span>
-                    </td>
-                    <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell">
-                      <span class="text-sm" style="color: var(--color-gray-500);">{{ nombreProyecto(planning.proyectoId) }}</span>
-                    </td>
-                    <td class="px-4 sm:px-6 py-2.5 text-center">
-                      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-medium"
-                            style="background-color: #e0f2fe; color: #0369a1;">
-                        {{ planning.tareas.length }}
-                      </span>
-                    </td>
-                    <td class="px-4 sm:px-6 py-2.5 text-center">
-                      <span class="text-sm font-semibold" style="color: var(--color-indigo-600);">
-                        {{ estimacionTotal(planning.tareas) }} día{{ estimacionTotal(planning.tareas) !== 1 ? 's' : '' }}
-                      </span>
-                    </td>
-                    <td class="px-4 sm:px-6 py-2.5 text-right">
-                      <div class="flex items-center justify-end gap-1">
-                        <button *appPermiso="'editar'; recurso: 'planning'" (click)="abrirEditar(planning)"
-                                class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
-                                [attr.aria-label]="'Editar planning'">
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
-                          </svg>
-                        </button>
-                        <button (click)="abrirTareas(planning)"
-                                class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-indigo-600)] hover:bg-[var(--color-gray-100)]"
-                                [attr.aria-label]="'Tareas del planning'">
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/>
-                          </svg>
-                        </button>
-                        <button *appPermiso="'crear'; recurso: 'planning'" (click)="clonarPlanning(planning)"
-                                class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-indigo-600)] hover:bg-[var(--color-gray-100)]"
-                                [attr.aria-label]="'Clonar planning'">
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"/>
-                          </svg>
-                        </button>
-                        <button *appPermiso="'eliminar'; recurso: 'planning'" (click)="confirmarEliminar(planning.id)"
-                                class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
-                                [attr.aria-label]="'Eliminar planning'">
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        @if (totalPlannings() > 0) {
-          <div class="mt-4 flex items-center justify-between gap-4 flex-wrap no-print">
-            <p class="text-sm" style="color: var(--color-gray-500);">
-              Mostrando {{ paginaInicio() }}–{{ paginaFin() }} de {{ totalPlannings() }} plan{{ totalPlannings() !== 1 ? 'es' : '' }}
-            </p>
-            <div class="flex items-center gap-1">
-              <button (click)="paginaAnterior()" [disabled]="paginaActual() <= 1"
-                      class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
-                Anterior
-              </button>
-              @if (paginasTotales() > 1) {
-                @for (p of rangoPaginas(); track $index) {
-                  @if (p === null) {
-                    <span class="px-1 text-sm" style="color: var(--color-gray-400);">…</span>
-                  } @else {
-                    <button (click)="irPagina(p)"
-                            class="min-w-[2rem] px-2 py-1.5 text-sm font-medium rounded-lg transition-colors"
-                            [style.background-color]="p === paginaActual() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
-                            [style.color]="p === paginaActual() ? '#ffffff' : 'var(--color-gray-600)'"
-                            [style.border]="p === paginaActual() ? '1px solid var(--color-indigo-600)' : '1px solid var(--color-gray-200)'">
-                      {{ p }}
-                    </button>
-                  }
-                }
-              }
-              <button (click)="paginaSiguiente()" [disabled]="paginaActual() >= paginasTotales()"
-                      class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
-                Siguiente
-              </button>
-            </div>
-          </div>
-        }
-      }
-
-      @if (deleteConfirmId) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);">
-          <div class="modal-enter rounded-xl shadow-xl p-6 w-full max-w-sm border" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-            <h3 class="text-lg font-semibold mb-2" style="color: var(--color-gray-900);">Eliminar planning</h3>
-            <p class="text-sm mb-6" style="color: var(--color-gray-500);">
-              ¿Eliminar este planning? Esta acción no se puede deshacer.
-            </p>
-            <div class="flex justify-end gap-3">
-              <button (click)="cancelarEliminar()"
-                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
-                Cancelar
-              </button>
-              <button (click)="ejecutarEliminar()"
-                      class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-rose-600)] hover:bg-[var(--color-rose-700)]">
-                Eliminar
-              </button>
-            </div>
-          </div>
+          <p-table [value]="plannings()" [paginator]="true" [rows]="PAGINA_SIZE"
+                   [paginatorStyleClass]="'no-print'" [showCurrentPageReport]="true"
+                   currentPageReportTemplate="Mostrando {first}–{last} de {totalRecords}"
+                   [rowsPerPageOptions]="[5, 10, 25]" [alwaysShowPaginator]="false"
+                   [rowHover]="true" [stripedRows]="true" [tableStyle]="{'min-width': '900px'}">
+            <ng-template pTemplate="header">
+              <tr>
+                <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Descripción</th>
+                <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha</th>
+                <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Proyecto</th>
+                <th class="text-center px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Tareas</th>
+                <th class="text-center px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estimación</th>
+                <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-planning>
+              <tr class="planning-row" style="transition: background-color 0.15s;">
+                <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell border-l-2 transition-all duration-200 cursor-pointer" style="border-color: rgba(13, 148, 136, 0.5);" (click)="abrirDetalle(planning)">
+                  <span class="text-sm truncate-desc transition-colors text-[var(--color-gray-700)] hover:text-[var(--color-teal-600)]">
+                    {{ planning.descripcion || '—' }}
+                  </span>
+                </td>
+                <td class="px-4 sm:px-6 py-2.5">
+                  <span class="text-sm whitespace-nowrap" style="color: var(--color-gray-900);">{{ planning.fecha }}</span>
+                </td>
+                <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell">
+                  <span class="text-sm" style="color: var(--color-gray-500);">{{ nombreProyecto(planning.proyectoId) }}</span>
+                </td>
+                <td class="px-4 sm:px-6 py-2.5 text-center">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-medium"
+                        style="background-color: #e0f2fe; color: #0369a1;">
+                    {{ planning.tareas.length }}
+                  </span>
+                </td>
+                <td class="px-4 sm:px-6 py-2.5 text-center">
+                  <span class="text-sm font-semibold" style="color: var(--color-indigo-600);">
+                    {{ estimacionTotal(planning.tareas) }} día{{ estimacionTotal(planning.tareas) !== 1 ? 's' : '' }}
+                  </span>
+                </td>
+                <td class="px-4 sm:px-6 py-2.5 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <p-button *appPermiso="'editar'; recurso: 'planning'" (onClick)="abrirEditar(planning)"
+                              icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" size="small"
+                              [attr.aria-label]="'Editar planning'" />
+                    <p-button (onClick)="abrirTareas(planning)"
+                              icon="pi pi-list-check" [text]="true" [rounded]="true" severity="secondary" size="small"
+                              [attr.aria-label]="'Tareas del planning'" />
+                    <p-button *appPermiso="'crear'; recurso: 'planning'" (onClick)="clonarPlanning(planning)"
+                              icon="pi pi-copy" [text]="true" [rounded]="true" severity="secondary" size="small"
+                              [attr.aria-label]="'Clonar planning'" />
+                    <p-button *appPermiso="'eliminar'; recurso: 'planning'" (onClick)="confirmarEliminar(planning)"
+                              icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small"
+                              [attr.aria-label]="'Eliminar planning'" />
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
         </div>
       }
 
@@ -225,42 +158,19 @@ export class PlanningComponent {
   private proyectoService = inject(ProyectoService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private confirmationService = inject(ConfirmationService);
 
   plannings = this.planningService.plannings;
   proyectos = this.proyectoService.proyectos;
   protected readonly estimacionTotal = estimacionTotal;
+  protected readonly PAGINA_SIZE = PAGINA_SIZE;
 
   showForm = false;
   editandoPlanning: Planning | null = null;
-  deleteConfirmId: string | null = null;
   showTareas = false;
   planningTareasActual: Planning | null = null;
   showDetalle = false;
   planningDetalleActual: Planning | null = null;
-
-  protected readonly paginaActual = signal(1);
-  protected readonly totalPlannings = computed(() => this.plannings().length);
-  protected readonly paginasTotales = computed(() => Math.max(1, Math.ceil(this.totalPlannings() / PAGINA_SIZE)));
-  protected readonly paginaInicio = computed(() => (this.paginaActual() - 1) * PAGINA_SIZE + 1);
-  protected readonly paginaFin = computed(() => Math.min(this.paginaActual() * PAGINA_SIZE, this.totalPlannings()));
-  protected readonly planningsPagina = computed(() => this.plannings().slice(this.paginaInicio() - 1, this.paginaFin()));
-  protected readonly rangoPaginas = computed<(number | null)[]>(() => {
-    const total = this.paginasTotales();
-    const actual = this.paginaActual();
-    if (total <= 7) {
-      return Array.from({length: total}, (_, i) => i + 1);
-    }
-    const paginas = new Set<number>([1, actual - 1, actual, actual + 1, total]);
-    const lista = [...paginas].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
-    const resultado: (number | null)[] = [];
-    let anterior = 0;
-    for (const p of lista) {
-      if (p - anterior > 1) resultado.push(null);
-      resultado.push(p);
-      anterior = p;
-    }
-    return resultado;
-  });
 
   private destroyRef = inject(DestroyRef);
 
@@ -272,27 +182,6 @@ export class PlanningComponent {
         this.router.navigate([], {queryParams: {}, replaceUrl: true});
       }
     });
-
-    effect(() => {
-      const total = this.paginasTotales();
-      if (this.paginaActual() > total) {
-        this.paginaActual.set(total);
-      }
-    });
-  }
-
-  irPagina(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.paginasTotales()) {
-      this.paginaActual.set(pagina);
-    }
-  }
-
-  paginaAnterior(): void {
-    this.irPagina(this.paginaActual() - 1);
-  }
-
-  paginaSiguiente(): void {
-    this.irPagina(this.paginaActual() + 1);
   }
 
   nombreProyecto(proyectoId: string): string {
@@ -332,19 +221,18 @@ export class PlanningComponent {
     this.planningService.clonar(planning.id);
   }
 
-  confirmarEliminar(id: string): void {
-    this.deleteConfirmId = id;
-  }
-
-  ejecutarEliminar(): void {
-    if (this.deleteConfirmId) {
-      this.planningService.eliminar(this.deleteConfirmId);
-    }
-    this.deleteConfirmId = null;
-  }
-
-  cancelarEliminar(): void {
-    this.deleteConfirmId = null;
+  confirmarEliminar(planning: Planning): void {
+    this.confirmationService.confirm({
+      header: 'Eliminar planning',
+      message: '¿Eliminar este planning? Esta acción no se puede deshacer.',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.planningService.eliminar(planning.id);
+      },
+    });
   }
 
   abrirTareas(planning: Planning): void {

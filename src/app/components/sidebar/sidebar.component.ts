@@ -1,6 +1,7 @@
 import {Component, inject, input, output, computed} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
+import {Avatar} from 'primeng/avatar';
 import {AuthService} from '../../services/auth.service';
 import {ThemeService} from '../../services/theme.service';
 import {PermisoService} from '../../services/permiso.service';
@@ -9,7 +10,7 @@ import {ChatService} from '../../services/chat.service';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, MatIconModule],
+  imports: [RouterLink, RouterLinkActive, MatIconModule, Avatar],
   template: `
     <div class="flex flex-col h-full select-none" style="background-color: var(--color-surface);">
       <!-- Logo + close (close only in mobile overlay) -->
@@ -108,11 +109,13 @@ import {ChatService} from '../../services/chat.service';
             <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shrink-0"
                  [style.background-color]="'var(--color-indigo-100)'"
                  style="color: var(--color-indigo-700);">
-              @if (authService.currentUser()?.foto) {
-                <img [src]="authService.currentUser()!.foto" alt="Foto de perfil" class="w-full h-full object-cover">
-              } @else {
-                {{ authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U' }}
-              }
+@if (authService.currentUser()?.foto) {
+              <p-avatar [image]="authService.currentUser()!.foto" shape="circle"
+                        [style]="{'width': '2rem', 'height': '2rem'}" />
+            } @else {
+              <p-avatar [label]="authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U'" shape="circle"
+                        [style]="{'width': '2rem', 'height': '2rem', 'background-color': 'var(--color-indigo-100)', 'color': 'var(--color-indigo-700)', 'font-size': '0.75rem', 'font-weight': '700'}" />
+            }
             </div>
             <div class="min-w-0 leading-tight">
               <p class="text-sm font-medium truncate" style="color: var(--color-gray-900);">{{ authService.currentUser()?.usuario }}</p>

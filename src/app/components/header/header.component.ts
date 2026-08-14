@@ -2,6 +2,7 @@ import {Component, inject, output, ChangeDetectionStrategy, signal, HostListener
 import {Router} from '@angular/router';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {Avatar} from 'primeng/avatar';
 import {ThemeService} from '../../services/theme.service';
 import {AuthService} from '../../services/auth.service';
 import {NotificacionesPanelComponent} from '../notificaciones-panel/notificaciones-panel.component';
@@ -10,7 +11,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatIconModule, NotificacionesPanelComponent],
+  imports: [MatButtonModule, MatIconModule, NotificacionesPanelComponent, Avatar],
   template: `
     <header style="background-color: var(--color-surface); border-color: var(--color-gray-200);" class="border-b shadow-sm">
       <div class="container">
@@ -32,14 +33,14 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
             <!-- User avatar -->
             <div class="relative" #userMenu>
               <button (click)="toggleUserMenu()"
-                      class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold transition-colors"
-                      [style.background-color]="'var(--color-indigo-100)'"
-                      style="color: var(--color-indigo-700);"
+                      class="shrink-0 transition-opacity hover:opacity-80"
                       [attr.aria-label]="'Menú de usuario'">
                 @if (authService.currentUser()?.foto) {
-                  <img [src]="authService.currentUser()!.foto" alt="Foto de perfil" class="w-full h-full object-cover">
+                  <p-avatar [image]="authService.currentUser()!.foto" shape="circle"
+                            [style]="{'width': '2rem', 'height': '2rem'}" />
                 } @else {
-                  {{ authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U' }}
+                  <p-avatar [label]="authService.currentUser()?.usuario?.charAt(0)?.toUpperCase() || 'U'" shape="circle"
+                            [style]="{'width': '2rem', 'height': '2rem', 'background-color': 'var(--color-indigo-100)', 'color': 'var(--color-indigo-700)', 'font-size': '0.75rem', 'font-weight': '700'}" />
                 }
               </button>
               @if (showUserMenu()) {

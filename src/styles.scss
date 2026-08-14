@@ -1,5 +1,9 @@
 @use 'tailwindcss';
 @use 'bootstrap/scss/bootstrap-grid';
+@plugin "tailwindcss-primeui";
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@import 'primeicons/primeicons.css';
 
 @keyframes modal-in {
   from {
@@ -248,5 +252,11 @@
   .justify-center-modal {
     justify-content: center;
     margin-left: 306px;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  .p-dialog{
+    width: 90vw !important;
   }
 }

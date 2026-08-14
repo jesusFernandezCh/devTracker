@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {signal} from '@angular/core';
 import {provideRouter} from '@angular/router';
+import {provideAnimations} from '@angular/platform-browser/animations';
 import {ProjectCardComponent} from './project-card.component';
 import {EquipoService} from '../../services/equipo.service';
 import {AuthService} from '../../services/auth.service';
@@ -27,6 +28,7 @@ describe('ProjectCardComponent', () => {
     TestBed.configureTestingModule({
       imports: [ProjectCardComponent],
       providers: [
+        provideAnimations(),
         provideRouter([]),
         {provide: AuthService, useValue: {currentUser: () => usuarioActual()}},
       ],
@@ -75,6 +77,7 @@ describe('ProjectCardComponent', () => {
     TestBed.configureTestingModule({
       imports: [ProjectCardComponent],
       providers: [
+        provideAnimations(),
         provideRouter([]),
         {provide: AuthService, useValue: {currentUser: () => usuarioActual()}},
       ],

@@ -5,6 +5,9 @@ import {FullCalendarModule} from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
+import {Dialog} from 'primeng/dialog';
+import {Tag} from 'primeng/tag';
+import {ProgressBar} from 'primeng/progressbar';
 import {ProyectoService} from '../../services/proyecto.service';
 import {ColumnService} from '../../services/column.service';
 import {PlanningService} from '../../services/planning.service';
@@ -66,7 +69,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
   selector: 'app-calendario',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FullCalendarModule, DatePipe],
+  imports: [CommonModule, FullCalendarModule, DatePipe, Dialog, Tag, ProgressBar],
   template: `
     <div class="calendario-page">
       <div class="flex justify-between items-center mb-6">
@@ -81,157 +84,157 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
       </div>
     </div>
 
-    @if (selectedProyecto(); as p) {
-      <div class="modal-backdrop" (click)="cerrarModal()">
-        <div class="modal-card modal-enter" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h2 style="color: var(--color-gray-900);">{{ p.nombre }}</h2>
-            <button (click)="cerrarModal()" class="close-btn" style="color: var(--color-gray-400);">&times;</button>
+    <p-dialog
+      [visible]="selectedProyecto() !== null"
+      (onHide)="cerrarModal()"
+      [header]="selectedProyecto()?.nombre ?? ''"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [closeOnEscape]="true"
+      [dismissableMask]="true"
+      [style]="{width: '400px'}"
+      styleClass="calendario-modal">
+      @if (selectedProyecto(); as p) {
+        <div>
+          @if (p.descripcion) {
+            <div class="rounded-lg p-3 mb-3" style="background-color: var(--color-gray-50);">
+              <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ p.descripcion }}</p>
+            </div>
+          }
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</span>
+              <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ p.cliente || '—' }}</p>
+            </div>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</span>
+              <div class="mt-1">
+                <p-tag [value]="p.status"
+                       [style]="{'background-color': statusInfo(p.status).bg, color: statusInfo(p.status).text}" />
+              </div>
+            </div>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Columna</span>
+              <div class="mt-1 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full" [style.background-color]="columnaColor(p.columnaId)"></span>
+                <span class="text-sm" style="color: var(--color-gray-800);">{{ columnaNombre(p.columnaId) }}</span>
+              </div>
+            </div>
+            @if (p.documentacion) {
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Documentación</span>
+                <a [href]="p.documentacion" target="_blank" rel="noopener"
+                   class="mt-1 inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                  </svg>
+                  Abrir Figma
+                </a>
+              </div>
+            }
           </div>
-          <div class="modal-body">
-            @if (p.descripcion) {
-              <div class="rounded-lg p-3 mb-3" style="background-color: var(--color-gray-50);">
-                <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ p.descripcion }}</p>
+
+          <div class="mt-3 pt-3 border-t" style="border-color: var(--color-gray-200);">
+            <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Duración</span>
+            <p class="mt-1 text-sm" style="color: var(--color-gray-800);">
+              {{ p.fechaDesde | date:'dd/MM/yyyy' }} — {{ p.fechaHasta | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+
+          <div class="mt-3 space-y-1">
+            <button (click)="mostrarPlanificaciones = !mostrarPlanificaciones"
+                    class="section-toggle">
+              <span class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/>
+                </svg>
+                <span>Planning ({{ planningsDelProyecto().length }})</span>
+              </span>
+              <svg class="chevron" [class.rotate-180]="mostrarPlanificaciones" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            @if (mostrarPlanificaciones) {
+              <div class="pl-3 space-y-2">
+                @for (planning of planningsDelProyecto(); track planning.id) {
+                  <div class="planning-item">
+                    <div class="min-w-0">
+                      <span class="font-medium" style="color: var(--color-gray-700);">{{ planning.fecha }}</span>
+                      @if (planning.descripcion) {
+                        <p class="truncate" style="color: var(--color-gray-400);">{{ planning.descripcion }}</p>
+                      }
+                    </div>
+                    <span class="shrink-0 ml-2 font-semibold" style="color: var(--color-indigo-600);">Estimación: {{ estimacionTotal(planning.tareas) }} días</span>
+                  </div>
+                } @empty {
+                  <p class="text-xs pl-2" style="color: var(--color-gray-400);">Sin planificaciones</p>
+                }
               </div>
             }
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
-              <div>
-                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</span>
-                <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ p.cliente || '—' }}</p>
+            <button (click)="mostrarTareas = !mostrarTareas"
+                    class="section-toggle">
+              <span class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-6 4h6m-6 4h6m-6 4h6"/>
+                </svg>
+                <span>Tareas ({{ tareasDelProyecto().length }})</span>
+              </span>
+              <svg class="chevron" [class.rotate-180]="mostrarTareas" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            @if (mostrarTareas) {
+              <div class="pl-3 space-y-1 tareas-scroll" style="max-height: 116px; overflow-y: auto;">
+                @for (tarea of tareasDelProyecto(); track tarea.id) {
+                  <div class="task-item">
+                    <label class="flex items-center gap-2 min-w-0 cursor-pointer flex-1">
+                      <input type="checkbox"
+                             [checked]="tarea.completada"
+                             (change)="toggleTarea(tarea.id)"
+                             class="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
+                      <span class="text-xs truncate"
+                            [class.line-through]="tarea.completada"
+                            [style.text-decoration]="tarea.completada ? 'line-through' : 'none'"
+                            [style.color]="tarea.completada ? 'var(--color-gray-400)' : 'var(--color-gray-700)'">{{ tarea.tarea }}</span>
+                    </label>
+                    <p-tag [value]="tarea.complejidad"
+                           [style]="{backgroundColor: complejidadEstilo(tarea.complejidad).bg, color: complejidadEstilo(tarea.complejidad).text}" />
+                  </div>
+                } @empty {
+                  <p class="text-xs pl-2" style="color: var(--color-gray-400);">Sin tareas</p>
+                }
               </div>
-              <div>
-                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</span>
-                <div class="mt-1">
-                  <span class="badge" [style.background-color]="statusInfo(p.status).bg" [style.color]="statusInfo(p.status).text">
-                    {{ p.status }}
+              @if (tareasDelProyecto().length > 0) {
+                <div class="mt-2 flex items-center gap-2 px-2">
+                  <div class="flex-1">
+                    <p-progressbar [value]="porcentajeAvance()"
+                                   [showValue]="false"
+                                   [style]="{height: '6px'}" />
+                  </div>
+                  <span class="text-xs font-medium shrink-0"
+                        [style.color]="porcentajeAvance() === 100 ? '#059669' : 'var(--color-gray-400)'">
+                    {{ porcentajeAvance() }}%
                   </span>
                 </div>
-              </div>
-              <div>
-                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Columna</span>
-                <div class="mt-1 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full" [style.background-color]="columnaColor(p.columnaId)"></span>
-                  <span class="text-sm" style="color: var(--color-gray-800);">{{ columnaNombre(p.columnaId) }}</span>
-                </div>
-              </div>
-              @if (p.documentacion) {
-                <div>
-                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Documentación</span>
-                  <a [href]="p.documentacion" target="_blank" rel="noopener"
-                     class="mt-1 inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                    </svg>
-                    Abrir Figma
-                  </a>
-                </div>
               }
-            </div>
+            }
+          </div>
 
-            <div class="mt-3 pt-3 border-t" style="border-color: var(--color-gray-200);">
-              <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Duración</span>
-              <p class="mt-1 text-sm" style="color: var(--color-gray-800);">
-                {{ p.fechaDesde | date:'dd/MM/yyyy' }} — {{ p.fechaHasta | date:'dd/MM/yyyy' }}
-              </p>
-            </div>
-
-            <div class="mt-3 space-y-1">
-              <button (click)="mostrarPlanificaciones = !mostrarPlanificaciones"
-                      class="section-toggle">
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/>
-                  </svg>
-                  <span>Planning ({{ planningsDelProyecto().length }})</span>
-                </span>
-                <svg class="chevron" [class.rotate-180]="mostrarPlanificaciones" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                </svg>
-              </button>
-              @if (mostrarPlanificaciones) {
-                <div class="pl-3 space-y-2">
-                  @for (planning of planningsDelProyecto(); track planning.id) {
-                    <div class="planning-item">
-                      <div class="min-w-0">
-                        <span class="font-medium" style="color: var(--color-gray-700);">{{ planning.fecha }}</span>
-                        @if (planning.descripcion) {
-                          <p class="truncate" style="color: var(--color-gray-400);">{{ planning.descripcion }}</p>
-                        }
-                      </div>
-                      <span class="shrink-0 ml-2 font-semibold" style="color: var(--color-indigo-600);">Estimación: {{ estimacionTotal(planning.tareas) }} días</span>
-                    </div>
-                  } @empty {
-                    <p class="text-xs pl-2" style="color: var(--color-gray-400);">Sin planificaciones</p>
-                  }
-                </div>
-              }
-
-              <button (click)="mostrarTareas = !mostrarTareas"
-                      class="section-toggle">
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-6 4h6m-6 4h6m-6 4h6"/>
-                  </svg>
-                  <span>Tareas ({{ tareasDelProyecto().length }})</span>
-                </span>
-                <svg class="chevron" [class.rotate-180]="mostrarTareas" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                </svg>
-              </button>
-              @if (mostrarTareas) {
-                <div class="pl-3 space-y-1 tareas-scroll" style="max-height: 116px; overflow-y: auto;">
-                  @for (tarea of tareasDelProyecto(); track tarea.id) {
-                    <div class="task-item">
-                      <label class="flex items-center gap-2 min-w-0 cursor-pointer flex-1">
-                        <input type="checkbox"
-                               [checked]="tarea.completada"
-                               (change)="toggleTarea(tarea.id)"
-                               class="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
-                        <span class="text-xs truncate"
-                              [class.line-through]="tarea.completada"
-                              [style.text-decoration]="tarea.completada ? 'line-through' : 'none'"
-                              [style.color]="tarea.completada ? 'var(--color-gray-400)' : 'var(--color-gray-700)'">{{ tarea.tarea }}</span>
-                      </label>
-                      <span class="shrink-0 text-xs font-medium px-1.5 py-0.5 rounded"
-                            [style.background-color]="complejidadEstilo(tarea.complejidad).bg"
-                            [style.color]="complejidadEstilo(tarea.complejidad).text">
-                        {{ tarea.complejidad }}
-                      </span>
-                    </div>
-                  } @empty {
-                    <p class="text-xs pl-2" style="color: var(--color-gray-400);">Sin tareas</p>
-                  }
-                </div>
-                @if (tareasDelProyecto().length > 0) {
-                  <div class="mt-2 flex items-center gap-2 px-2">
-                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-200);">
-                      <div class="h-full rounded-full transition-all duration-300"
-                           [style.width.%]="porcentajeAvance()"
-                           [style.background-color]="porcentajeAvance() === 100 ? '#22C55E' : '#6366F1'"></div>
-                    </div>
-                    <span class="text-xs font-medium shrink-0"
-                          [style.color]="porcentajeAvance() === 100 ? '#059669' : 'var(--color-gray-400)'">
-                      {{ porcentajeAvance() }}%
-                    </span>
-                  </div>
-                }
-              }
-            </div>
-
-            <div class="flex justify-end gap-2 pt-3">
-              <button (click)="router.navigate(['/proyectos'])"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"/>
-                </svg>
-                Proyectos
-              </button>
-            </div>
+          <div class="flex justify-end gap-2 pt-3">
+            <button (click)="router.navigate(['/proyectos'])"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"/>
+              </svg>
+              Proyectos
+            </button>
           </div>
         </div>
-      </div>
-    }
+      }
+    </p-dialog>
   `,
   styles: [`
     .calendario-page {
@@ -297,67 +300,6 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
 
     :host-context([data-theme="dark"]) .fc .fc-daygrid-more-link {
       color: var(--color-indigo-500);
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(0, 0, 0, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 1rem;
-    }
-
-    .modal-card {
-      background-color: var(--color-surface);
-      border-radius: 0.75rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--color-gray-200);
-    }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: 0.875rem;
-      font-weight: 700;
-      line-height: 1.4;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.25rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0;
-      transition: color 0.15s;
-    }
-
-    .close-btn:hover {
-      color: var(--color-gray-700) !important;
-    }
-
-    .modal-body {
-      padding: 1rem;
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-      width: fit-content;
     }
 
     .section-toggle {
@@ -479,15 +421,6 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-
-      .modal-backdrop {
-        padding: 0.5rem;
-      }
-
-      .modal-card {
-        max-height: 90vh;
-        overflow-y: auto;
       }
     }
   `]

@@ -6,6 +6,8 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { map } from 'rxjs';
 import { HighchartsChartComponent, providePartialHighcharts } from 'highcharts-angular';
 import type { Options as HighchartsOptions, SeriesOptionsType } from 'highcharts';
+import { Tag } from 'primeng/tag';
+import { ProgressBar } from 'primeng/progressbar';
 import { ProyectoService } from '../../services/proyecto.service';
 import { PlanningService } from '../../services/planning.service';
 import { ColumnService } from '../../services/column.service';
@@ -25,7 +27,7 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
   selector: 'app-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, HighchartsChartComponent],
+  imports: [CommonModule, RouterLink, HighchartsChartComponent, Tag, ProgressBar],
   providers: [providePartialHighcharts({
     modules: () => [
       import('highcharts/esm/highcharts-more').then(() => import('highcharts/esm/modules/solid-gauge')),
@@ -89,21 +91,16 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
                       <span class="db-bar-label">
                         {{ item.proyecto.nombre }}
                         @if (item.proyecto.prioridad) {
-                          <span class="db-bar-priority"
-                                [style.color]="prioridadColor(item.proyecto.prioridad).text"
-                                [style.background-color]="prioridadColor(item.proyecto.prioridad).bg">
-                            {{ item.proyecto.prioridad }}
-                          </span>
+                          <p-tag [value]="item.proyecto.prioridad"
+                                 [style]="{color: prioridadColor(item.proyecto.prioridad).text, backgroundColor: prioridadColor(item.proyecto.prioridad).bg}" />
                         }
                       </span>
                       <span class="db-bar-value">{{ item.porcentaje }}<span class="db-percent-sign">%</span></span>
                     </div>
-                    <div class="db-bar-track">
-                      <div class="db-bar-fill"
-                           [style.width.%]="animacionIniciada() ? item.porcentaje : 0"
-                           [style.background-color]="barColor(item.porcentaje)">
-                      </div>
-                    </div>
+                    <p-progressbar [value]="animacionIniciada() ? item.porcentaje : 0"
+                                   [color]="barColor(item.porcentaje)"
+                                   [showValue]="false"
+                                   [style]="{height: '6px'}" />
                   </div>
                 }
               </div>
@@ -152,7 +149,7 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
                       <div class="db-deadline-dot" [style.background-color]="days <= 14 ? 'var(--color-rose-500)' : days <= 30 ? 'var(--color-amber-500)' : 'var(--color-gray-300)'"></div>
                       <span class="db-deadline-name">{{ proy.nombre }}</span>
                       @if (days <= 14) {
-                        <span class="db-deadline-urgent">URGENT</span>
+                        <p-tag value="URGENT" severity="danger" />
                       }
                     </div>
                     <div class="db-deadline-meta">
@@ -185,12 +182,10 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
                         </span>
                         <span class="db-bar-value">{{ item.porcentaje }}<span class="db-percent-sign">%</span></span>
                       </div>
-                      <div class="db-bar-track">
-                        <div class="db-bar-fill"
-                             [style.width.%]="animacionIniciada() ? item.porcentaje : 0"
-                             [style.background-color]="barColor(item.porcentaje)">
-                        </div>
-                      </div>
+                      <p-progressbar [value]="animacionIniciada() ? item.porcentaje : 0"
+                                     [color]="barColor(item.porcentaje)"
+                                     [showValue]="false"
+                                     [style]="{height: '6px'}" />
                     </div>
                   }
                 </div>

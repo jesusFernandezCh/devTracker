@@ -2,13 +2,19 @@ import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { InputText } from 'primeng/inputtext';
+import { Password } from 'primeng/password';
+import { Checkbox } from 'primeng/checkbox';
+import { Button } from 'primeng/button';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, InputText, Password, Checkbox, Button, IconField, InputIcon],
   template: `
     <div class="min-h-screen flex" style="background-color: var(--color-gray-50);">
       <!-- Left panel: branding -->
@@ -71,52 +77,45 @@ import { AuthService } from '../../services/auth.service';
           <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Correo electrónico</label>
-              <input formControlName="correo" type="email" autocomplete="email"
-                     class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
-                     style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                     placeholder="ejemplo@correo.com">
+              <p-iconfield>
+                <p-inputicon>
+                  <i class="pi pi-envelope"></i>
+                </p-inputicon>
+                <input pInputText formControlName="correo" type="email" autocomplete="email" class="w-full"
+                       placeholder="ejemplo@correo.com" autofocus>
+              </p-iconfield>
               @if (loginForm.controls.correo.touched && loginForm.controls.correo.invalid) {
-                <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Ingresa un correo válido.</p>
+                <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                  <i class="pi pi-exclamation-circle"></i> Ingresa un correo válido.
+                </small>
               }
             </div>
 
             <div>
               <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Contraseña</label>
-              <input formControlName="clave" type="password" autocomplete="current-password"
-                     class="w-full px-3 py-2.5 text-sm rounded-lg outline-none transition-colors"
-                     style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                     placeholder="••••••••">
+              <p-password formControlName="clave" [toggleMask]="true" [feedback]="false" fluid="true"
+                           [inputStyle]="{width: '100%'}" placeholder="••••••••"
+                           autocomplete="current-password" />
               @if (loginForm.controls.clave.touched && loginForm.controls.clave.invalid) {
-                <p class="mt-1 text-xs" style="color: var(--color-rose-500);">La contraseña debe tener al menos 4 caracteres.</p>
+                <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                  <i class="pi pi-exclamation-circle"></i> La contraseña debe tener al menos 4 caracteres.
+                </small>
               }
             </div>
 
             <div class="flex items-center justify-between">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input formControlName="recordar" type="checkbox"
-                       class="w-4 h-4 rounded"
-                       style="accent-color: var(--color-indigo-600);">
+                <p-checkbox formControlName="recordar" [binary]="true" inputId="recordar" />
                 <span class="text-sm" style="color: var(--color-gray-600);">Recordar sesión</span>
               </label>
               <a href="#" class="text-sm font-medium transition-colors" style="color: var(--color-indigo-600);" (click)="$event.preventDefault()">¿Olvidaste tu contraseña?</a>
             </div>
 
-            <button type="submit" [disabled]="loginForm.invalid || loading()"
-                    class="w-full py-2.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                    style="background-color: var(--color-teal-600);"
-                    [class.hover:bg-teal-700]="!loginForm.invalid && !loading()">
-              @if (loading()) {
-                <span class="flex items-center justify-center gap-2">
-                  <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Iniciando sesión...
-                </span>
-              } @else {
-                Iniciar sesión
-              }
-            </button>
+            <p-button type="submit"
+                      [disabled]="loginForm.invalid || loading()"
+                      [loading]="loading()"
+                      [label]="loading() ? 'Iniciando sesión...' : 'Iniciar sesión'"
+                      [style]="{width: '100%'}" />
           </form>
 
           <div class="relative my-6">
@@ -160,9 +159,7 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     :host { display: block; }
-    input:focus { border-color: var(--color-indigo-400) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .animate-spin { animation: spin 1s linear infinite; }
   `]
 })
 export class LoginComponent {

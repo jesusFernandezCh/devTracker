@@ -4,6 +4,8 @@ import {MatIconRegistry} from '@angular/material/icon';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {BreakpointObserver} from '@angular/cdk/layout';
 import {SwUpdate} from '@angular/service-worker';
+import {ConfirmationService} from 'primeng/api';
+import {ConfirmDialog} from 'primeng/confirmdialog';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {HeaderComponent} from './components/header/header.component';
 import {ChatWidgetComponent} from './components/chat-widget/chat-widget.component';
@@ -13,7 +15,8 @@ import {AuthService} from './services/auth.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent, ChatWidgetComponent, BottomNavComponent],
+  imports: [RouterOutlet, MatSidenavModule, SidebarComponent, HeaderComponent, ChatWidgetComponent, BottomNavComponent, ConfirmDialog],
+  providers: [ConfirmationService],
   template: `
     @if (actualizacionDisponible()) {
     <div class="fixed top-0 inset-x-0 z-[100] flex items-center justify-between gap-4 px-4 py-2.5 shadow-lg"
@@ -33,6 +36,7 @@ import {AuthService} from './services/auth.service';
     </div>
     }
     @if (authService.isLoggedIn()) {
+    <p-confirmDialog />
     <mat-sidenav-container>
       <mat-sidenav #sidenav
                    [mode]="isMobile() ? 'over' : 'side'"

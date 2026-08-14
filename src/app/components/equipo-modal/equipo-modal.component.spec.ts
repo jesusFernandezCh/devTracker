@@ -1,4 +1,5 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {provideAnimations} from '@angular/platform-browser/animations';
 import {EquipoModalComponent} from './equipo-modal.component';
 import {EquipoService} from '../../services/equipo.service';
 import {Proyecto} from '../../models/proyecto.model';
@@ -20,7 +21,7 @@ describe('EquipoModalComponent', () => {
       {id: 'u1', usuario: 'Ana López', correo: 'ana@correo.com', clave: 'abcd:efgh', tipo: 'usuario'},
       {id: 'u2', usuario: 'Beto Ruiz', correo: 'beto@correo.com', clave: 'abcd:efgh', tipo: 'qa'},
     ]));
-    TestBed.configureTestingModule({imports: [EquipoModalComponent]});
+    TestBed.configureTestingModule({imports: [EquipoModalComponent], providers: [provideAnimations()]});
     fixture = TestBed.createComponent(EquipoModalComponent);
     fixture.componentRef.setInput('proyecto', proyecto);
     component = fixture.componentInstance;

@@ -1,6 +1,11 @@
-import {Component, inject, ChangeDetectionStrategy, signal, computed, effect} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, signal, computed} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 import {HighchartsChartComponent} from 'highcharts-angular';
 import type {Options as HighchartsOptions, SeriesOptionsType} from 'highcharts';
+import {TableModule} from 'primeng/table';
+import {Tag} from 'primeng/tag';
+import {Select} from 'primeng/select';
+import {ProgressBar} from 'primeng/progressbar';
 import {ReporteService} from '../../services/reporte.service';
 import {ColumnService} from '../../services/column.service';
 import {ThemeService} from '../../services/theme.service';
@@ -24,7 +29,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
   selector: 'app-reportes',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HighchartsChartComponent],
+  imports: [FormsModule, HighchartsChartComponent, TableModule, Tag, Select, ProgressBar],
   template: `
     <div class="mb-6">
       <div class="flex items-center justify-between gap-4 flex-wrap">
@@ -56,15 +61,16 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
       </div>
       <div class="min-w-[12rem]">
         <label class="block text-xs font-medium mb-1" style="color: var(--color-gray-500);">Proyecto</label>
-        <select [value]="reporteService.proyectoId()"
-                (change)="reporteService.proyectoId.set($any($event.target).value)"
-                class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
-          <option value="">Todos los proyectos</option>
-          @for (p of reporteService.proyectosAccesibles(); track p.id) {
-            <option [value]="p.id">{{ p.nombre }}</option>
-          }
-        </select>
+        <p-select
+          [options]="reporteService.proyectosAccesibles()"
+          optionLabel="nombre"
+          optionValue="id"
+          [ngModel]="reporteService.proyectoId()"
+          (ngModelChange)="reporteService.proyectoId.set($event ?? '')"
+          [showClear]="true"
+          placeholder="Todos los proyectos"
+          [style]="{width: '100%'}"
+          appendTo="body" />
       </div>
       <button (click)="reporteService.limpiarFiltros()"
               class="px-3 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
@@ -88,7 +94,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
     <div class="print-area">
       @switch (tabActivo()) {
         @case ('proyectos') {
-          @let rows = proyectosPagina();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Reporte de proyectos</h2>
             <div class="flex items-center gap-2">
@@ -97,90 +102,61 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
             </div>
           </div>
           <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[900px] text-sm">
-                <thead>
-                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                    <th class="th-cell">Proyecto</th>
-                    <th class="th-cell">Estado</th>
-                    <th class="th-cell">Prioridad</th>
-                    <th class="th-cell">Tareas</th>
-                    <th class="th-cell">Completadas</th>
-                    <th class="th-cell">Avance</th>
-                    <th class="th-cell">Story points</th>
-                    <th class="th-cell">Vence</th>
-                  </tr>
-                </thead>
-                <tbody style="border-top: 1px solid var(--color-gray-100);">
-                  @for (r of rows; track r.proyecto.id) {
-                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ r.proyecto.nombre }}</td>
-                      <td class="td-cell">
-                        <span class="badge" [style.background-color]="r.proyecto.status ? 'var(--color-indigo-100)' : 'var(--color-gray-100)'"
-                              [style.color]="'var(--color-indigo-700)'">{{ r.proyecto.status || '—' }}</span>
-                      </td>
-                      <td class="td-cell">
-                        @if (r.proyecto.prioridad) {
-                          <span class="badge" [style.background-color]="'var(--color-amber-100)'" [style.color]="'var(--color-amber-700)'">{{ r.proyecto.prioridad }}</span>
-                        } @else { — }
-                      </td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.tareas }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.completadas }}</td>
-                      <td class="td-cell">
-                        <span class="font-semibold" [style.color]="colorPorcentaje(r.porcentaje)">{{ r.porcentaje }}%</span>
-                      </td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.puntos }}</td>
-                      <td class="td-cell">
-                        @if (r.diasRestantes !== null) {
-                          <span class="badge" [style.background-color]="URGENCIA_STYLE[r.urgencia].bg"
-                                [style.color]="URGENCIA_STYLE[r.urgencia].text">{{ URGENCIA_STYLE[r.urgencia].label }} · {{ r.diasRestantes }}d</span>
-                        } @else { — }
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="8" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <p-table [value]="reporteService.proyectosDetalle()" [paginator]="true" [rows]="PAGINA_SIZE"
+                     [paginatorStyleClass]="'no-print'" [showCurrentPageReport]="true"
+                     currentPageReportTemplate="Mostrando {first}–{last} de {totalRecords}"
+                     [rowsPerPageOptions]="[5, 10, 25]" [alwaysShowPaginator]="false"
+                     [rowHover]="true" [tableStyle]="{'min-width': '900px'}">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="th-cell">Proyecto</th>
+                  <th class="th-cell">Estado</th>
+                  <th class="th-cell">Prioridad</th>
+                  <th class="th-cell">Tareas</th>
+                  <th class="th-cell">Completadas</th>
+                  <th class="th-cell">Avance</th>
+                  <th class="th-cell">Story points</th>
+                  <th class="th-cell">Vence</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-r>
+                <tr>
+                  <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ r.proyecto.nombre }}</td>
+                  <td class="td-cell">
+                    <p-tag [value]="r.proyecto.status || '—'"
+                           styleClass="badge-cell"
+                           [style]="{backgroundColor: r.proyecto.status ? 'var(--color-indigo-100)' : 'var(--color-gray-100)', color: 'var(--color-indigo-700)'}" />
+                  </td>
+                  <td class="td-cell">
+                    @if (r.proyecto.prioridad) {
+                      <p-tag [value]="r.proyecto.prioridad"
+                             styleClass="badge-cell"
+                             [style]="{backgroundColor: 'var(--color-amber-100)', color: 'var(--color-amber-700)'}" />
+                    } @else { — }
+                  </td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ r.tareas }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ r.completadas }}</td>
+                  <td class="td-cell">
+                    <span class="font-semibold" [style.color]="colorPorcentaje(r.porcentaje)">{{ r.porcentaje }}%</span>
+                  </td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ r.puntos }}</td>
+                  <td class="td-cell">
+                    @if (r.diasRestantes !== null) {
+                      <p-tag [value]="URGENCIA_STYLE[r.urgencia].label + ' · ' + r.diasRestantes + 'd'"
+                             styleClass="badge-cell"
+                             [style]="{backgroundColor: URGENCIA_STYLE[r.urgencia].bg, color: URGENCIA_STYLE[r.urgencia].text}" />
+                    } @else { — }
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="8" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+              </ng-template>
+            </p-table>
           </div>
-
-          @if (totalProyectosReporte() > 0) {
-            <div class="mt-4 flex items-center justify-between gap-4 flex-wrap no-print">
-              <p class="text-sm" style="color: var(--color-gray-500);">
-                Mostrando {{ inicioProyectos() }}–{{ finProyectos() }} de {{ totalProyectosReporte() }} proyecto{{ totalProyectosReporte() !== 1 ? 's' : '' }}
-              </p>
-              <div class="flex items-center gap-1">
-                <button (click)="anteriorProyectos()" [disabled]="paginaProyectos() <= 1"
-                        class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
-                  Anterior
-                </button>
-                @if (paginasProyectos() > 1) {
-                  @for (p of rangoProyectos(); track $index) {
-                    @if (p === null) {
-                      <span class="px-1 text-sm" style="color: var(--color-gray-400);">…</span>
-                    } @else {
-                      <button (click)="irPaginaProyectos(p)"
-                              class="min-w-[2rem] px-2 py-1.5 text-sm font-medium rounded-lg transition-colors"
-                              [style.background-color]="p === paginaProyectos() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
-                              [style.color]="p === paginaProyectos() ? '#ffffff' : 'var(--color-gray-600)'"
-                              [style.border]="p === paginaProyectos() ? '1px solid var(--color-indigo-600)' : '1px solid var(--color-gray-200)'">
-                        {{ p }}
-                      </button>
-                    }
-                  }
-                }
-                <button (click)="siguienteProyectos()" [disabled]="paginaProyectos() >= paginasProyectos()"
-                        class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          }
         }
 
         @case ('productividad') {
-          @let items = reporteService.productividadPorProyecto();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Productividad por proyecto</h2>
             <div class="flex items-center gap-2">
@@ -189,7 +165,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
             </div>
           </div>
           <div class="space-y-4">
-            @for (item of items; track item.proyecto.id) {
+            @for (item of reporteService.productividadPorProyecto(); track item.proyecto.id) {
               <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
                 <div class="flex items-center justify-between gap-4 px-5 py-3.5 border-b flex-wrap" style="border-color: var(--color-gray-100);">
                   <div>
@@ -197,35 +173,32 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                     <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">{{ item.plannings.length }} planning(s) · {{ item.puntos }} story points</p>
                   </div>
                   <span class="inline-flex items-center gap-2">
-                    <div class="w-32 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
-                      <div class="h-full rounded-full" [style.width.%]="item.porcentaje" [style.background-color]="colorPorcentaje(item.porcentaje)"></div>
-                    </div>
+                    <p-progressbar [value]="item.porcentaje" [color]="colorPorcentaje(item.porcentaje)"
+                                   [showValue]="false" [style]="{height: '6px', width: '8rem'}" />
                     <span class="text-sm font-semibold" style="color: var(--color-gray-700);">{{ item.porcentaje }}%</span>
                   </span>
                 </div>
                 @if (item.plannings.length > 0) {
-                  <table class="w-full text-sm">
-                    <thead>
-                      <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                  <p-table [value]="item.plannings">
+                    <ng-template pTemplate="header">
+                      <tr>
                         <th class="th-cell">Fecha</th>
                         <th class="th-cell">Descripción</th>
                         <th class="th-cell">Tareas</th>
                         <th class="th-cell">Completadas</th>
                         <th class="th-cell">Puntos</th>
                       </tr>
-                    </thead>
-                    <tbody>
-                      @for (pl of item.plannings; track pl.planning.id) {
-                        <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                          <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.planning.fecha }}</td>
-                          <td class="td-cell" style="color: var(--color-gray-900);">{{ pl.planning.descripcion || '—' }}</td>
-                          <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.tareas.length }}</td>
-                          <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.completadas }}</td>
-                          <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ pl.puntos }}</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-pl>
+                      <tr>
+                        <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.planning.fecha }}</td>
+                        <td class="td-cell" style="color: var(--color-gray-900);">{{ pl.planning.descripcion || '—' }}</td>
+                        <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.tareas.length }}</td>
+                        <td class="td-cell" style="color: var(--color-gray-700);">{{ pl.completadas }}</td>
+                        <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ pl.puntos }}</td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
                 }
               </div>
             } @empty {
@@ -237,8 +210,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
         }
 
         @case ('estimacion') {
-          @let complejidad = reporteService.estimacionPorComplejidad();
-          @let porProyecto = reporteService.estimacionPorProyecto();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Estimación / carga de trabajo</h2>
             <div class="flex items-center gap-2">
@@ -247,7 +218,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
             </div>
           </div>
           <div class="grid md:grid-cols-3 gap-4 mb-4">
-            @for (c of complejidad; track c.complejidad) {
+            @for (c of reporteService.estimacionPorComplejidad(); track c.complejidad) {
               <div class="rounded-xl border p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
                 <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--color-gray-400);">{{ c.complejidad }}</p>
                 <p class="text-2xl font-bold" style="color: var(--color-gray-900);">{{ c.cantidad }} <span class="text-sm font-medium" style="color: var(--color-gray-400);">tarea{{ c.cantidad !== 1 ? 's' : '' }}</span></p>
@@ -256,43 +227,39 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
             }
           </div>
           <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                    <th class="th-cell">Proyecto</th>
-                    <th class="th-cell">Tareas</th>
-                    <th class="th-cell">Story points</th>
-                    <th class="th-cell">Peso relativo</th>
-                  </tr>
-                </thead>
-                <tbody style="border-top: 1px solid var(--color-gray-100);">
-                  @let totalPuntos = sumarPuntos(porProyecto);
-                  @for (r of porProyecto; track r.proyecto.id) {
-                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ r.proyecto.nombre }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ r.tareas }}</td>
-                      <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ r.puntos }}</td>
-                      <td class="td-cell">
-                        <div class="flex items-center gap-2">
-                          <div class="w-28 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
-                            <div class="h-full rounded-full" [style.width.%]="totalPuntos > 0 ? (r.puntos / totalPuntos) * 100 : 0" style="background-color: var(--color-indigo-500);"></div>
-                          </div>
-                          <span class="text-xs" style="color: var(--color-gray-400);">{{ totalPuntos > 0 ? Math.round((r.puntos / totalPuntos) * 100) : 0 }}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="4" class="empty-row">No hay tareas para los filtros aplicados.</td></tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <p-table [value]="reporteService.estimacionPorProyecto()">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="th-cell">Proyecto</th>
+                  <th class="th-cell">Tareas</th>
+                  <th class="th-cell">Story points</th>
+                  <th class="th-cell">Peso relativo</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-r>
+                <tr>
+                  <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ r.proyecto.nombre }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ r.tareas }}</td>
+                  <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ r.puntos }}</td>
+                  <td class="td-cell">
+                    @let totalPuntos = sumarPuntos(reporteService.estimacionPorProyecto());
+                    <div class="flex items-center gap-2">
+                      <p-progressbar [value]="totalPuntos > 0 ? (r.puntos / totalPuntos) * 100 : 0"
+                                     color="var(--color-indigo-500)"
+                                     [showValue]="false" [style]="{height: '6px', width: '7rem'}" />
+                      <span class="text-xs" style="color: var(--color-gray-400);">{{ totalPuntos > 0 ? Math.round((r.puntos / totalPuntos) * 100) : 0 }}%</span>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="4" class="empty-row">No hay tareas para los filtros aplicados.</td></tr>
+              </ng-template>
+            </p-table>
           </div>
         }
 
         @case ('vencimientos') {
-          @let vencimientos = reporteService.vencimientos();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Vencimientos próximos</h2>
             <div class="flex items-center gap-2">
@@ -301,37 +268,35 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
             </div>
           </div>
           <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                    <th class="th-cell">Proyecto</th>
-                    <th class="th-cell">Fecha límite</th>
-                    <th class="th-cell">Días restantes</th>
-                    <th class="th-cell">Urgencia</th>
-                  </tr>
-                </thead>
-                <tbody style="border-top: 1px solid var(--color-gray-100);">
-                  @for (v of vencimientos; track v.proyecto.id) {
-                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ v.proyecto.nombre }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ v.proyecto.fechaHasta }}</td>
-                      <td class="td-cell font-semibold" [style.color]="URGENCIA_STYLE[v.urgencia].bg === '#e11d48' ? '#e11d48' : 'var(--color-gray-700)'">{{ v.diasRestantes }}d</td>
-                      <td class="td-cell">
-                        <span class="badge" [style.background-color]="URGENCIA_STYLE[v.urgencia].bg" [style.color]="URGENCIA_STYLE[v.urgencia].text">{{ URGENCIA_STYLE[v.urgencia].label }}</span>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="4" class="empty-row">No hay proyectos con fecha límite.</td></tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <p-table [value]="reporteService.vencimientos()">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="th-cell">Proyecto</th>
+                  <th class="th-cell">Fecha límite</th>
+                  <th class="th-cell">Días restantes</th>
+                  <th class="th-cell">Urgencia</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-v>
+                <tr>
+                  <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ v.proyecto.nombre }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ v.proyecto.fechaHasta }}</td>
+                  <td class="td-cell font-semibold" [style.color]="URGENCIA_STYLE[v.urgencia].bg === '#e11d48' ? '#e11d48' : 'var(--color-gray-700)'">{{ v.diasRestantes }}d</td>
+                  <td class="td-cell">
+                    <p-tag [value]="URGENCIA_STYLE[v.urgencia].label"
+                           styleClass="badge-cell"
+                           [style]="{backgroundColor: URGENCIA_STYLE[v.urgencia].bg, color: URGENCIA_STYLE[v.urgencia].text}" />
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="4" class="empty-row">No hay proyectos con fecha límite.</td></tr>
+              </ng-template>
+            </p-table>
           </div>
         }
 
         @case ('pipeline') {
-          @let pipeline = reporteService.pipelinePorColumna();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Pipeline por ambiente</h2>
             <div class="flex items-center gap-2">
@@ -341,7 +306,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
           </div>
           <div class="rounded-xl border shadow-sm p-5" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
             <div class="flex h-8 rounded-lg overflow-hidden" style="background-color: var(--color-gray-100);">
-              @for (item of pipeline; track item.columna.id) {
+              @for (item of reporteService.pipelinePorColumna(); track item.columna.id) {
                 @if (item.porcentaje > 0) {
                   <div class="min-w-[4px]" [style.width.%]="item.porcentaje" [style.background-color]="item.columna.color"
                        [title]="item.columna.nombre + ': ' + item.cantidad + ' proyecto' + (item.cantidad !== 1 ? 's' : '')"></div>
@@ -349,7 +314,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
               }
             </div>
             <div class="flex flex-wrap gap-4 mt-4">
-              @for (item of pipeline; track item.columna.id) {
+              @for (item of reporteService.pipelinePorColumna(); track item.columna.id) {
                 <div class="flex items-center gap-2 text-sm">
                   <span class="w-2.5 h-2.5 rounded-full" [style.background-color]="item.columna.color"></span>
                   <span style="color: var(--color-gray-600);">{{ item.columna.nombre }}</span>
@@ -362,7 +327,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
         }
 
         @case ('calidad') {
-          @let calidad = reporteService.calidadPorColumna();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Calidad por ambiente</h2>
             <div class="flex items-center gap-2">
@@ -371,7 +335,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
             </div>
           </div>
           <div class="grid md:grid-cols-3 gap-4">
-            @for (c of calidad; track c.columna.id) {
+            @for (c of reporteService.calidadPorColumna(); track c.columna.id) {
               <div class="rounded-xl border p-5" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
                 <div class="flex items-center gap-2 mb-3">
                   <span class="w-2.5 h-2.5 rounded-full" [style.background-color]="c.columna.color"></span>
@@ -379,9 +343,8 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                 </div>
                 <p class="text-3xl font-bold" style="color: var(--color-gray-900);">{{ c.porcentaje }}<span class="text-base" style="color: var(--color-gray-400);">%</span></p>
                 <p class="text-sm mt-1" style="color: var(--color-gray-500);">{{ c.completadas }} de {{ c.total }} completadas</p>
-                <div class="mt-3 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
-                  <div class="h-full rounded-full" [style.width.%]="c.porcentaje" [style.background-color]="colorPorcentaje(c.porcentaje)"></div>
-                </div>
+                <p-progressbar [value]="c.porcentaje" [color]="colorPorcentaje(c.porcentaje)"
+                               [showValue]="false" [style]="{height: '6px'}" class="mt-3" />
                 <p class="text-xs mt-2" style="color: var(--color-gray-400);">{{ c.pendientes }} pendiente{{ c.pendientes !== 1 ? 's' : '' }}</p>
               </div>
             }
@@ -389,7 +352,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
         }
 
         @case ('clientes') {
-          @let porCliente = reporteService.avancePorCliente();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Avance por cliente</h2>
             <div class="flex items-center gap-2">
@@ -399,36 +361,33 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
           </div>
 
           <div class="rounded-xl border shadow-sm overflow-hidden mb-6" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[700px] text-sm">
-                <thead>
-                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                    <th class="th-cell">Cliente</th>
-                    <th class="th-cell">Proyectos</th>
-                    <th class="th-cell">Tareas</th>
-                    <th class="th-cell">Completadas</th>
-                    <th class="th-cell">Pendientes</th>
-                    <th class="th-cell">Avance</th>
-                  </tr>
-                </thead>
-                <tbody style="border-top: 1px solid var(--color-gray-100);">
-                  @for (c of porCliente; track c.cliente) {
-                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ c.cliente }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.proyectos }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.tareas }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.completadas }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ c.pendientes }}</td>
-                      <td class="td-cell">
-                        <span class="font-semibold" [style.color]="colorPorcentaje(c.porcentaje)">{{ c.porcentaje }}%</span>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="6" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <p-table [value]="reporteService.avancePorCliente()" [tableStyle]="{'min-width': '700px'}">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="th-cell">Cliente</th>
+                  <th class="th-cell">Proyectos</th>
+                  <th class="th-cell">Tareas</th>
+                  <th class="th-cell">Completadas</th>
+                  <th class="th-cell">Pendientes</th>
+                  <th class="th-cell">Avance</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-c>
+                <tr>
+                  <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ c.cliente }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ c.proyectos }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ c.tareas }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ c.completadas }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ c.pendientes }}</td>
+                  <td class="td-cell">
+                    <span class="font-semibold" [style.color]="colorPorcentaje(c.porcentaje)">{{ c.porcentaje }}%</span>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="6" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+              </ng-template>
+            </p-table>
           </div>
 
           <div class="rounded-xl border shadow-sm p-4" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
@@ -444,8 +403,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
         }
 
         @case ('usuarios') {
-          @let porUsuario = reporteService.productividadPorUsuario();
-          @let porTipo = reporteService.usuariosPorTipo();
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Productividad por usuario</h2>
             <div class="flex items-center gap-2">
@@ -455,48 +412,46 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
           </div>
 
           <div class="rounded-xl border shadow-sm overflow-hidden mb-6" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[700px] text-sm">
-                <thead>
-                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                    <th class="th-cell">Usuario</th>
-                    <th class="th-cell">Plannings</th>
-                    <th class="th-cell">Tareas</th>
-                    <th class="th-cell">Completadas</th>
-                    <th class="th-cell">Pendientes</th>
-                    <th class="th-cell">Story points</th>
-                    <th class="th-cell">Avance</th>
-                  </tr>
-                </thead>
-                <tbody style="border-top: 1px solid var(--color-gray-100);">
-                  @for (u of porUsuario; track u.usuarioId) {
-                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ u.nombre }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.plannings }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.tareas }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.completadas }}</td>
-                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.pendientes }}</td>
-                      <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ u.puntos }}</td>
-                      <td class="td-cell">
-                        <span class="font-semibold" [style.color]="colorPorcentaje(u.porcentaje)">{{ u.porcentaje }}%</span>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="7" class="empty-row">No hay plannings para los filtros aplicados.</td></tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <p-table [value]="reporteService.productividadPorUsuario()" [tableStyle]="{'min-width': '700px'}">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="th-cell">Usuario</th>
+                  <th class="th-cell">Plannings</th>
+                  <th class="th-cell">Tareas</th>
+                  <th class="th-cell">Completadas</th>
+                  <th class="th-cell">Pendientes</th>
+                  <th class="th-cell">Story points</th>
+                  <th class="th-cell">Avance</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-u>
+                <tr>
+                  <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ u.nombre }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ u.plannings }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ u.tareas }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ u.completadas }}</td>
+                  <td class="td-cell" style="color: var(--color-gray-700);">{{ u.pendientes }}</td>
+                  <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ u.puntos }}</td>
+                  <td class="td-cell">
+                    <span class="font-semibold" [style.color]="colorPorcentaje(u.porcentaje)">{{ u.porcentaje }}%</span>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="7" class="empty-row">No hay plannings para los filtros aplicados.</td></tr>
+              </ng-template>
+            </p-table>
           </div>
 
           <div class="rounded-xl border shadow-sm p-5" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
             <h3 class="text-sm font-semibold mb-3" style="color: var(--color-gray-900);">Usuarios por tipo</h3>
-            @if (porTipo.length > 0) {
+            @if (reporteService.usuariosPorTipo().length > 0) {
               <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-                @for (t of porTipo; track t.rol) {
+                @for (t of reporteService.usuariosPorTipo(); track t.rol) {
                   <div class="flex items-center justify-between gap-3 rounded-lg border p-3" style="border-color: var(--color-gray-200); background-color: var(--color-gray-50);">
                     <span class="text-sm font-medium" style="color: var(--color-gray-800);">{{ t.nombre }}</span>
-                    <span class="badge" style="background-color: var(--color-indigo-100); color: var(--color-indigo-700);">{{ t.cantidad }}</span>
+                    <p-tag value="{{ t.cantidad }}" styleClass="badge-cell"
+                           [style]="{backgroundColor: 'var(--color-indigo-100)', color: 'var(--color-indigo-700)'}" />
                   </div>
                 }
               </div>
@@ -580,15 +535,13 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
       white-space: nowrap;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.125rem 0.5rem;
+    ::ng-deep .badge-cell {
       border-radius: 9999px;
-      font-size: 0.75rem;
       font-weight: 600;
       white-space: nowrap;
     }
+
+    ::ng-deep .badge-cell .p-tag-icon { margin: 0; }
 
     .empty-row {
       padding: 2.5rem 1rem;
@@ -618,55 +571,7 @@ export class ReportesComponent {
   protected readonly URGENCIA_STYLE = URGENCIA_STYLE;
   protected readonly estimacionTotal = estimacionTotal;
   protected readonly Math = Math;
-
-  protected readonly paginaProyectos = signal(1);
-  protected readonly totalProyectosReporte = computed(() => this.reporteService.proyectosDetalle().length);
-  protected readonly paginasProyectos = computed(() => Math.max(1, Math.ceil(this.totalProyectosReporte() / PAGINA_SIZE)));
-  protected readonly inicioProyectos = computed(() => (this.paginaProyectos() - 1) * PAGINA_SIZE + 1);
-  protected readonly finProyectos = computed(() => Math.min(this.paginaProyectos() * PAGINA_SIZE, this.totalProyectosReporte()));
-  protected readonly proyectosPagina = computed(() =>
-    this.reporteService.proyectosDetalle().slice(this.inicioProyectos() - 1, this.finProyectos()),
-  );
-  protected readonly rangoProyectos = computed<(number | null)[]>(() => {
-    const total = this.paginasProyectos();
-    const actual = this.paginaProyectos();
-    if (total <= 7) {
-      return Array.from({length: total}, (_, i) => i + 1);
-    }
-    const paginas = new Set<number>([1, actual - 1, actual, actual + 1, total]);
-    const lista = [...paginas].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
-    const resultado: (number | null)[] = [];
-    let anterior = 0;
-    for (const p of lista) {
-      if (p - anterior > 1) resultado.push(null);
-      resultado.push(p);
-      anterior = p;
-    }
-    return resultado;
-  });
-
-  constructor() {
-    effect(() => {
-      const total = this.paginasProyectos();
-      if (this.paginaProyectos() > total) {
-        this.paginaProyectos.set(total);
-      }
-    });
-  }
-
-  irPaginaProyectos(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.paginasProyectos()) {
-      this.paginaProyectos.set(pagina);
-    }
-  }
-
-  anteriorProyectos(): void {
-    this.irPaginaProyectos(this.paginaProyectos() - 1);
-  }
-
-  siguienteProyectos(): void {
-    this.irPaginaProyectos(this.paginaProyectos() + 1);
-  }
+  protected readonly PAGINA_SIZE = PAGINA_SIZE;
 
   protected colorPorcentaje(pct: number): string {
     if (pct >= 75) return 'var(--color-emerald-600)';

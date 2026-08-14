@@ -1,5 +1,7 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {provideAnimations} from '@angular/platform-browser/animations';
 import {signal} from '@angular/core';
+import {ConfirmationService} from 'primeng/api';
 import {ProyectosComponent} from './proyectos.component';
 import {EquipoService} from '../../services/equipo.service';
 import {AuthService} from '../../services/auth.service';
@@ -43,7 +45,7 @@ describe('ProyectosComponent', () => {
     localStorage.setItem('devtracker-usuarios', JSON.stringify(usuarios));
     TestBed.configureTestingModule({
       imports: [ProyectosComponent],
-      providers: [{provide: AuthService, useValue: {currentUser: () => usuarioActual()}}],
+      providers: [provideAnimations(), {provide: AuthService, useValue: {currentUser: () => usuarioActual()}}, ConfirmationService],
     });
     fixture = TestBed.createComponent(ProyectosComponent);
     component = fixture.componentInstance;

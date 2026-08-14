@@ -1,6 +1,11 @@
 import {Component, inject, signal, computed, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
+import {InputText} from 'primeng/inputtext';
+import {Textarea} from 'primeng/textarea';
+import {Button} from 'primeng/button';
+import {Avatar} from 'primeng/avatar';
+import {Chip} from 'primeng/chip';
 import {AuthService} from '../../services/auth.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {Usuario, Curriculum} from '../../models/usuario.model';
@@ -19,7 +24,7 @@ function formatoTamano(bytes: number): string {
   selector: 'app-perfil',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, InputText, Textarea, Button, Avatar, Chip],
   template: `
     <div class="max-w-4xl">
       <div class="mb-8">
@@ -55,35 +60,24 @@ function formatoTamano(bytes: number): string {
              style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
           <p class="text-sm font-semibold mb-4 text-left" style="color: var(--color-gray-900);">Foto de perfil</p>
           @if (foto()) {
-            <img [src]="foto()!" alt="Foto de perfil"
-                 class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-2"
-                 style="border-color: var(--color-gray-200);">
+            <p-avatar [image]="foto()!" shape="circle"
+                      [style]="{'width': '6rem', 'height': '6rem', 'font-size': '2rem', 'border': '2px solid var(--color-gray-200)'}"
+                      class="mx-auto mb-4 block" />
           } @else {
-            <div class="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4"
-                 style="background-color: var(--color-indigo-100); color: var(--color-indigo-700);">
-              {{ inicialesUsuario() }}
-            </div>
+            <p-avatar [label]="inicialesUsuario()" shape="circle"
+                      [style]="{'width': '6rem', 'height': '6rem', 'font-size': '2rem', 'background-color': 'var(--color-indigo-100)', 'color': 'var(--color-indigo-700)', 'border': '2px solid var(--color-gray-200)'}"
+                      class="mx-auto mb-4 block" />
           }
           <p class="text-sm font-medium truncate" style="color: var(--color-gray-900);">{{ nombreCompleto() }}</p>
           <p class="text-xs truncate mt-0.5" style="color: var(--color-gray-500);">{{ usuario()?.usuario }}</p>
 
           <input #fotoInput type="file" accept="image/*" class="hidden" (change)="onFotoSeleccionada($event)">
           <div class="flex items-center justify-center gap-2 mt-5">
-            <button (click)="fotoInput.click()"
-                    class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-white bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/>
-              </svg>
-              Cambiar foto
-            </button>
+            <p-button label="Cambiar foto" icon="pi pi-camera" severity="contrast"
+                      (onClick)="fotoInput.click()" />
             @if (foto()) {
-              <button (click)="quitarFoto()"
-                      class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
-                      aria-label="Quitar foto">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                </svg>
-              </button>
+              <p-button icon="pi pi-trash" [text]="true" severity="danger" [rounded]="true"
+                        (onClick)="quitarFoto()" [attr.aria-label]="'Quitar foto'" />
             }
           </div>
           <p class="text-xs mt-3" style="color: var(--color-gray-400);">JPG, PNG o GIF. Se redimensiona automáticamente.</p>
@@ -97,75 +91,57 @@ function formatoTamano(bytes: number): string {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Nombres</label>
-                <input formControlName="nombres" type="text" autocomplete="given-name"
-                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                       placeholder="Tus nombres">
+                <input pInputText formControlName="nombres" type="text" autocomplete="given-name" class="w-full" placeholder="Tus nombres">
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Apellidos</label>
-                <input formControlName="apellidos" type="text" autocomplete="family-name"
-                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                       placeholder="Tus apellidos">
+                <input pInputText formControlName="apellidos" type="text" autocomplete="family-name" class="w-full" placeholder="Tus apellidos">
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Cédula de identidad</label>
-                <input formControlName="cedula" type="text" autocomplete="off"
-                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                       placeholder="V-12345678">
+                <input pInputText formControlName="cedula" type="text" autocomplete="off" class="w-full" placeholder="V-12345678">
                 @if (perfilForm.controls.cedula.touched && perfilForm.controls.cedula.invalid) {
-                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Cédula inválida.</p>
+                  <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                    <i class="pi pi-exclamation-circle"></i> Cédula inválida.
+                  </small>
                 }
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Número telefónico</label>
-                <input formControlName="telefono" type="tel" autocomplete="tel"
-                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                       placeholder="+58 412-1234567">
+                <input pInputText formControlName="telefono" type="tel" autocomplete="tel" class="w-full" placeholder="+58 412-1234567">
                 @if (perfilForm.controls.telefono.touched && perfilForm.controls.telefono.invalid) {
-                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Teléfono inválido.</p>
+                  <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                    <i class="pi pi-exclamation-circle"></i> Teléfono inválido.
+                  </small>
                 }
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Número de contacto</label>
-                <input formControlName="telefonoContacto" type="tel" autocomplete="tel"
-                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                       placeholder="Teléfono alternativo">
+                <input pInputText formControlName="telefonoContacto" type="tel" autocomplete="tel" class="w-full" placeholder="Teléfono alternativo">
                 @if (perfilForm.controls.telefonoContacto.touched && perfilForm.controls.telefonoContacto.invalid) {
-                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Teléfono inválido.</p>
+                  <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                    <i class="pi pi-exclamation-circle"></i> Teléfono inválido.
+                  </small>
                 }
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Email</label>
-                <input formControlName="correo" type="email" autocomplete="email"
-                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
-                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                       placeholder="ejemplo@correo.com">
+                <input pInputText formControlName="correo" type="email" autocomplete="email" class="w-full" placeholder="ejemplo@correo.com">
                 @if (perfilForm.controls.correo.touched && perfilForm.controls.correo.invalid) {
-                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Ingresa un correo válido.</p>
+                  <small class="mt-1 flex items-center gap-1 text-xs" style="color: var(--color-rose-500);">
+                    <i class="pi pi-exclamation-circle"></i> Ingresa un correo válido.
+                  </small>
                 }
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Dirección de vivienda</label>
-              <textarea formControlName="direccion" rows="2" autocomplete="street-address"
-                        class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors resize-y"
-                        style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                        placeholder="Calle, urbanización, ciudad…"></textarea>
+              <textarea pTextarea formControlName="direccion" rows="2" autocomplete="street-address"
+                        class="w-full resize-y" placeholder="Calle, urbanización, ciudad…"></textarea>
             </div>
 
             <div class="flex justify-end pt-1.5 border-t" style="border-color: var(--color-gray-200);">
-              <button type="submit" [disabled]="perfilForm.invalid"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
-                </svg>
-                Guardar
-              </button>
+              <p-button type="submit" label="Guardar" icon="pi pi-check" [disabled]="perfilForm.invalid" />
             </div>
           </form>
         </div>
@@ -181,28 +157,15 @@ function formatoTamano(bytes: number): string {
           </div>
           @if (curriculum()) {
             <div class="flex items-center gap-2">
-              <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
-                    style="background-color: var(--color-gray-100); color: var(--color-gray-700);">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-                </svg>
+              <p-chip>
+                <i class="pi pi-file"></i>
                 <span class="max-w-48 truncate font-medium">{{ curriculum()!.nombre }}</span>
                 <span style="color: var(--color-gray-400);">· {{ formatoTamano(curriculum()!.tamano) }}</span>
-              </span>
-              <button (click)="descargarCurriculum()"
-                      class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
-                      [attr.aria-label]="'Descargar ' + curriculum()!.nombre">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
-                </svg>
-              </button>
-              <button (click)="quitarCurriculum()"
-                      class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
-                      aria-label="Quitar curriculum">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
+              </p-chip>
+              <p-button icon="pi pi-download" [text]="true" severity="secondary" [rounded]="true"
+                        (onClick)="descargarCurriculum()" [attr.aria-label]="'Descargar ' + curriculum()!.nombre" />
+              <p-button icon="pi pi-times" [text]="true" severity="danger" [rounded]="true"
+                        (onClick)="quitarCurriculum()" [attr.aria-label]="'Quitar curriculum'" />
             </div>
           } @else {
             <p class="text-sm" style="color: var(--color-gray-400);">No has adjuntado un curriculum.</p>
@@ -211,20 +174,14 @@ function formatoTamano(bytes: number): string {
         <div class="mt-4 pt-4 border-t" style="border-color: var(--color-gray-200);">
           <input #cvInput type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                  class="hidden" (change)="onCurriculumSeleccionado($event)">
-          <button (click)="cvInput.click()"
-                  class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors text-white bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75"/>
-            </svg>
-            {{ curriculum() ? 'Reemplazar curriculum' : 'Adjuntar curriculum' }}
-          </button>
+          <p-button [label]="curriculum() ? 'Reemplazar curriculum' : 'Adjuntar curriculum'"
+                    icon="pi pi-upload" (onClick)="cvInput.click()" />
         </div>
       </div>
     </div>
   `,
   styles: [`
     :host { display: block; }
-    input:focus, textarea:focus { border-color: var(--color-indigo-400) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
   `]
 })
 export class PerfilComponent {
