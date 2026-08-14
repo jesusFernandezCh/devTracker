@@ -1,5 +1,5 @@
 import {Component, inject, computed, signal, ViewChild, ElementRef, HostListener, effect, afterNextRender, ChangeDetectionStrategy} from '@angular/core';
-import {Router} from '@angular/router';
+import {Router, ActivatedRoute} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {ColumnService} from '../../services/column.service';
 import {ProyectoService} from '../../services/proyecto.service';
@@ -73,7 +73,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
              cdkDropListOrientation="horizontal"
              class="flex gap-6 overflow-x-auto custom-scrollbar scroll-smooth">
         @for (col of columnService.columnas(); track col.id) {
-          <div cdkDrag [cdkDragData]="col" class="w-[320px] shrink-0 group">
+          <div cdkDrag [cdkDragData]="col" [id]="'columna-' + col.id" class="w-[320px] shrink-0 group">
             <div class="bg-gray-50 rounded-xl border border-gray-200 h-[calc(100vh-220px)] flex flex-col">
               <div cdkDragHandle
                    class="flex items-center justify-between px-4 pt-4 cursor-grab active:cursor-grabbing">
@@ -146,6 +146,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
 })
 export class BoardComponent {
   protected readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly columnService = inject(ColumnService);
   protected readonly proyectoService = inject(ProyectoService);
   protected readonly planningService = inject(PlanningService);
@@ -189,10 +190,43 @@ export class BoardComponent {
 
   constructor() {
     afterNextRender(() => this.actualizarEstadoScroll());
+    afterNextRender(() => {
+      const params = this.route.snapshot.queryParamMap;
+      const proyectoId = params.get('proyectoId');
+      const columnaId = params.get('columna');
+      if (proyectoId) this._enfocarProyecto(proyectoId);
+      if (columnaId) this._enfocarColumna(columnaId);
+    });
     effect(() => {
       this.columnService.columnas();
       this.actualizarEstadoScroll();
     });
+  }
+
+  private _enfocarProyecto(id: string): void {
+    const el = document.getElementById(`project-${id}`);
+    if (el) this._resaltar(el, '#6366f1');
+  }
+
+  private _enfocarColumna(id: string): void {
+    const el = document.getElementById(`columna-${id}`);
+    if (!el) return;
+    const color = this.columnService.columnas().find(c => c.id === id)?.color ?? '#6366f1';
+    this._resaltar(el, color);
+  }
+
+  private _resaltar(el: HTMLElement, color: string): void {
+    el.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'center'});
+    el.style.outline = `2px solid ${color}`;
+    el.style.outlineOffset = '3px';
+    el.style.borderRadius = '0.75rem';
+    el.style.boxShadow = `0 0 0 6px ${color}40`;
+    setTimeout(() => {
+      el.style.outline = '';
+      el.style.outlineOffset = '';
+      el.style.borderRadius = '';
+      el.style.boxShadow = '';
+    }, 2400);
   }
 
   @HostListener('window:resize')
