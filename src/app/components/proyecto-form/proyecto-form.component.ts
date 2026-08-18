@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {Proyecto} from '../../models/proyecto.model';
+import {ClienteService} from '../../services/cliente.service';
 
 @Component({
   selector: 'app-proyecto-form',
@@ -51,9 +52,9 @@ import {Proyecto} from '../../models/proyecto.model';
                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
                 <option value="">Selecciona</option>
-                <option value="Cliente A">Cliente A</option>
-                <option value="Cliente B">Cliente B</option>
-                <option value="Cliente C">Cliente C</option>
+                @for (cliente of clientes(); track cliente.id) {
+                  <option [value]="cliente.nombre">{{ cliente.nombre }}</option>
+                }
               </select>
             </div>
             @if (editando()) {
@@ -186,6 +187,9 @@ import {Proyecto} from '../../models/proyecto.model';
 })
 export class ProyectoFormComponent {
   private fb = inject(FormBuilder);
+  private clienteService = inject(ClienteService);
+
+  protected readonly clientes = this.clienteService.clientes;
 
   readonly editando = input<Proyecto | null>(null);
   readonly guardar = output<{nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}>();
