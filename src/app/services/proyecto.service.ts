@@ -52,6 +52,13 @@ export class ProyectoService {
     this._guardar();
   }
 
+  renombrarCliente(nombreAnterior: string, nombreNuevo: string): void {
+    this._proyectos.update((list) =>
+      list.map((p) => (p.cliente === nombreAnterior ? {...p, cliente: nombreNuevo} : p)),
+    );
+    this._guardar();
+  }
+
   eliminar(id: string): void {
     this._proyectos.update((list) => list.filter((p) => p.id !== id));
     this._guardar();

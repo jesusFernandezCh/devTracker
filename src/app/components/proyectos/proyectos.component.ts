@@ -15,6 +15,7 @@ import {iniciales, tipoColor} from '../../utils/helpers';
 import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
 import {EquipoModalComponent} from '../equipo-modal/equipo-modal.component';
+import {ClienteModalComponent} from '../cliente-modal/cliente-modal.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
 
 const PAGINA_SIZE = 10;
@@ -23,7 +24,7 @@ const PAGINA_SIZE = 10;
   selector: 'app-proyectos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, PermisoDirective],
+  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, ClienteModalComponent, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -35,6 +36,14 @@ const PAGINA_SIZE = 10;
         </p>
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0 d-flex align-items-center gap-2">
+        <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirClientes()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm bg-[var(--color-surface)] hover:bg-[var(--color-gray-100)] border"
+                style="color: var(--color-gray-700); border-color: var(--color-gray-300);">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
+          </svg>
+          <span class="d-none d-sm-inline">Clientes</span>
+        </button>
         <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -381,6 +390,10 @@ const PAGINA_SIZE = 10;
       @if (equipoProyecto(); as proyecto) {
         <app-equipo-modal [proyecto]="proyecto" (cerrar)="cerrarEquipo()"/>
       }
+
+      @if (clientesAbierto) {
+        <app-cliente-modal (cerrar)="cerrarClientes()"/>
+      }
   `,
   styles: [`
     .proyecto-row:hover {
@@ -408,6 +421,7 @@ export class ProyectosComponent {
   showForm = false;
   editandoProyecto: Proyecto | null = null;
   deleteConfirmId: string | null = null;
+  clientesAbierto = false;
 
   protected readonly equipoProyecto = signal<Proyecto | null>(null);
 
@@ -471,6 +485,14 @@ export class ProyectosComponent {
   abrirNuevo(): void {
     this.editandoProyecto = null;
     this.showForm = true;
+  }
+
+  abrirClientes(): void {
+    this.clientesAbierto = true;
+  }
+
+  cerrarClientes(): void {
+    this.clientesAbierto = false;
   }
 
   abrirEditar(proyecto: Proyecto): void {
