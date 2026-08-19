@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { map } from 'rxjs';
 import { HighchartsChartComponent, providePartialHighcharts } from 'highcharts-angular';
-import type { Options as HighchartsOptions, SeriesOptionsType } from 'highcharts';
+import type { Options as HighchartsOptions, SeriesOptionsType, Chart } from 'highcharts';
 import { ProyectoService } from '../../services/proyecto.service';
 import { PlanningService } from '../../services/planning.service';
 import { ColumnService } from '../../services/column.service';
@@ -83,7 +83,7 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
           <section class="db-card h-full">
             <h2 class="db-card-heading">Cantidad de proyectos por cliente</h2>
             @if (avancePorCliente().length > 0) {
-              <highcharts-chart [options]="graficaAvanceCliente()" class="db-drilldown"></highcharts-chart>
+              <highcharts-chart [options]="graficaAvanceCliente()" (chartInstance)="onAvanceChart($event)" class="db-drilldown"></highcharts-chart>
             } @else {
               <p class="db-empty">Sin proyectos por cliente.</p>
             }
@@ -95,7 +95,7 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
             <h2 class="db-card-heading">Progreso por ambiente</h2>
             @if (tieneDatosAmbiente()) {
               <div class="db-pipeline">
-                <highcharts-chart [options]="graficaAmbiente()" class="db-dona"></highcharts-chart>
+                <highcharts-chart [options]="graficaAmbiente()" (chartInstance)="onAmbienteChart($event)" class="db-dona"></highcharts-chart>
                 <div class="db-pipeline-legend">
                   @for (item of proyectosPorColumna(); track item.columna.id) {
                     @if (item.cantidad > 0) {
@@ -670,6 +670,38 @@ export class DashboardComponent {
 
   protected readonly animacionIniciada = signal(false);
 
+  private _ultimoToqueDrilldown = 0;
+
+  private _onToqueChart(e: TouchEvent, chart: Chart): void {
+    const punto = chart.hoverPoint ?? (chart.pointer as unknown as {getPointFromEvent: (ev: Event) => unknown}).getPointFromEvent(e);
+    if (!punto) return;
+    const p = punto as unknown as {
+      drilldown?: string;
+      options?: {proyectoId?: string; columna?: string};
+      runDrilldown: () => void;
+    };
+    if (p.drilldown) {
+      const now = Date.now();
+      if (now - this._ultimoToqueDrilldown < 350) return;
+      this._ultimoToqueDrilldown = now;
+      e.preventDefault();
+      p.runDrilldown();
+    } else if (p.options?.proyectoId) {
+      e.preventDefault();
+      this.router.navigate(['/tablero'], {queryParams: {proyectoId: p.options.proyectoId}});
+    } else if (p.options?.columna) {
+      e.preventDefault();
+      this.router.navigate(['/tablero'], {queryParams: {columna: p.options.columna}});
+    }
+  }
+
+  private _vincularToque(chart: Chart): void {
+    const container = chart.container;
+    if (!container || (container as unknown as {__dtTouchBound?: boolean}).__dtTouchBound) return;
+    (container as unknown as {__dtTouchBound: boolean}).__dtTouchBound = true;
+    container.addEventListener('touchend', (e: TouchEvent) => this._onToqueChart(e, chart), {passive: false});
+  }
+
   protected readonly esMovil = toSignal(
     inject(BreakpointObserver)
       .observe('(max-width: 767px)')
@@ -836,6 +868,7 @@ export class DashboardComponent {
         name: i.columna.nombre,
         y: i.cantidad,
         color: i.columna.color,
+        columna: i.columna.id,
         cursor: 'pointer',
         events: {
           click: () => this.router.navigate(['/tablero'], {queryParams: {columna: i.columna.id}}),
@@ -970,12 +1003,13 @@ export class DashboardComponent {
       type: 'column',
       color: COLORES_SERIES[i % COLORES_SERIES.length],
       cursor: 'pointer',
-      tooltip: {pointFormat: 'Avance: <b>{point.y}%</b> · clic para abrir el proyecto'},
+      tooltip: {pointFormat: 'Avance: <b>{point.y}%</b> · pulse para abrir el proyecto'},
       data: detalle
         .filter(d => clienteDe(d.proyecto.cliente) === c.cliente)
         .map(d => ({
           name: d.proyecto.nombre,
           y: d.porcentaje,
+          proyectoId: d.proyecto.id,
           events: {
             click: () => this.router.navigate(['/tablero'], {queryParams: {proyectoId: d.proyecto.id}}),
           },
@@ -1002,7 +1036,9 @@ export class DashboardComponent {
       },
       yAxis: {
         title: {text: undefined},
-        min: 0,
+        min: 1,
+        allowDecimals: false, // <-- Esto evita que aparezcan decimales en las etiquetas
+        // tickInterval: 1,       // <-- Forzar los saltos de 1 en 1 (opcional pero recomendado)
         labels: {style: {color: p.suave}},
         gridLineColor: p.grid,
       },
@@ -1030,6 +1066,14 @@ export class DashboardComponent {
       }] as SeriesOptionsType[],
     };
   });
+
+  protected onAvanceChart(chart: Chart): void {
+    this._vincularToque(chart);
+  }
+
+  protected onAmbienteChart(chart: Chart): void {
+    this._vincularToque(chart);
+  }
 
   constructor() {
     afterNextRender(() => {

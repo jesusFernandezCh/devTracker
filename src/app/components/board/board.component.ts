@@ -73,7 +73,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
              cdkDropListOrientation="horizontal"
              class="flex gap-6 overflow-x-auto custom-scrollbar scroll-smooth">
         @for (col of columnService.columnas(); track col.id) {
-          <div cdkDrag [cdkDragData]="col" [id]="'columna-' + col.id" class="w-[320px] shrink-0 group">
+          <div cdkDrag [cdkDragData]="col" [id]="'columna-' + col.id" class="w-[350px] shrink-0 group">
             <div class="bg-gray-50 rounded-xl border border-gray-200 h-[calc(100vh-220px)] flex flex-col">
               <div cdkDragHandle
                    class="flex items-center justify-between px-4 pt-4 cursor-grab active:cursor-grabbing">
@@ -111,7 +111,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
                 </button>
                 </div>
               </div>
-              <div class="flex-1 p-4 pt-3 min-h-0">
+              <div class="flex-1 p-3 pt-3 min-h-3">
                 <app-column [columna]="col"
                             [proyectos]="(proyectosPorColumna().get(col.id) ?? [])"
                             [connectedDropIds]="connectedDropIds(col.id)"
