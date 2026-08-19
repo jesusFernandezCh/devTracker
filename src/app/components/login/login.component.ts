@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
     <div class="min-h-screen flex" style="background-color: var(--color-gray-50);">
       <!-- Left panel: branding -->
       <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12"
-          style="background-image: url('/images/portada.jpeg'); background-size: cover; background-position: center;">
+          style="background-image: url('./images/portada.jpeg'); background-size: cover; background-position: center;">
            
         <div class="absolute inset-0 opacity-10">
           <svg class="w-full h-full" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
