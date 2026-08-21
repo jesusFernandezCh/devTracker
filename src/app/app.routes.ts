@@ -7,6 +7,7 @@ import {ProyectosComponent} from './components/proyectos/proyectos.component';
 import {PlanningComponent} from './components/planning/planning.component';
 import {CalendarioComponent} from './components/calendario/calendario.component';
 import {ReportesComponent} from './components/reportes/reportes.component';
+import {DocumentacionComponent} from './components/documentacion/documentacion.component';
 import {UsuariosComponent} from './components/usuarios/usuarios.component';
 import {RolesComponent} from './components/roles/roles.component';
 import {LoginComponent} from './components/login/login.component';
@@ -22,6 +23,7 @@ export const routes: Routes = [
   {path: 'planning', component: PlanningComponent, canActivate: [authGuard]},
   {path: 'calendario', component: CalendarioComponent, canActivate: [authGuard]},
   {path: 'reportes', component: ReportesComponent, canActivate: [authGuard, permisoGuard('leer', 'reportes')]},
+  {path: 'documentacion', component: DocumentacionComponent, canActivate: [authGuard, permisoGuard('leer', 'reportes')]},
   {path: 'usuarios', component: UsuariosComponent, canActivate: [authGuard, permisoGuard('leer', 'usuarios')]},
   {path: 'roles', component: RolesComponent, canActivate: [authGuard, permisoGuard('leer', 'roles')]},
   {path: 'tarea/nueva', component: TaskFormComponent, canActivate: [authGuard, permisoGuard('crear', 'tareas')]},

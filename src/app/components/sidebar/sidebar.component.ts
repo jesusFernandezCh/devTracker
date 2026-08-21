@@ -65,6 +65,12 @@ import {ChatService} from '../../services/chat.service';
           <mat-icon class="sidebar-nav-icon">query_stats</mat-icon>
           <span>Reportes</span>
         </a>
+        <a routerLink="/documentacion" routerLinkActive="sidebar-active"
+           (click)="onNavClick()"
+           class="sidebar-nav-item">
+          <mat-icon class="sidebar-nav-icon">folder_open</mat-icon>
+          <span>Documentación</span>
+        </a>
         <button (click)="onChatClick()" class="sidebar-nav-item w-full">
           <mat-icon class="sidebar-nav-icon">forum</mat-icon>
           <span class="flex-1 text-left">Chat</span>
