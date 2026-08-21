@@ -20,7 +20,7 @@
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
-
+  --color-header: #0b0f19;
   --color-surface: #ffffff;
 
   --scrollbar-thumb: #d1d5db;
@@ -88,6 +88,7 @@
   --color-purple-100: #3B0764;
   --color-purple-700: #D8B4FE;
 
+  --color-header: #1E293B;
   --color-surface: #1E293B;
 
   --estimation-bg: #1E1B4B;
