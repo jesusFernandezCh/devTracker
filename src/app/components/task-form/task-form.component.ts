@@ -26,7 +26,7 @@ import {CommonModule} from '@angular/common';
 
       <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
         <div class="px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
-          <h1 class="text-sm font-bold" style="color: var(--color-gray-900);">{{ editTaskId ? 'Editar tarea' : 'Nueva tarea' }}</h1>
+          <h1>{{ editTaskId ? 'Editar tarea' : 'Nueva tarea' }}</h1>
         </div>
 
         <div class="p-4">

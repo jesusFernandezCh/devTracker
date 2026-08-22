@@ -21,7 +21,7 @@ import {
     <div class="mb-8">
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">Roles y permisos</h1>
+          <h1>Roles y permisos</h1>
           <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
             Matriz de acceso por rol. Haz clic sobre un permiso para activarlo o desactivarlo.
             @if (authService.currentUser(); as user) {

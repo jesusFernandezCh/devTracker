@@ -33,7 +33,7 @@ import { AuthService } from '../../services/auth.service';
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-3 4v6m-3-3h6"/>
             </svg>
           </div>
-          <h1 class="text-4xl font-bold text-indigo-700 mb-4">DevTracker</h1>
+          <h1>DevTracker</h1>
           <p class="text-lg text-white leading-relaxed">
              Sistema de Gestión de Desarrollos. Organiza tus proyectos, planifica tareas y da seguimiento a tu equipo de trabajo.
           </p>

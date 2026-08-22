@@ -25,7 +25,7 @@ function tipoColor(tipo: string): {text: string; bg: string} {
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
-        <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">
+        <h1>
           Usuarios
         </h1>
         <p class="mt-1 text-sm" style="color: var(--color-gray-500)">

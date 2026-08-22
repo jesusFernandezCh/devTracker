@@ -28,7 +28,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
       @if (taskData(); as data) {
         <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
           <div class="px-6 py-5 border-b" style="border-color: var(--color-gray-100);">
-            <h1 class="text-2xl font-bold" style="color: var(--color-gray-900);">{{ data.task.tarea }}</h1>
+            <h1>{{ data.task.tarea }}</h1>
             <p class="mt-2 text-sm" style="color: var(--color-gray-500);">
               {{ data.planning.fecha }} · {{ data.proyectoNombre }}
             </p>

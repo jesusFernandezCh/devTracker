@@ -29,7 +29,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
     <div class="mb-6">
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">Reportes</h1>
+          <h1>Reportes</h1>
           <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
             Indicadores de proyectos, tareas, estimación y avance.
           </p>
