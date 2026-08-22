@@ -1,6 +1,5 @@
-import {Component, inject, computed, signal, ViewChild, ElementRef, HostListener, effect, afterNextRender, ChangeDetectionStrategy} from '@angular/core';
+import {Component, inject, computed, signal, viewChild, ElementRef, HostListener, effect, afterNextRender, ChangeDetectionStrategy} from '@angular/core';
 import {Router, ActivatedRoute} from '@angular/router';
-import {FormsModule} from '@angular/forms';
 import {ColumnService} from '../../services/column.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {PlanningService} from '../../services/planning.service';
@@ -19,7 +18,7 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
   selector: 'app-board',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ColumnComponent, ColumnManagerComponent, CdkDropList, CdkDrag, CdkDragHandle, FormsModule],
+  imports: [ColumnComponent, ColumnManagerComponent, CdkDropList, CdkDrag, CdkDragHandle],
   template: `
     <div class="space-y-6">
       <div class="row align-items-center justify-content-between">
@@ -80,7 +79,8 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
                 <div class="flex items-center space-x-2 min-w-0">
                   <div class="w-3 h-3 rounded-full shrink-0" [style.background-color]="col.color"></div>
                   @if (editandoColumnaId === col.id) {
-                    <input [(ngModel)]="editandoColumnaNombre"
+                    <input [value]="editandoColumnaNombre()"
+                           (input)="editandoColumnaNombre.set($any($event.target).value)"
                            (keydown.enter)="guardarEditColumna()"
                            (blur)="guardarEditColumna()"
                            (keydown.escape)="cancelarEditColumna()"
@@ -231,7 +231,7 @@ export class BoardComponent {
 
   @HostListener('window:resize')
   protected actualizarEstadoScroll(): void {
-    const el = this.columnasScrollEl?.nativeElement;
+    const el = this.columnasScrollEl()?.nativeElement;
     if (!el) return;
     this.puedeIzquierda.set(el.scrollLeft > 1);
     this.puedeDerecha.set(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
@@ -239,16 +239,16 @@ export class BoardComponent {
 
   protected showColumnManager = false;
   protected editandoColumnaId: string | null = null;
-  protected editandoColumnaNombre = '';
+  protected editandoColumnaNombre = signal('');
 
-  @ViewChild('columnasScroll', {static: false}) columnasScrollEl!: ElementRef<HTMLElement>;
+  private readonly columnasScrollEl = viewChild<ElementRef<HTMLElement>>('columnasScroll');
 
   protected scrollIzquierda(): void {
-    this.columnasScrollEl?.nativeElement.scrollBy({left: -340, behavior: 'smooth'});
+    this.columnasScrollEl()?.nativeElement.scrollBy({left: -340, behavior: 'smooth'});
   }
 
   protected scrollDerecha(): void {
-    this.columnasScrollEl?.nativeElement.scrollBy({left: 340, behavior: 'smooth'});
+    this.columnasScrollEl()?.nativeElement.scrollBy({left: 340, behavior: 'smooth'});
   }
 
   openColumnManager(): void {
@@ -261,12 +261,12 @@ export class BoardComponent {
 
   protected iniciarEditColumna(col: Columna): void {
     this.editandoColumnaId = col.id;
-    this.editandoColumnaNombre = col.nombre;
+    this.editandoColumnaNombre.set(col.nombre);
   }
 
   protected guardarEditColumna(): void {
-    if (this.editandoColumnaId && this.editandoColumnaNombre.trim()) {
-      this.columnService.renombrarColumna(this.editandoColumnaId, this.editandoColumnaNombre.trim());
+    if (this.editandoColumnaId && this.editandoColumnaNombre().trim()) {
+      this.columnService.renombrarColumna(this.editandoColumnaId, this.editandoColumnaNombre().trim());
     }
     this.editandoColumnaId = null;
   }
