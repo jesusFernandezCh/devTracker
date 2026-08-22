@@ -70,8 +70,7 @@ import {Planning} from '../../models/planning.model';
       </div>
     </div>
   `,
-  styles: [`
-  `]
+  styles: []
 })
 export class PlanningFormComponent {
   private fb = inject(FormBuilder);

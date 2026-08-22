@@ -12,7 +12,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatButtonModule, MatIconModule, NotificacionesPanelComponent],
   template: `
-    <header style="background-color: var(--color-surface); border-color: var(--color-gray-200);" class="border-b shadow-sm">
+    <header style="background-color: var(--color-header); border-color: var(--color-gray-200);" class="border-b shadow-sm">
       <div class="container">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center gap-3 min-w-0">
@@ -21,7 +21,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
                 <mat-icon>menu</mat-icon>
               </button>
             </span>
-            <span class="text-xs sm:text-sm hidden sm:block truncate" style="color: var(--color-indigo-700); text-align:left !important;">
+            <span class="text-xs sm:text-sm hidden sm:block truncate" style="color: #F3F4F6; text-align:left !important;">
               Sistema de Gestión de Desarrollos
             </span>
           </div>

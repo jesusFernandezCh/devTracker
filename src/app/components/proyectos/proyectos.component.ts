@@ -28,7 +28,7 @@ const PAGINA_SIZE = 10;
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
-        <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">
+        <h1>
           Proyectos
         </h1>
         <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
@@ -92,7 +92,7 @@ const PAGINA_SIZE = 10;
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
                 @for (proyecto of proyectosPagina(); track proyecto.id) {
-                  <tr class="proyecto-row" style="transition: background-color 0.15s;">
+                  <tr class="row-hover" style="transition: background-color 0.15s;">
                     <td class="px-4 sm:px-6 py-2.5 border-l-2 transition-all duration-200 hover:border-[rgba(13,148,136,1)] hover:pl-7" style="border-color: rgba(13, 148, 136, 0.5);">
                       <button (click)="abrirDetalle(proyecto)"
                               class="flex items-center gap-3 text-left group"
@@ -395,11 +395,7 @@ const PAGINA_SIZE = 10;
         <app-cliente-modal (cerrar)="cerrarClientes()"/>
       }
   `,
-  styles: [`
-    .proyecto-row:hover {
-      background-color: var(--color-gray-50);
-    }
-  `],
+  styles: [],
 })
 export class ProyectosComponent {
   private proyectoService = inject(ProyectoService);

@@ -70,7 +70,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
   template: `
     <div class="calendario-page">
       <div class="flex justify-between items-center mb-6">
-        <h1 style="color: var(--color-gray-900);" class="text-2xl font-bold">Calendario de Proyectos</h1>
+        <h1>Calendario de Proyectos</h1>
       </div>
 
       <div class="fc-wrapper">

@@ -23,7 +23,7 @@ function formatoTamano(bytes: number): string {
   template: `
     <div class="max-w-4xl">
       <div class="mb-8">
-        <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">Mi perfil</h1>
+        <h1>Mi perfil</h1>
         <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
           Actualiza tu foto, datos personales y curriculum vitae.
         </p>
@@ -224,7 +224,6 @@ function formatoTamano(bytes: number): string {
   `,
   styles: [`
     :host { display: block; }
-    input:focus, textarea:focus { border-color: var(--color-indigo-400) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
   `]
 })
 export class PerfilComponent {

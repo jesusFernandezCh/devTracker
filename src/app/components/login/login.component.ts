@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
     <div class="min-h-screen flex" style="background-color: var(--color-gray-50);">
       <!-- Left panel: branding -->
       <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12"
-          style="background-image: url('/images/portada.jpeg'); background-size: cover; background-position: center;">
+          style="background-image: url('./images/portada.jpeg'); background-size: cover; background-position: center;">
            
         <div class="absolute inset-0 opacity-10">
           <svg class="w-full h-full" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -33,7 +33,7 @@ import { AuthService } from '../../services/auth.service';
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-3 4v6m-3-3h6"/>
             </svg>
           </div>
-          <h1 class="text-4xl font-bold text-indigo-700 mb-4">DevTracker</h1>
+          <h1>DevTracker</h1>
           <p class="text-lg text-white leading-relaxed">
              Sistema de Gestión de Desarrollos. Organiza tus proyectos, planifica tareas y da seguimiento a tu equipo de trabajo.
           </p>
@@ -160,7 +160,6 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     :host { display: block; }
-    input:focus { border-color: var(--color-indigo-400) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
     @keyframes spin { to { transform: rotate(360deg); } }
     .animate-spin { animation: spin 1s linear infinite; }
   `]
