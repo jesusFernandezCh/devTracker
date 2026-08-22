@@ -74,7 +74,7 @@ const PAGINA_SIZE = 10;
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
                 @for (planning of planningsPagina(); track planning.id) {
-                  <tr class="planning-row" style="transition: background-color 0.15s;">
+                  <tr class="row-hover" style="transition: background-color 0.15s;">
                     <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell border-l-2 transition-all duration-200 cursor-pointer" style="border-color: rgba(13, 148, 136, 0.5);" (click)="abrirDetalle(planning)">
                       <span class="text-sm truncate-desc transition-colors text-[var(--color-gray-700)] hover:text-[var(--color-teal-600)]">
                         {{ planning.descripcion || '—' }}
@@ -218,9 +218,6 @@ const PAGINA_SIZE = 10;
       text-overflow: ellipsis;
       white-space: nowrap;
       display: block;
-    }
-    .planning-row:hover {
-      background-color: var(--color-gray-50);
     }
   `],
 })

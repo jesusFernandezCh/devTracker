@@ -72,7 +72,7 @@ function tipoColor(tipo: string): {text: string; bg: string} {
             </thead>
             <tbody style="border-top: 1px solid var(--color-gray-100);">
               @for (usuario of usuarios(); track usuario.id) {
-                <tr class="usuario-row" style="transition: background-color 0.15s;">
+                <tr class="row-hover" style="transition: background-color 0.15s;">
                   <td class="px-4 sm:px-6 py-2.5">
                     <div class="flex items-center gap-3">
                       @if (usuario.foto) {
@@ -233,9 +233,7 @@ function tipoColor(tipo: string): {text: string; bg: string} {
       </div>
     }
   `,
-  styles: [`
-    .usuario-row:hover { background-color: var(--color-gray-50); }
-  `]
+  styles: []
 })
 export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);

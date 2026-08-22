@@ -98,8 +98,7 @@ import {CommonModule} from '@angular/common';
     </div>
     </div>
   `,
-  styles: [`
-  `]
+  styles: []
 })
 export class TaskFormComponent {
   private readonly fb = inject(NonNullableFormBuilder);

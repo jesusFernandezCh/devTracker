@@ -144,8 +144,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
       </div>
     </div>
   `,
-  styles: [`
-  `]
+  styles: []
 })
 export class PlanningTasksComponent {
   private fb = inject(FormBuilder);

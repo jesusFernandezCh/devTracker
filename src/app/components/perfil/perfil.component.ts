@@ -224,7 +224,6 @@ function formatoTamano(bytes: number): string {
   `,
   styles: [`
     :host { display: block; }
-    input:focus, textarea:focus { border-color: var(--color-indigo-400) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
   `]
 })
 export class PerfilComponent {

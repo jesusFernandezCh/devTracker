@@ -160,7 +160,6 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     :host { display: block; }
-    input:focus { border-color: var(--color-indigo-400) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
     @keyframes spin { to { transform: rotate(360deg); } }
     .animate-spin { animation: spin 1s linear infinite; }
   `]

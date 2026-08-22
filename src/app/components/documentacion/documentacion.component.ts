@@ -113,7 +113,7 @@ interface ProyectoAccordion {
                       </thead>
                       <tbody style="border-top: 1px solid var(--color-gray-100);">
                         @for (doc of item.documentos; track doc.id) {
-                          <tr class="doc-row" style="transition: background-color 0.15s;">
+                          <tr class="row-hover" style="transition: background-color 0.15s;">
                             <td class="px-4 sm:px-6 py-2.5 border-l-2 transition-all duration-200 hover:border-[rgba(99,102,241,1)] hover:pl-7"
                                 [style.border-color]="colorTipoMime(doc.tipoMime) + '80'">
                               <button (click)="abrirPreview(doc)"
@@ -222,11 +222,7 @@ interface ProyectoAccordion {
       </div>
     }
   `,
-  styles: [`
-    .doc-row:hover {
-      background-color: var(--color-gray-50);
-    }
-  `],
+  styles: [],
 })
 export class DocumentacionComponent {
   private documentoService = inject(DocumentoService);

@@ -101,8 +101,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
     </div>
     </div>
   `,
-  styles: [`
-  `]
+  styles: []
 })
 export class TaskDetailComponent {
   private route = inject(ActivatedRoute);

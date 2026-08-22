@@ -63,9 +63,9 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
       }
 
       <ng-template #panelContenido>
-        <div class="notif-header">
+        <div class="panel-header">
           <div class="flex items-center gap-1 min-w-0">
-            <button (click)="toggle()" class="notif-close" [attr.aria-label]="'Cerrar notificaciones'">
+            <button (click)="toggle()" class="icon-btn notif-close" [attr.aria-label]="'Cerrar notificaciones'">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -108,7 +108,7 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
               }
             </button>
           } @empty {
-            <p class="notif-empty">Sin notificaciones</p>
+            <p class="empty-state">Sin notificaciones</p>
           }
         </div>
 
@@ -150,15 +150,6 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
       z-index: 50;
       overflow: hidden;
-    }
-
-    .notif-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--color-gray-200);
     }
     .notif-title {
       font-size: 0.9375rem;
@@ -244,12 +235,6 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
       flex-shrink: 0;
       background-color: var(--color-rose-500);
     }
-    .notif-empty {
-      padding: 1.5rem 1rem;
-      text-align: center;
-      font-size: 0.8125rem;
-      color: var(--color-gray-400);
-    }
     .notif-footer {
       padding: 0.5rem 0.75rem;
       border-top: 1px solid var(--color-gray-200);
@@ -280,23 +265,6 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
       max-height: none;
       flex: 1;
       min-height: 0;
-    }
-    .notif-close {
-      width: 2rem;
-      height: 2rem;
-      border: none;
-      border-radius: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--color-gray-400);
-      background: transparent;
-      transition: background-color 0.15s, color 0.15s;
-    }
-    .notif-close:hover {
-      color: var(--color-gray-700);
-      background-color: var(--color-gray-100);
     }
     @media (min-width: 768px) {
       .notif-close {

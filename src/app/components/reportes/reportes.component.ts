@@ -138,7 +138,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="8" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+                    <tr><td colspan="8" class="empty-state">No hay proyectos para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -283,7 +283,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="4" class="empty-row">No hay tareas para los filtros aplicados.</td></tr>
+                    <tr><td colspan="4" class="empty-state">No hay tareas para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -322,7 +322,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="4" class="empty-row">No hay proyectos con fecha límite.</td></tr>
+                    <tr><td colspan="4" class="empty-state">No hay proyectos con fecha límite.</td></tr>
                   }
                 </tbody>
               </table>
@@ -424,7 +424,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="6" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+                    <tr><td colspan="6" class="empty-state">No hay proyectos para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -482,7 +482,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="7" class="empty-row">No hay plannings para los filtros aplicados.</td></tr>
+                    <tr><td colspan="7" class="empty-state">No hay plannings para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -578,22 +578,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
     .td-cell {
       padding: 0.625rem 1rem;
       white-space: nowrap;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .empty-row {
-      padding: 2.5rem 1rem;
-      text-align: center;
-      color: var(--color-gray-400);
     }
   `]
 })
