@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --configuration production --base-href /devTracker/",
+    "build": "ng build --base-href /",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "deploy": "npm run build:gh && node scripts/check-base.cjs && angular-cli-ghpages --dir dist/devtracker/browser"
