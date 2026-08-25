@@ -4,10 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build:gh": "ng build --configuration production",
     "deploy": "npm run build:gh && node scripts/check-base.cjs && angular-cli-ghpages --dir dist/devtracker/browser"
   },
   "private": true,
