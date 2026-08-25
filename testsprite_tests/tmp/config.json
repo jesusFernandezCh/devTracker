@@ -5,8 +5,8 @@
   "localEndpoint": "http://localhost:4200/",
   "serverPort": 62975,
   "executionArgs": {
-    "projectName": "devtraker",
-    "projectPath": "D:\\AngularWorkSpace\\devtraker",
+    "projectName": "devTracker",
+    "projectPath": "D:\\AngularWorkSpace\\devTracker",
     "testIds": [],
     "additionalInstruction": "Aplicación Angular gestionada con datos en localStorage. Usar credencial por defecto admin@devtracker.app / admin123 para login.",
     "serverMode": "development",
