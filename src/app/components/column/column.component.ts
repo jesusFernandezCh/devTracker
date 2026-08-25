@@ -26,7 +26,7 @@ import {CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem} f
            class="flex-1 space-y-3 overflow-y-auto custom-scrollbar min-h-[200px] p-1"
            (cdkDropListDropped)="onDrop($event)">
         @for (proj of proyectos(); track proj.proyecto.id) {
-          <div cdkDrag [cdkDragData]="proj" [@slideIn]>
+          <div cdkDrag [cdkDragData]="proj" [@slideIn] [id]="'project-' + proj.proyecto.id">
             <app-project-card
               [proyecto]="proj.proyecto"
               [plannings]="proj.plannings"

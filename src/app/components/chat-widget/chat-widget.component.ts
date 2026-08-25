@@ -31,11 +31,11 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
 
     @if (chatService.abierto()) {
       <div class="chat-panel" role="dialog" aria-label="Chat">
-        <div class="chat-header">
+        <div class="panel-header">
           <div class="flex items-center gap-2 min-w-0">
             @if (conversacion()) {
               <button (click)="conversacion.set(null)"
-                      class="chat-icon-btn"
+                      class="icon-btn"
                       aria-label="Volver a contactos">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
@@ -49,7 +49,7 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
               }
             </div>
           </div>
-          <button (click)="chatService.cerrar()" class="chat-icon-btn" aria-label="Cerrar chat">
+          <button (click)="chatService.cerrar()" class="icon-btn" aria-label="Cerrar chat">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -115,7 +115,7 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
                 }
               </button>
             } @empty {
-              <p class="chat-empty">No hay otros usuarios registrados.</p>
+              <p class="empty-state">No hay otros usuarios registrados.</p>
             }
           } @else {
             <div #scroll class="chat-scroll">
@@ -141,7 +141,7 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
                   </div>
                 </div>
               } @empty {
-                <p class="chat-empty">Sin mensajes. Escribe el primero.</p>
+                <p class="empty-state">Sin mensajes. Escribe el primero.</p>
               }
             </div>
 
@@ -215,14 +215,6 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
       border: 1px solid var(--color-gray-200);
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
     }
-    .chat-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--color-gray-200);
-    }
     .chat-header-title {
       font-size: 0.9375rem;
       font-weight: 700;
@@ -231,23 +223,6 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
     .chat-header-sub {
       font-size: 0.75rem;
       color: var(--color-gray-400);
-    }
-    .chat-icon-btn {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 0.5rem;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--color-gray-400);
-      background: transparent;
-      transition: background-color 0.15s, color 0.15s;
-    }
-    .chat-icon-btn:hover {
-      color: var(--color-gray-700);
-      background-color: var(--color-gray-100);
     }
 
     .chat-body {
@@ -376,12 +351,6 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
       opacity: 0.7;
       align-self: flex-end;
     }
-    .chat-empty {
-      padding: 1.5rem 1rem;
-      text-align: center;
-      font-size: 0.8125rem;
-      color: var(--color-gray-400);
-    }
 
     .chat-input {
       display: flex;
@@ -423,6 +392,16 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
     .chat-send:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+
+    @media (max-width: 767px) {
+      .chat-fab {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom));
+      }
+      .chat-panel {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom));
+        height: min(34rem, calc(100dvh - 7.5rem));
+      }
     }
   `],
 })

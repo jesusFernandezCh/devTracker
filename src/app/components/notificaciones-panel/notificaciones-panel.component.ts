@@ -1,6 +1,9 @@
 import {Component, inject, signal, computed, ChangeDetectionStrategy, HostListener, viewChild, ElementRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {BreakpointObserver} from '@angular/cdk/layout';
+import {map} from 'rxjs';
 import {NotificacionService} from '../../services/notificacion.service';
 import {Notificacion, TipoNotificacion} from '../../models/notificacion.model';
 
@@ -46,56 +49,75 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
       </button>
 
       @if (abierto()) {
-        <div class="notif-panel" role="dialog" aria-label="Notificaciones">
-          <div class="notif-header">
-            <div>
+        @if (esMovil()) {
+          <div class="notif-backdrop" (click)="toggle()">
+            <div class="notif-panel notif-panel-modal" role="dialog" aria-label="Notificaciones" (click)="$event.stopPropagation()">
+              <ng-container *ngTemplateOutlet="panelContenido" />
+            </div>
+          </div>
+        } @else {
+          <div class="notif-panel" role="dialog" aria-label="Notificaciones">
+            <ng-container *ngTemplateOutlet="panelContenido" />
+          </div>
+        }
+      }
+
+      <ng-template #panelContenido>
+        <div class="panel-header">
+          <div class="flex items-center gap-1 min-w-0">
+            <button (click)="toggle()" class="icon-btn notif-close" [attr.aria-label]="'Cerrar notificaciones'">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+            <div class="min-w-0">
               <p class="notif-title">Notificaciones</p>
               @if (noLeidas() > 0) {
                 <p class="notif-sub">{{ noLeidas() }} no leída{{ noLeidas() !== 1 ? 's' : '' }}</p>
               }
             </div>
-            @if (lista().length > 0) {
-              <button (click)="marcarTodasLeidas()"
-                      class="notif-action"
-                      [attr.aria-label]="'Marcar todas como leídas'">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Marcar todas
-              </button>
-            }
           </div>
-
-          <div class="notif-body custom-scrollbar">
-            @for (n of lista(); track n.id) {
-              <button (click)="abrirNotificacion(n)"
-                      class="notif-item"
-                      [class.notif-item-no-leida]="!n.leida">
-                <span class="notif-icon shrink-0" [style.color]="estilo(n.tipo).text" [style.background-color]="estilo(n.tipo).bg">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="estilo(n.tipo).icon"/>
-                  </svg>
-                </span>
-                <span class="flex-1 min-w-0 text-left">
-                  <span class="notif-desc">{{ n.descripcion }}</span>
-                  <span class="notif-time">{{ tiempoRelativo(n.fecha) }}</span>
-                </span>
-                @if (!n.leida) {
-                  <span class="notif-dot"></span>
-                }
-              </button>
-            } @empty {
-              <p class="notif-empty">Sin notificaciones</p>
-            }
-          </div>
-
           @if (lista().length > 0) {
-            <div class="notif-footer">
-              <button (click)="limpiar()" class="notif-action w-full justify-center">Limpiar todas</button>
-            </div>
+            <button (click)="marcarTodasLeidas()"
+                    class="notif-action"
+                    [attr.aria-label]="'Marcar todas como leídas'">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Marcar todas
+            </button>
           }
         </div>
-      }
+
+        <div class="notif-body custom-scrollbar">
+          @for (n of lista(); track n.id) {
+            <button (click)="abrirNotificacion(n)"
+                    class="notif-item"
+                    [class.notif-item-no-leida]="!n.leida">
+              <span class="notif-icon shrink-0" [style.color]="estilo(n.tipo).text" [style.background-color]="estilo(n.tipo).bg">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="estilo(n.tipo).icon"/>
+                </svg>
+              </span>
+              <span class="flex-1 min-w-0 text-left">
+                <span class="notif-desc">{{ n.descripcion }}</span>
+                <span class="notif-time">{{ tiempoRelativo(n.fecha) }}</span>
+              </span>
+              @if (!n.leida) {
+                <span class="notif-dot"></span>
+              }
+            </button>
+          } @empty {
+            <p class="empty-state">Sin notificaciones</p>
+          }
+        </div>
+
+        @if (lista().length > 0) {
+          <div class="notif-footer">
+            <button (click)="limpiar()" class="notif-action w-full justify-center">Limpiar todas</button>
+          </div>
+        }
+      </ng-template>
     </div>
   `,
   styles: [`
@@ -128,15 +150,6 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
       z-index: 50;
       overflow: hidden;
-    }
-
-    .notif-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--color-gray-200);
     }
     .notif-title {
       font-size: 0.9375rem;
@@ -222,16 +235,41 @@ const ETIQUETAS: Record<TipoNotificacion, string> = {
       flex-shrink: 0;
       background-color: var(--color-rose-500);
     }
-    .notif-empty {
-      padding: 1.5rem 1rem;
-      text-align: center;
-      font-size: 0.8125rem;
-      color: var(--color-gray-400);
-    }
     .notif-footer {
       padding: 0.5rem 0.75rem;
       border-top: 1px solid var(--color-gray-200);
       display: flex;
+    }
+
+    .notif-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .notif-panel-modal {
+      position: relative;
+      top: auto;
+      right: auto;
+      width: min(26rem, calc(100vw - 3rem));
+      max-height: min(70dvh, 40rem);
+      display: flex;
+      flex-direction: column;
+      animation: modal-in 0.2s ease-out;
+    }
+    .notif-panel-modal .notif-body {
+      max-height: none;
+      flex: 1;
+      min-height: 0;
+    }
+    @media (min-width: 768px) {
+      .notif-close {
+        display: none;
+      }
     }
   `]
 })
@@ -244,6 +282,12 @@ export class NotificacionesPanelComponent {
 
   protected readonly lista = this.notificacionService.notificaciones;
   protected readonly noLeidas = computed(() => this.notificacionService.noLeidas());
+  protected readonly esMovil = toSignal(
+    inject(BreakpointObserver)
+      .observe('(max-width: 767px)')
+      .pipe(map((r) => r.matches)),
+    {initialValue: false},
+  );
 
   protected estilo(tipo: TipoNotificacion): TipoEstilo {
     return ESTILOS[tipo];

@@ -102,8 +102,7 @@ import {complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
       </div>
     </div>
   `,
-  styles: [`
-  `]
+  styles: []
 })
 export class PlanningDetailComponent {
   readonly planning = input.required<Planning>();

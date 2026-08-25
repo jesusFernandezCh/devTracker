@@ -17,10 +17,16 @@
   animation: modal-in 0.2s ease-out;
 }
 
+h1 {
+  font-size: 21px;
+  font-weight: bold;
+  color: var(--color-gray-900);
+}
+
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
-
+  --color-header: #0b0f19;
   --color-surface: #ffffff;
 
   --scrollbar-thumb: #d1d5db;
@@ -88,6 +94,7 @@
   --color-purple-100: #3B0764;
   --color-purple-700: #D8B4FE;
 
+  --color-header: #1E293B;
   --color-surface: #1E293B;
 
   --estimation-bg: #1E1B4B;
@@ -125,6 +132,132 @@
 .badge-priority-critica {
   background-color: var(--color-priority-critica-bg);
   color: var(--color-priority-critica-text);
+}
+
+/* ── Date range picker (Material) ──
+   Los estilos de Material se inyectan después de styles.scss; los overrides
+   se hacen con `!important` para ganar a esas reglas sin importar el orden. */
+
+.mat-datepicker-content {
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: var(--color-surface) !important;
+  color: var(--color-gray-900) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+.mat-calendar-header {
+  color: var(--color-gray-700) !important;
+}
+
+.mat-calendar-period-button .mat-calendar-arrow {
+  fill: var(--color-gray-500) !important;
+}
+
+.mat-calendar-table-header th {
+  color: var(--color-gray-500) !important;
+  font-weight: 600;
+}
+
+.mat-calendar-previous-button::after,
+.mat-calendar-next-button::after {
+  border-color: var(--color-gray-600) !important;
+}
+
+.mat-calendar-body-cell-content {
+  color: var(--color-gray-800) !important;
+  border-radius: 0.5rem;
+}
+
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover>.mat-calendar-body-cell-content:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+  background-color: #eef2ff !important;
+}
+
+.mat-calendar-body-today:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+  border-color: var(--color-indigo-500) !important;
+}
+
+.mat-calendar-body-in-range::before {
+  background: rgba(99, 102, 241, 0.16) !important;
+}
+
+.mat-calendar-body-cell-content.mat-calendar-body-selected {
+  background-color: var(--color-indigo-600) !important;
+  color: #fff !important;
+}
+
+.mat-calendar-body-disabled>.mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  color: var(--color-gray-400) !important;
+}
+
+.mat-calendar-body-label {
+  color: var(--color-gray-600) !important;
+}
+
+.mat-datepicker-content .mat-icon-button {
+  color: var(--color-gray-500) !important;
+}
+
+[data-theme="dark"] .mat-datepicker-content {
+  background-color: #0f172a !important;
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-200) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .mat-calendar-header {
+  color: var(--color-gray-300) !important;
+}
+
+[data-theme="dark"] .mat-calendar-period-button.mat-icon-button {
+  color: var(--color-gray-400) !important;
+}
+
+[data-theme="dark"] .mat-calendar-period-button .mat-calendar-arrow {
+  fill: var(--color-gray-400) !important;
+}
+
+[data-theme="dark"] .mat-calendar-table-header th {
+  color: var(--color-gray-500) !important;
+}
+
+[data-theme="dark"] .mat-calendar-previous-button::after,
+[data-theme="dark"] .mat-calendar-next-button::after {
+  border-color: var(--color-gray-400) !important;
+}
+
+[data-theme="dark"] .mat-calendar-body-cell-content {
+  color: var(--color-gray-300) !important;
+}
+
+[data-theme="dark"] .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover>.mat-calendar-body-cell-content:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+  background-color: var(--color-gray-700) !important;
+}
+
+[data-theme="dark"] .mat-calendar-body-today:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+  border-color: var(--color-indigo-500) !important;
+}
+
+[data-theme="dark"] .mat-calendar-body-in-range::before {
+  background: rgba(99, 102, 241, 0.3) !important;
+}
+
+[data-theme="dark"] .mat-calendar-body-cell-content.mat-calendar-body-selected {
+  background-color: var(--color-indigo-600) !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .mat-calendar-body-disabled>.mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  color: var(--color-gray-600) !important;
+}
+
+[data-theme="dark"] .mat-calendar-body-label {
+  color: var(--color-gray-500) !important;
+}
+
+[data-theme="dark"] .mat-datepicker-content .mat-icon-button {
+  color: var(--color-gray-400) !important;
 }
 
 /* ── Drag & drop animations ── */
@@ -217,6 +350,7 @@
 
   mat-sidenav,
   app-header,
+  app-bottom-nav,
   .no-print {
     display: none !important;
   }
@@ -248,4 +382,92 @@
     justify-content: center;
     margin-left: 306px;
   }
+}
+
+/* ── Componentes compartidos ── */
+
+/* Row hover — usado en proyectos, documentacion, usuarios, planning */
+.row-hover:hover {
+  background-color: var(--color-gray-50);
+}
+
+/* Input/textarea focus ring — usado en login, perfil */
+input:focus, textarea:focus {
+  border-color: var(--color-indigo-400) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Icon button (2rem) — usado en chat-widget, notificaciones-panel */
+.icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-gray-400);
+  background: transparent;
+  transition: background-color 0.15s, color 0.15s;
+}
+.icon-btn:hover {
+  color: var(--color-gray-700);
+  background-color: var(--color-gray-100);
+}
+
+/* Panel header — usado en chat-widget, notificaciones-panel */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+/* Empty state — usado en notificaciones-panel, reportes */
+.empty-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--color-gray-400);
+}
+
+/* Modal backdrop — usado en calendario, notificaciones-panel */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+/* Modal card — usado en calendario, chat-widget */
+.modal-card {
+  background-color: var(--color-surface);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Badge — usado en reportes, calendario */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+/* JetBrains Mono font — usado en dashboard */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }

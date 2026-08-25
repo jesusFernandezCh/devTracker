@@ -12,8 +12,10 @@ import {Proyecto, ProyectoConDatos} from '../../models/proyecto.model';
 import {Usuario} from '../../models/usuario.model';
 import {statusColor, prioridadColor, estimacionTotal} from '../../utils/estimacion';
 import {iniciales, tipoColor} from '../../utils/helpers';
+import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
 import {EquipoModalComponent} from '../equipo-modal/equipo-modal.component';
+import {ClienteModalComponent} from '../cliente-modal/cliente-modal.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
 
 const PAGINA_SIZE = 10;
@@ -22,11 +24,11 @@ const PAGINA_SIZE = 10;
   selector: 'app-proyectos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, PermisoDirective],
+  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, ClienteModalComponent, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
-        <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">
+        <h1>
           Proyectos
         </h1>
         <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
@@ -34,15 +36,13 @@ const PAGINA_SIZE = 10;
         </p>
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0 d-flex align-items-center gap-2">
-        <button (click)="soloMios.set(!soloMios())"
-                class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors border"
-                [style.background-color]="soloMios() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
-                [style.color]="soloMios() ? '#ffffff' : 'var(--color-gray-700)'"
-                [style.border-color]="soloMios() ? 'var(--color-indigo-600)' : 'var(--color-gray-300)'">
+        <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirClientes()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm bg-[var(--color-surface)] hover:bg-[var(--color-gray-100)] border"
+                style="color: var(--color-gray-700); border-color: var(--color-gray-300);">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
           </svg>
-          Mis proyectos
+          <span class="d-none d-sm-inline">Clientes</span>
         </button>
         <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
@@ -59,9 +59,9 @@ const PAGINA_SIZE = 10;
           <svg class="w-16 h-16 mx-auto mb-4" style="color: var(--color-gray-300)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"/>
           </svg>
-          @if (soloMios() && proyectos().length > 0) {
+          @if (!esAdmin() && proyectos().length > 0) {
             <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500)">No tienes proyectos asignados</h3>
-            <p class="text-sm mb-6" style="color: var(--color-gray-400)">Usa el filtro "Solo mis proyectos" desactivado para ver todos.</p>
+            <p class="text-sm mb-6" style="color: var(--color-gray-400)">Solo puedes ver los proyectos en los que estás asociado.</p>
           } @else {
             <h3 class="text-lg font-medium mb-2" style="color: var(--color-gray-500)">No hay proyectos</h3>
             <p class="text-sm mb-6" style="color: var(--color-gray-400)">Crea tu primer proyecto para empezar.</p>
@@ -92,7 +92,7 @@ const PAGINA_SIZE = 10;
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
                 @for (proyecto of proyectosPagina(); track proyecto.id) {
-                  <tr class="proyecto-row" style="transition: background-color 0.15s;">
+                  <tr class="row-hover" style="transition: background-color 0.15s;">
                     <td class="px-4 sm:px-6 py-2.5 border-l-2 transition-all duration-200 hover:border-[rgba(13,148,136,1)] hover:pl-7" style="border-color: rgba(13, 148, 136, 0.5);">
                       <button (click)="abrirDetalle(proyecto)"
                               class="flex items-center gap-3 text-left group"
@@ -247,10 +247,10 @@ const PAGINA_SIZE = 10;
 
       @if (detalleProyecto(); as detalle) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarDetalle()">
-          <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
-            <div class="flex items-start justify-between gap-4 px-6 py-3 border-b" style="border-color: var(--color-gray-100);">
+          <div class="modal-enter rounded-xl shadow-xl w-full max-w-sm border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+            <div class="flex items-start justify-between gap-4 px-4 py-2.5 border-b" style="border-color: var(--color-gray-100);">
               <div class="min-w-0">
-                <h3 class="text-lg font-semibold leading-tight" style="color: var(--color-gray-900);">{{ detalle.proyecto.nombre }}</h3>
+                <h3 class="text-base font-semibold leading-tight" style="color: var(--color-gray-900);">{{ detalle.proyecto.nombre }}</h3>
                 @if (detalle.proyecto.cliente) {
                   <p class="text-sm mt-0.5" style="color: var(--color-gray-500);">{{ detalle.proyecto.cliente }}</p>
                 }
@@ -258,20 +258,20 @@ const PAGINA_SIZE = 10;
               <button (click)="cerrarDetalle()"
                       class="shrink-0 p-1.5 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)]"
                       aria-label="Cerrar detalle">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
 
-            <div class="px-6 py-3">
+            <div class="px-4 py-2.5">
               @if (detalle.proyecto.descripcion) {
-                <div class="rounded-lg p-3 mb-5" style="background-color: var(--color-gray-50);">
-                  <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ detalle.proyecto.descripcion }}</p>
+                <div class="rounded-lg p-2.5 mb-4" style="background-color: var(--color-gray-50);">
+                  <p class="text-sm leading-relaxed max-h-[91px] overflow-y-auto custom-scrollbar pr-1" style="color: var(--color-gray-600);">{{ detalle.proyecto.descripcion }}</p>
                 </div>
               }
 
-              <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+              <div class="grid grid-cols-2 gap-x-3 gap-y-3">
                 <div>
                   <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</span>
                   <div class="mt-1">
@@ -323,33 +323,33 @@ const PAGINA_SIZE = 10;
                 </div>
               </div>
 
-              <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-gray-900);">{{ detalle.plannings.length }}</p>
+              <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-gray-900);">{{ detalle.plannings.length }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Planning</p>
                 </div>
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-gray-900);">{{ detalle.tareas.length }}</p>
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-gray-900);">{{ detalle.tareas.length }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Tareas</p>
                 </div>
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-teal-600);">{{ tareasCompletadas(detalle) }}</p>
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-teal-600);">{{ tareasCompletadas(detalle) }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Completadas</p>
                 </div>
-                <div class="rounded-lg p-3 text-center" style="background-color: var(--color-gray-50);">
-                  <p class="text-xl font-bold" style="color: var(--color-indigo-600);">{{ estimacionTotal(detalle.tareas) }}</p>
+                <div class="rounded-lg p-2 text-center" style="background-color: var(--color-gray-50);">
+                  <p class="text-lg font-bold" style="color: var(--color-indigo-600);">{{ estimacionTotal(detalle.tareas) }}</p>
                   <p class="text-xs mt-0.5" style="color: var(--color-gray-500);">Story points</p>
                 </div>
               </div>
             </div>
 
-            <div class="flex justify-end gap-3 px-6 py-4 border-t" style="border-color: var(--color-gray-100);">
+            <div class="flex justify-end gap-3 px-4 py-3 border-t" style="border-color: var(--color-gray-100);">
               <button (click)="cerrarDetalle()"
-                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
                 Cerrar
               </button>
               <button (click)="irAPlanning(detalle.proyecto.id)"
-                      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                      class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -390,12 +390,12 @@ const PAGINA_SIZE = 10;
       @if (equipoProyecto(); as proyecto) {
         <app-equipo-modal [proyecto]="proyecto" (cerrar)="cerrarEquipo()"/>
       }
+
+      @if (clientesAbierto) {
+        <app-cliente-modal (cerrar)="cerrarClientes()"/>
+      }
   `,
-  styles: [`
-    .proyecto-row:hover {
-      background-color: var(--color-gray-50);
-    }
-  `],
+  styles: [],
 })
 export class ProyectosComponent {
   private proyectoService = inject(ProyectoService);
@@ -417,13 +417,18 @@ export class ProyectosComponent {
   showForm = false;
   editandoProyecto: Proyecto | null = null;
   deleteConfirmId: string | null = null;
+  clientesAbierto = false;
 
-  protected readonly soloMios = signal(false);
   protected readonly equipoProyecto = signal<Proyecto | null>(null);
+
+  protected readonly esAdmin = computed(() => {
+    const tipo = this.authService.currentUser()?.tipo;
+    return tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador';
+  });
 
   protected readonly proyectosFiltrados = computed(() => {
     const lista = this.proyectos();
-    if (!this.soloMios()) return lista;
+    if (this.esAdmin()) return lista;
     const id = this.authService.currentUser()?.id;
     if (!id) return [];
     return lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
@@ -476,6 +481,14 @@ export class ProyectosComponent {
   abrirNuevo(): void {
     this.editandoProyecto = null;
     this.showForm = true;
+  }
+
+  abrirClientes(): void {
+    this.clientesAbierto = true;
+  }
+
+  cerrarClientes(): void {
+    this.clientesAbierto = false;
   }
 
   abrirEditar(proyecto: Proyecto): void {

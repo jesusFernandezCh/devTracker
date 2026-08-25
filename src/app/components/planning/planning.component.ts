@@ -3,7 +3,11 @@ import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PlanningService} from '../../services/planning.service';
 import {ProyectoService} from '../../services/proyecto.service';
+import {EquipoService} from '../../services/equipo.service';
+import {AuthService} from '../../services/auth.service';
 import {Planning, PlanningTask} from '../../models/planning.model';
+import {Proyecto} from '../../models/proyecto.model';
+import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {estimacionTotal} from '../../utils/estimacion';
 import {PlanningFormComponent} from '../planning-form/planning-form.component';
@@ -21,7 +25,7 @@ const PAGINA_SIZE = 10;
   template: `
       <div class="row align-items-center mb-8">
         <div class="col-12 col-md">
-          <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">
+          <h1>
             Planning
           </h1>
           <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
@@ -70,7 +74,7 @@ const PAGINA_SIZE = 10;
               </thead>
               <tbody style="border-top: 1px solid var(--color-gray-100);">
                 @for (planning of planningsPagina(); track planning.id) {
-                  <tr class="planning-row" style="transition: background-color 0.15s;">
+                  <tr class="row-hover" style="transition: background-color 0.15s;">
                     <td class="px-4 sm:px-6 py-2.5 hidden sm:table-cell border-l-2 transition-all duration-200 cursor-pointer" style="border-color: rgba(13, 148, 136, 0.5);" (click)="abrirDetalle(planning)">
                       <span class="text-sm truncate-desc transition-colors text-[var(--color-gray-700)] hover:text-[var(--color-teal-600)]">
                         {{ planning.descripcion || '—' }}
@@ -189,7 +193,7 @@ const PAGINA_SIZE = 10;
 
       @if (showForm) {
         <app-planning-form [editando]="editandoPlanning"
-                           [proyectos]="proyectos()"
+                           [proyectos]="proyectosDisponibles()"
                            (guardar)="onGuardar($event)"
                            (cerrar)="cerrarForm()"/>
       }
@@ -215,20 +219,35 @@ const PAGINA_SIZE = 10;
       white-space: nowrap;
       display: block;
     }
-    .planning-row:hover {
-      background-color: var(--color-gray-50);
-    }
   `],
 })
 export class PlanningComponent {
   private planningService = inject(PlanningService);
   private proyectoService = inject(ProyectoService);
+  private equipoService = inject(EquipoService);
+  private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   plannings = this.planningService.plannings;
   proyectos = this.proyectoService.proyectos;
   protected readonly estimacionTotal = estimacionTotal;
+
+  protected readonly proyectosDisponibles = computed(() => {
+    const lista = this.proyectos();
+    const tipo = this.authService.currentUser()?.tipo;
+    if (tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador') return lista;
+    const id = this.authService.currentUser()?.id;
+    const filtrados = !id ? [] : lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
+    const edit = this.editandoPlanning;
+    if (edit) {
+      const actual = lista.find((p) => p.id === edit.proyectoId);
+      if (actual && !filtrados.some((p) => p.id === actual.id)) {
+        return [...filtrados, actual];
+      }
+    }
+    return filtrados;
+  });
 
   showForm = false;
   editandoPlanning: Planning | null = null;
@@ -303,7 +322,7 @@ export class PlanningComponent {
   abrirNuevo(proyectoId?: string): void {
     this.editandoPlanning = null;
     this.showForm = true;
-    if (proyectoId) {
+    if (proyectoId && this.proyectosDisponibles().some((p) => p.id === proyectoId)) {
       setTimeout(() => {
         const form = document.querySelector('app-planning-form');
         if (form) {

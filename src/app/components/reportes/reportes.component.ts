@@ -2,7 +2,6 @@ import {Component, inject, ChangeDetectionStrategy, signal, computed, effect} fr
 import {HighchartsChartComponent} from 'highcharts-angular';
 import type {Options as HighchartsOptions, SeriesOptionsType} from 'highcharts';
 import {ReporteService} from '../../services/reporte.service';
-import {ProyectoService} from '../../services/proyecto.service';
 import {ColumnService} from '../../services/column.service';
 import {ThemeService} from '../../services/theme.service';
 import {estimacionTotal} from '../../utils/estimacion';
@@ -30,7 +29,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
     <div class="mb-6">
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-3xl font-bold" style="color: var(--color-gray-900)">Reportes</h1>
+          <h1>Reportes</h1>
           <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
             Indicadores de proyectos, tareas, estimación y avance.
           </p>
@@ -62,7 +61,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                 class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                 style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
           <option value="">Todos los proyectos</option>
-          @for (p of proyectoService.proyectos(); track p.id) {
+          @for (p of reporteService.proyectosAccesibles(); track p.id) {
             <option [value]="p.id">{{ p.nombre }}</option>
           }
         </select>
@@ -139,7 +138,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="8" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+                    <tr><td colspan="8" class="empty-state">No hay proyectos para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -284,7 +283,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="4" class="empty-row">No hay tareas para los filtros aplicados.</td></tr>
+                    <tr><td colspan="4" class="empty-state">No hay tareas para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -323,7 +322,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="4" class="empty-row">No hay proyectos con fecha límite.</td></tr>
+                    <tr><td colspan="4" class="empty-state">No hay proyectos con fecha límite.</td></tr>
                   }
                 </tbody>
               </table>
@@ -425,7 +424,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="6" class="empty-row">No hay proyectos para los filtros aplicados.</td></tr>
+                    <tr><td colspan="6" class="empty-state">No hay proyectos para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -483,7 +482,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="7" class="empty-row">No hay plannings para los filtros aplicados.</td></tr>
+                    <tr><td colspan="7" class="empty-state">No hay plannings para los filtros aplicados.</td></tr>
                   }
                 </tbody>
               </table>
@@ -580,27 +579,10 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
       padding: 0.625rem 1rem;
       white-space: nowrap;
     }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .empty-row {
-      padding: 2.5rem 1rem;
-      text-align: center;
-      color: var(--color-gray-400);
-    }
   `]
 })
 export class ReportesComponent {
   protected readonly reporteService = inject(ReporteService);
-  protected readonly proyectoService = inject(ProyectoService);
   protected readonly columnService = inject(ColumnService);
   protected readonly themeService = inject(ThemeService);
 

@@ -9,6 +9,9 @@ import {ProyectoService} from '../../services/proyecto.service';
 import {ColumnService} from '../../services/column.service';
 import {PlanningService} from '../../services/planning.service';
 import {ThemeService} from '../../services/theme.service';
+import {EquipoService} from '../../services/equipo.service';
+import {AuthService} from '../../services/auth.service';
+import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {statusColor, complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
 import type {Proyecto} from '../../models/proyecto.model';
 import type {Columna} from '../../models/columna.model';
@@ -67,7 +70,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
   template: `
     <div class="calendario-page">
       <div class="flex justify-between items-center mb-6">
-        <h1 style="color: var(--color-gray-900);" class="text-2xl font-bold">Calendario de Proyectos</h1>
+        <h1>Calendario de Proyectos</h1>
       </div>
 
       <div class="fc-wrapper">
@@ -495,6 +498,8 @@ export class CalendarioComponent {
   private readonly columnService = inject(ColumnService);
   protected readonly planningService = inject(PlanningService);
   protected readonly themeService = inject(ThemeService);
+  private readonly equipoService = inject(EquipoService);
+  private readonly authService = inject(AuthService);
 
   protected mostrarPlanificaciones = false;
   protected mostrarTareas = false;
@@ -547,8 +552,21 @@ export class CalendarioComponent {
     },
   };
 
+  protected readonly esAdmin = computed(() => {
+    const tipo = this.authService.currentUser()?.tipo;
+    return tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador';
+  });
+
+  protected readonly proyectosVisibles = computed(() => {
+    const lista = this.proyectoService.proyectos();
+    if (this.esAdmin()) return lista;
+    const id = this.authService.currentUser()?.id;
+    if (!id) return [];
+    return lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
+  });
+
   protected readonly events = computed(() =>
-    this.proyectoService.proyectos().flatMap((p) => {
+    this.proyectosVisibles().flatMap((p) => {
       const colors = statusColor(p.status);
       return getWeekdaySegments(p.fechaDesde, p.fechaHasta).map(seg => ({
         title: p.nombre,

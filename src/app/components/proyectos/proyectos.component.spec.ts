@@ -52,6 +52,7 @@ describe('ProyectosComponent', () => {
   });
 
   it('renderiza la columna Equipo con el contador de miembros', () => {
+    usuarioActual.set(usuarios[0]);
     equipoService.asignar('p1', 'u1');
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Equipo');
@@ -70,31 +71,46 @@ describe('ProyectosComponent', () => {
     expect(fixture.nativeElement.querySelector('app-equipo-modal')).toBeNull();
   });
 
-  it('el filtro "Solo mis proyectos" filtra por membresía', () => {
-    usuarioActual.set(usuarios[0]);
-    equipoService.asignar('p1', 'u1');
+  it('un usuario regular solo ve los proyectos en los que está asociado', () => {
+    usuarioActual.set(usuarios[1]);
+    equipoService.asignar('p1', 'u2');
     fixture.detectChanges();
 
-    const c = component as unknown as {
-      soloMios: {set: (v: boolean) => void};
-      proyectosFiltrados: () => typeof proyectos;
-    };
-    expect(c.proyectosFiltrados().length).toBe(2);
-
-    c.soloMios.set(true);
-    fixture.detectChanges();
+    const c = component as unknown as {proyectosFiltrados: () => typeof proyectos};
     expect(c.proyectosFiltrados().length).toBe(1);
     expect(c.proyectosFiltrados()[0].id).toBe('p1');
     expect(fixture.nativeElement.textContent).toContain('Web App');
     expect(fixture.nativeElement.textContent).not.toContain('Mobile');
   });
 
-  it('muestra estado vacío cuando no hay proyectos asignados al usuario', () => {
+  it('admin y super-admin ven todos los proyectos', () => {
     usuarioActual.set(usuarios[0]);
+    equipoService.asignar('p1', 'u2');
     fixture.detectChanges();
-    const c = component as unknown as {soloMios: {set: (v: boolean) => void}};
-    c.soloMios.set(true);
+
+    const c = component as unknown as {proyectosFiltrados: () => typeof proyectos};
+    expect(c.proyectosFiltrados().length).toBe(2);
+  });
+
+  it('muestra estado vacío cuando el usuario regular no tiene proyectos asignados', () => {
+    usuarioActual.set(usuarios[1]);
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('No tienes proyectos asignados');
+  });
+
+  it('al crear un proyecto el creador queda asignado automáticamente y es visible', () => {
+    usuarioActual.set(usuarios[1]);
+    const c = component as unknown as {
+      onGuardar: (data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}) => void;
+      proyectosFiltrados: () => typeof proyectos;
+    };
+    c.onGuardar({nombre: 'Nuevo', descripcion: '', cliente: '', status: '', prioridad: '', fechaDesde: '', fechaHasta: '', documentacion: ''});
+    fixture.detectChanges();
+
+    const visibles = c.proyectosFiltrados();
+    expect(visibles.length).toBe(1);
+    expect(visibles[0].nombre).toBe('Nuevo');
+    expect(equipoService.miembrosDe(visibles[0].id)).toContain('u2');
+    expect(fixture.nativeElement.textContent).toContain('Nuevo');
   });
 });
