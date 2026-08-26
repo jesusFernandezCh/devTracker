@@ -524,11 +524,11 @@ export class CalendarioComponent {
     return Math.round((completadas / lista.length) * 100);
   });
 
-  protected toggleTarea(tareaId: string): void {
+  protected async toggleTarea(tareaId: string): Promise<void> {
     const planning = this.planningsDelProyecto().find(p =>
       p.tareas.some(t => t.id === tareaId)
     );
-    if (planning) this.planningService.toggleCompletada(planning.id, tareaId);
+    if (planning) await this.planningService.toggleCompletada(planning.id, tareaId);
   }
 
   protected readonly selectedProyecto = signal<Proyecto | null>(null);

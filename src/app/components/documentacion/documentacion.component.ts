@@ -304,13 +304,13 @@ export class DocumentacionComponent {
     this.editandoDoc = null;
   }
 
-  onGuardar(data: {nombre: string; descripcion: string; proyectoId: string; archivoBase64: string; tipoMime: string}): void {
+  async onGuardar(data: {nombre: string; descripcion: string; proyectoId: string; archivoBase64: string; tipoMime: string}): Promise<void> {
     if (this.editandoDoc) {
-      this.documentoService.actualizar(this.editandoDoc.id, data);
-      this.notificacionService.notificar({tipo: 'info', descripcion: `Documento «${data.nombre}» actualizado`, url: '/documentacion'});
+      await this.documentoService.actualizar(this.editandoDoc.id, data);
+      await this.notificacionService.notificar({tipo: 'info', descripcion: `Documento «${data.nombre}» actualizado`, url: '/documentacion'});
     } else {
-      this.documentoService.crear(data);
-      this.notificacionService.notificar({tipo: 'exito', descripcion: `Documento «${data.nombre}» subido`, url: '/documentacion'});
+      await this.documentoService.crear(data);
+      await this.notificacionService.notificar({tipo: 'exito', descripcion: `Documento «${data.nombre}» subido`, url: '/documentacion'});
     }
     this.cerrarForm();
   }
@@ -319,11 +319,11 @@ export class DocumentacionComponent {
     this.deleteConfirmDoc.set(doc);
   }
 
-  ejecutarEliminar(): void {
+  async ejecutarEliminar(): Promise<void> {
     const doc = this.deleteConfirmDoc();
     if (doc) {
-      this.documentoService.eliminar(doc.id);
-      this.notificacionService.notificar({tipo: 'alerta', descripcion: `Documento «${doc.nombre}» eliminado`});
+      await this.documentoService.eliminar(doc.id);
+      await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Documento «${doc.nombre}» eliminado`});
     }
     this.deleteConfirmDoc.set(null);
   }

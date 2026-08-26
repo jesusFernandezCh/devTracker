@@ -15,6 +15,8 @@ import {PlanningService} from './planning.service';
 import {EquipoService} from './equipo.service';
 import {NotificacionService} from './notificacion.service';
 import {ChatService} from './chat.service';
+import {ClienteService} from './cliente.service';
+import {DocumentoService} from './documento.service';
 
 export interface UsuarioDto {
   id: string;
@@ -75,6 +77,8 @@ export class AuthService {
   private readonly equipoService = inject(EquipoService);
   private readonly notificacionService = inject(NotificacionService);
   private readonly chatService = inject(ChatService);
+  private readonly clienteService = inject(ClienteService);
+  private readonly documentoService = inject(DocumentoService);
 
   private _promesaCarga: Promise<void> | null = null;
 
@@ -155,6 +159,8 @@ export class AuthService {
       this.planningService.cargar(),
       this.equipoService.cargar(),
       this.notificacionService.cargar(),
+      this.clienteService.cargar(),
+      this.documentoService.cargar(),
     ]);
     await this.chatService.conectar(usuario.id, this.tokenService.token());
   }
@@ -169,6 +175,8 @@ export class AuthService {
     this.planningService.limpiar();
     this.equipoService.limpiar();
     this.notificacionService.limpiar();
+    this.clienteService.limpiar();
+    this.documentoService.limpiar();
     this.chatService.desconectar();
   }
 }

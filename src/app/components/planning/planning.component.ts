@@ -338,26 +338,26 @@ export class PlanningComponent {
     this.showForm = true;
   }
 
-  onGuardar(data: {fecha: string; proyectoId: string; descripcion: string}): void {
+  async onGuardar(data: {fecha: string; proyectoId: string; descripcion: string}): Promise<void> {
     if (this.editandoPlanning) {
-      this.planningService.actualizar(this.editandoPlanning.id, data);
+      await this.planningService.actualizar(this.editandoPlanning.id, data);
     } else {
-      this.planningService.crear({...data, tareas: []});
+      await this.planningService.crear({...data, tareas: []});
     }
     this.cerrarForm();
   }
 
-  clonarPlanning(planning: Planning): void {
-    this.planningService.clonar(planning.id);
+  async clonarPlanning(planning: Planning): Promise<void> {
+    await this.planningService.clonar(planning.id);
   }
 
   confirmarEliminar(id: string): void {
     this.deleteConfirmId = id;
   }
 
-  ejecutarEliminar(): void {
+  async ejecutarEliminar(): Promise<void> {
     if (this.deleteConfirmId) {
-      this.planningService.eliminar(this.deleteConfirmId);
+      await this.planningService.eliminar(this.deleteConfirmId);
     }
     this.deleteConfirmId = null;
   }
@@ -371,8 +371,8 @@ export class PlanningComponent {
     this.showTareas = true;
   }
 
-  onActualizarTareas(event: {planningId: string; tareas: PlanningTask[]}): void {
-    this.planningService.actualizar(event.planningId, {tareas: event.tareas});
+  async onActualizarTareas(event: {planningId: string; tareas: PlanningTask[]}): Promise<void> {
+    await this.planningService.actualizar(event.planningId, {tareas: event.tareas});
     this._actualizarRefTareas();
   }
 

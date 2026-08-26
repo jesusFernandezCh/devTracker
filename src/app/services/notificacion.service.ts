@@ -33,7 +33,7 @@ export class NotificacionService {
 
   async marcarLeida(id: string): Promise<void> {
     try {
-      const actualizada = await firstValueFrom(this.http.patch<Notificacion>(`api/notificaciones/${id}/leer`));
+      const actualizada = await firstValueFrom(this.http.patch<Notificacion>(`api/notificaciones/${id}/leer`, {}));
       this._notificaciones.update((list) => list.map((n) => (n.id === id ? actualizada : n)));
     } catch {
       /* ignorar */

@@ -21,7 +21,7 @@ export function permisoGuard(accion: Accion, recurso: Recurso): CanActivateFn {
     if (!auth.isLoggedIn()) {
       return router.parseUrl('/login');
     }
-    if (permiso.puedeUsuarioActual(accion, recurso)) {
+    if (permiso.puede(accion, recurso, auth.currentUser()?.tipo)) {
       return true;
     }
     return router.parseUrl('/');

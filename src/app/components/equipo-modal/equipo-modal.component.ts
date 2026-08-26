@@ -142,25 +142,25 @@ export class EquipoModalComponent {
     return this.equipoService.miembrosDe(this.proyecto().id).includes(usuarioId);
   }
 
-  protected toggle(usuarioId: string): void {
+  protected async toggle(usuarioId: string): Promise<void> {
     const nombre = this.usuarioService.usuarioPorId(usuarioId)?.usuario ?? usuarioId;
     const asignando = !this.estaAsignado(usuarioId);
     if (asignando) {
-      this.equipoService.asignar(this.proyecto().id, usuarioId);
+      await this.equipoService.asignar(this.proyecto().id, usuarioId);
     } else {
-      this.equipoService.quitar(this.proyecto().id, usuarioId);
+      await this.equipoService.quitar(this.proyecto().id, usuarioId);
     }
-    this.notificacionService.notificar({
+    await this.notificacionService.notificar({
       tipo: 'info',
       descripcion: `«${nombre}» ${asignando ? 'agregado al' : 'quitado del'} equipo de «${this.proyecto().nombre}»`,
       url: '/proyectos',
     });
   }
 
-  protected quitar(usuarioId: string): void {
+  protected async quitar(usuarioId: string): Promise<void> {
     const nombre = this.usuarioService.usuarioPorId(usuarioId)?.usuario ?? usuarioId;
-    this.equipoService.quitar(this.proyecto().id, usuarioId);
-    this.notificacionService.notificar({
+    await this.equipoService.quitar(this.proyecto().id, usuarioId);
+    await this.notificacionService.notificar({
       tipo: 'info',
       descripcion: `«${nombre}» quitado del equipo de «${this.proyecto().nombre}»`,
       url: '/proyectos',

@@ -283,7 +283,7 @@ export class RolesComponent {
   });
 
   protected get puedeEditar(): boolean {
-    return this.permisoService.puedeUsuarioActual('editar', 'roles');
+    return this.permisoService.puede('editar', 'roles', this.authService.currentUser()?.tipo);
   }
 
   protected esSuperAdmin(id: string): boolean {
@@ -294,8 +294,8 @@ export class RolesComponent {
     return this.permisoService.permisos()[rol]?.[recurso]?.includes(accion) ?? false;
   }
 
-  protected togglePermiso(rol: string, recurso: Recurso, accion: Accion): void {
-    this.permisoService.toggle(rol, recurso, accion);
+  protected async togglePermiso(rol: string, recurso: Recurso, accion: Accion): Promise<void> {
+    await this.permisoService.toggle(rol, recurso, accion);
   }
   protected abrirNuevoRol(): void {
     this.editandoRol = null;

@@ -155,7 +155,7 @@ export class TaskFormComponent {
     this.router.navigate(['/']);
   }
 
-  protected onSubmit(): void {
+  protected async onSubmit(): Promise<void> {
     if (this.taskForm.invalid) {
       this.taskForm.markAllAsTouched();
       return;
@@ -165,12 +165,12 @@ export class TaskFormComponent {
 
     if (this.editTaskId && this.editContext()) {
       const ctx = this.editContext()!;
-      this.planningService.actualizar(ctx.planningId, {
+      await this.planningService.actualizar(ctx.planningId, {
         tareas: this.planningService.planningPorId(ctx.planningId)!.tareas.map(t =>
           t.id === this.editTaskId ? {...t, tarea: values.nombre, complejidad: values.complejidad as PlanningTask['complejidad']} : t,
         ),
       });
-      this.notificacionService.notificar({tipo: 'info', descripcion: `Tarea «${values.nombre}» actualizada`, url: '/'});
+      await this.notificacionService.notificar({tipo: 'info', descripcion: `Tarea «${values.nombre}» actualizada`, url: '/'});
     } else {
       const nuevaTarea: PlanningTask = {
         id: crypto.randomUUID(),
@@ -178,8 +178,8 @@ export class TaskFormComponent {
         complejidad: values.complejidad as PlanningTask['complejidad'],
         completada: false,
       };
-      this.planningService.agregarTarea(values.planningId, nuevaTarea);
-      this.notificacionService.notificar({tipo: 'exito', descripcion: `Tarea «${values.nombre}» creada`, url: '/'});
+      await this.planningService.agregarTarea(values.planningId, nuevaTarea);
+      await this.notificacionService.notificar({tipo: 'exito', descripcion: `Tarea «${values.nombre}» creada`, url: '/'});
     }
 
     this.router.navigate(['/']);

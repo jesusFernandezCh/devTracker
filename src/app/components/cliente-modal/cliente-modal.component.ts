@@ -130,19 +130,19 @@ export class ClienteModalComponent {
   protected readonly editandoNombre = signal('');
   protected readonly eliminarId = signal<string | null>(null);
 
-  protected agregar(): void {
+  protected async agregar(): Promise<void> {
     const nombre = this.nuevoNombre().trim();
     if (!nombre) {
-      this.notificacionService.notificar({tipo: 'error', descripcion: `El nombre del cliente no puede estar vacío.`});
+      await this.notificacionService.notificar({tipo: 'error', descripcion: `El nombre del cliente no puede estar vacío.`});
       return;
     }
     if (this.clientes().some((c) => c.nombre.trim().toLowerCase() === nombre.toLowerCase())) {
-      this.notificacionService.notificar({tipo: 'error', descripcion: `Ya existe un cliente llamado «${nombre}».`});
+      await this.notificacionService.notificar({tipo: 'error', descripcion: `Ya existe un cliente llamado «${nombre}».`});
       return;
     }
-    this.clienteService.crear(nombre);
+    await this.clienteService.crear(nombre);
     this.nuevoNombre.set('');
-    this.notificacionService.notificar({tipo: 'exito', descripcion: `Cliente «${nombre}» creado.`});
+    await this.notificacionService.notificar({tipo: 'exito', descripcion: `Cliente «${nombre}» creado.`});
   }
 
   protected editar(id: string): void {
@@ -152,22 +152,22 @@ export class ClienteModalComponent {
     this.editandoNombre.set(cliente.nombre);
   }
 
-  protected guardarEdicion(id: string): void {
+  protected async guardarEdicion(id: string): Promise<void> {
     const nombre = this.editandoNombre().trim();
     const actual = this.clientes().find((c) => c.id === id);
     if (!actual) return;
     if (!nombre) {
-      this.notificacionService.notificar({tipo: 'error', descripcion: `El nombre del cliente no puede estar vacío.`});
+      await this.notificacionService.notificar({tipo: 'error', descripcion: `El nombre del cliente no puede estar vacío.`});
       return;
     }
     if (this.clientes().some((c) => c.id !== id && c.nombre.trim().toLowerCase() === nombre.toLowerCase())) {
-      this.notificacionService.notificar({tipo: 'error', descripcion: `Ya existe un cliente llamado «${nombre}».`});
+      await this.notificacionService.notificar({tipo: 'error', descripcion: `Ya existe un cliente llamado «${nombre}».`});
       return;
     }
-    this.clienteService.renombrar(id, nombre);
+    await this.clienteService.renombrar(id, nombre);
     this.editandoId.set(null);
     this.editandoNombre.set('');
-    this.notificacionService.notificar({tipo: 'exito', descripcion: `Cliente «${actual.nombre}» renombrado a «${nombre}» en sus proyectos.`});
+    await this.notificacionService.notificar({tipo: 'exito', descripcion: `Cliente «${actual.nombre}» renombrado a «${nombre}» en sus proyectos.`});
   }
 
   protected cancelarEdicion(): void {
@@ -179,20 +179,20 @@ export class ClienteModalComponent {
     this.eliminarId.set(id);
   }
 
-  protected ejecutarEliminar(): void {
+  protected async ejecutarEliminar(): Promise<void> {
     const id = this.eliminarId();
     if (!id) return;
     const cliente = this.clientes().find((c) => c.id === id);
-    const resultado = this.clienteService.eliminar(id);
+    const resultado = await this.clienteService.eliminar(id);
     this.eliminarId.set(null);
     if (resultado === 'en-uso') {
-      this.notificacionService.notificar({
+      await this.notificacionService.notificar({
         tipo: 'alerta',
         descripcion: `No se puede eliminar «${cliente?.nombre ?? ''}»: hay proyectos que lo utilizan.`,
       });
       return;
     }
-    this.notificacionService.notificar({tipo: 'exito', descripcion: `Cliente «${cliente?.nombre ?? ''}» eliminado.`, url: '/proyectos'});
+    await this.notificacionService.notificar({tipo: 'exito', descripcion: `Cliente «${cliente?.nombre ?? ''}» eliminado.`, url: '/proyectos'});
   }
 
   protected cancelarEliminar(): void {

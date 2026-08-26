@@ -325,9 +325,9 @@ export class UsuariosComponent {
     this.deleteConfirmId = id;
   }
 
-  ejecutarEliminar(): void {
+  async ejecutarEliminar(): Promise<void> {
     if (this.deleteConfirmId) {
-      this.usuarioService.eliminar(this.deleteConfirmId);
+      await this.usuarioService.eliminar(this.deleteConfirmId);
     }
     this.deleteConfirmId = null;
   }

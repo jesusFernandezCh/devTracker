@@ -1,18 +1,39 @@
 import {Injectable, signal, inject} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
 import {Documento} from '../models/documento.model';
-import {AuthService} from './auth.service';
 
-const STORAGE_KEY = 'devtracker-documentos';
+interface DocumentoDto {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  archivoBase64: string;
+  tipoMime: string;
+  proyectoId: string;
+  fechaCreacion: string;
+  fechaModificacion: string;
+  autorId: string;
+}
+
+function aDocumento(d: DocumentoDto): Documento {
+  return {
+    id: d.id,
+    nombre: d.nombre,
+    descripcion: d.descripcion ?? '',
+    archivoBase64: d.archivoBase64,
+    tipoMime: d.tipoMime,
+    proyectoId: d.proyectoId,
+    fechaCreacion: d.fechaCreacion,
+    fechaModificacion: d.fechaModificacion,
+    autorId: d.autorId,
+  };
+}
 
 @Injectable({providedIn: 'root'})
 export class DocumentoService {
   private readonly _documentos = signal<Documento[]>([]);
   readonly documentos = this._documentos.asReadonly();
-  private readonly authService = inject(AuthService);
-
-  constructor() {
-    this._cargar();
-  }
+  private readonly http = inject(HttpClient);
 
   documentoPorId(id: string): Documento | undefined {
     return this._documentos().find((d) => d.id === id);
@@ -22,47 +43,54 @@ export class DocumentoService {
     return this._documentos().filter((d) => d.proyectoId === proyectoId);
   }
 
-  crear(data: Omit<Documento, 'id' | 'fechaCreacion' | 'fechaModificacion' | 'autorId'>): void {
-    const now = new Date().toISOString();
-    const autorId = this.authService.currentUser()?.id ?? '';
-    const documento: Documento = {
-      ...data,
-      id: crypto.randomUUID(),
-      fechaCreacion: now,
-      fechaModificacion: now,
-      autorId,
-    };
-    this._documentos.update((list) => [...list, documento]);
-    this._guardar();
-  }
-
-  actualizar(id: string, data: Partial<Omit<Documento, 'id' | 'fechaCreacion' | 'autorId'>>): void {
-    this._documentos.update((list) =>
-      list.map((d) => (d.id === id ? {...d, ...data, fechaModificacion: new Date().toISOString()} : d)),
-    );
-    this._guardar();
-  }
-
-  eliminar(id: string): void {
-    this._documentos.update((list) => list.filter((d) => d.id !== id));
-    this._guardar();
-  }
-
-  private _guardar(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this._documentos()));
-  }
-
-  private _cargar(): void {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const data = JSON.parse(raw) as Documento[];
-        this._documentos.set(data);
-        return;
-      } catch {
-        /* ignorar */
-      }
+  async cargar(): Promise<void> {
+    try {
+      const lista = await firstValueFrom(this.http.get<DocumentoDto[]>('api/documentos'));
+      this._documentos.set((lista ?? []).map(aDocumento));
+    } catch {
+      /* sin permiso: mantener estado actual */
     }
+  }
+
+  async crear(data: Omit<Documento, 'id' | 'fechaCreacion' | 'fechaModificacion' | 'autorId'>): Promise<void> {
+    try {
+      const creado = await firstValueFrom(this.http.post<DocumentoDto>('api/documentos', {
+        nombre: data.nombre,
+        descripcion: data.descripcion || undefined,
+        archivoBase64: data.archivoBase64,
+        tipoMime: data.tipoMime,
+        proyectoId: data.proyectoId,
+      }));
+      this._documentos.update((list) => [...list, aDocumento(creado)]);
+    } catch {
+      /* ignorar */
+    }
+  }
+
+  async actualizar(id: string, data: Partial<Omit<Documento, 'id' | 'fechaCreacion' | 'autorId'>>): Promise<void> {
+    try {
+      const actualizado = await firstValueFrom(this.http.patch<DocumentoDto>(`api/documentos/${id}`, {
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        archivoBase64: data.archivoBase64,
+        tipoMime: data.tipoMime,
+      }));
+      this._documentos.update((list) => list.map((d) => (d.id === id ? aDocumento(actualizado) : d)));
+    } catch {
+      /* ignorar */
+    }
+  }
+
+  async eliminar(id: string): Promise<void> {
+    try {
+      await firstValueFrom(this.http.delete(`api/documentos/${id}`));
+      this._documentos.update((list) => list.filter((d) => d.id !== id));
+    } catch {
+      /* ignorar */
+    }
+  }
+
+  limpiar(): void {
     this._documentos.set([]);
   }
 }

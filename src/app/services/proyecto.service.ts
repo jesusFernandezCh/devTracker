@@ -2,7 +2,6 @@ import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
 import {Proyecto} from '../models/proyecto.model';
-import {AuthService} from './auth.service';
 import {EquipoService} from './equipo.service';
 
 const COLUMNA_POR_DEFECTO = 'desarrollo';
@@ -43,7 +42,6 @@ export class ProyectoService {
   private readonly _proyectos = signal<Proyecto[]>([]);
   readonly proyectos = this._proyectos.asReadonly();
   private readonly http = inject(HttpClient);
-  private readonly authService = inject(AuthService);
   private readonly equipoService = inject(EquipoService);
 
   proyectoPorId(id: string): Proyecto | undefined {
@@ -59,7 +57,7 @@ export class ProyectoService {
     }
   }
 
-  async crear(data: Omit<Proyecto, 'id' | 'createdAt' | 'columnaId'> & {columnaId?: string}): Promise<Proyecto> {
+  async crear(data: Omit<Proyecto, 'id' | 'createdAt' | 'columnaId'> & {columnaId?: string}, creadorId?: string): Promise<Proyecto> {
     const payload: Partial<ProyectoDto> = {
       nombre: data.nombre,
       descripcion: data.descripcion || undefined,
@@ -75,7 +73,6 @@ export class ProyectoService {
     const proyecto = aProyecto(creado);
     this._proyectos.update((list) => [...list, proyecto]);
 
-    const creadorId = this.authService.currentUser()?.id;
     if (creadorId) {
       await this.equipoService.asignar(proyecto.id, creadorId);
     }
@@ -98,6 +95,12 @@ export class ProyectoService {
   async eliminar(id: string): Promise<void> {
     await firstValueFrom(this.http.delete(`api/proyectos/${id}`));
     this._proyectos.update((list) => list.filter((p) => p.id !== id));
+  }
+
+  renombrarCliente(nombreAnterior: string, nombreNuevo: string): void {
+    this._proyectos.update((list) =>
+      list.map((p) => (p.cliente === nombreAnterior ? {...p, cliente: nombreNuevo} : p)),
+    );
   }
 
   limpiar(): void {

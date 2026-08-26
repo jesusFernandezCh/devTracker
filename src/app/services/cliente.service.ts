@@ -1,20 +1,25 @@
 import {Injectable, signal, inject} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
 import {Cliente} from '../models/cliente.model';
 import {ProyectoService} from './proyecto.service';
 
-const STORAGE_KEY = 'devtracker-clientes';
+interface ClienteDto {
+  id: string;
+  nombre: string;
+  createdAt: string;
+}
 
-const CLIENTES_DEFAULT: string[] = ['Cliente A', 'Cliente B', 'Cliente C'];
+function aCliente(c: ClienteDto): Cliente {
+  return {id: c.id, nombre: c.nombre, createdAt: c.createdAt};
+}
 
 @Injectable({providedIn: 'root'})
 export class ClienteService {
   private readonly _clientes = signal<Cliente[]>([]);
   readonly clientes = this._clientes.asReadonly();
+  private readonly http = inject(HttpClient);
   private readonly proyectoService = inject(ProyectoService);
-
-  constructor() {
-    this._cargar();
-  }
 
   clientePorId(id: string): Cliente | undefined {
     return this._clientes().find((c) => c.id === id);
@@ -25,62 +30,55 @@ export class ClienteService {
     return this._clientes().some((c) => c.id !== ignorarId && c.nombre.trim().toLowerCase() === n);
   }
 
-  crear(nombre: string): boolean {
-    const n = nombre.trim();
-    if (!n || this.existeNombre(nombre)) return false;
-    const cliente: Cliente = {
-      id: crypto.randomUUID(),
-      nombre: n,
-      createdAt: new Date().toISOString(),
-    };
-    this._clientes.update((list) => [...list, cliente]);
-    this._guardar();
-    return true;
+  async cargar(): Promise<void> {
+    try {
+      const lista = await firstValueFrom(this.http.get<ClienteDto[]>('api/clientes'));
+      this._clientes.set((lista ?? []).map(aCliente));
+    } catch {
+      /* sin permiso: mantener estado actual */
+    }
   }
 
-  renombrar(id: string, nombre: string): boolean {
+  async crear(nombre: string): Promise<boolean> {
+    const n = nombre.trim();
+    if (!n || this.existeNombre(nombre)) return false;
+    try {
+      const creado = await firstValueFrom(this.http.post<ClienteDto>('api/clientes', {nombre: n}));
+      this._clientes.update((list) => [...list, aCliente(creado)]);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async renombrar(id: string, nombre: string): Promise<boolean> {
     const n = nombre.trim();
     if (!n || this.existeNombre(nombre, id)) return false;
     const actual = this.clientePorId(id);
     if (!actual || actual.nombre === n) return true;
-    this._clientes.update((list) => list.map((c) => (c.id === id ? {...c, nombre: n} : c)));
-    this._guardar();
-    this.proyectoService.renombrarCliente(actual.nombre, n);
-    return true;
+    try {
+      const actualizado = await firstValueFrom(this.http.patch<ClienteDto>(`api/clientes/${id}`, {nombre: n}));
+      this._clientes.update((list) => list.map((c) => (c.id === id ? aCliente(actualizado) : c)));
+      this.proyectoService.renombrarCliente(actual.nombre, n);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
-  eliminar(id: string): 'ok' | 'en-uso' {
+  async eliminar(id: string): Promise<'ok' | 'en-uso'> {
     const cliente = this.clientePorId(id);
     if (!cliente) return 'ok';
-    if (this.proyectoService.proyectos().some((p) => p.cliente === cliente.nombre)) {
+    try {
+      await firstValueFrom(this.http.delete(`api/clientes/${id}`));
+      this._clientes.update((list) => list.filter((c) => c.id !== id));
+      return 'ok';
+    } catch {
       return 'en-uso';
     }
-    this._clientes.update((list) => list.filter((c) => c.id !== id));
-    this._guardar();
-    return 'ok';
   }
 
-  private _guardar(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this._clientes()));
-  }
-
-  private _cargar(): void {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const data = JSON.parse(raw) as Cliente[];
-        this._clientes.set(data.map((c) => ({...c, nombre: c.nombre || ''})));
-        this._guardar();
-        return;
-      } catch {
-        /* ignorar */
-      }
-    }
-    this._clientes.set(CLIENTES_DEFAULT.map((nombre) => ({
-      id: crypto.randomUUID(),
-      nombre,
-      createdAt: new Date().toISOString(),
-    })));
-    this._guardar();
+  limpiar(): void {
+    this._clientes.set([]);
   }
 }

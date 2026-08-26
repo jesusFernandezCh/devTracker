@@ -1,7 +1,6 @@
 import {Injectable, computed, inject, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
-import {AuthService} from './auth.service';
 import {
   ACCIONES,
   RECURSOS_ORDEN,
@@ -36,16 +35,10 @@ function clonarMatriz(matriz: Record<TipoUsuario, MatrizPermisos>): Record<TipoU
  */
 @Injectable({providedIn: 'root'})
 export class PermisoService {
-  private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
 
   private readonly _permisos = signal<Record<TipoUsuario, MatrizPermisos>>(clonarMatriz(PERMISOS));
   readonly permisos = this._permisos.asReadonly();
-
-  readonly permisosUsuarioActual = computed(() => {
-    const user = this.authService.currentUser();
-    return user ? (this._permisos()[user.tipo] ?? {}) : {};
-  });
 
   hidratar(matriz: MatrizServidor): void {
     this._permisos.set(clonarMatriz({...PERMISOS, ...matriz} as Record<TipoUsuario, MatrizPermisos>));
@@ -60,16 +53,10 @@ export class PermisoService {
     }
   }
 
-  puede(accion: Accion, recurso: Recurso, tipo?: TipoUsuario): boolean {
-    const rol = tipo ?? this.authService.currentUser()?.tipo;
-    if (!rol) return false;
-    const acciones = this._permisos()[rol]?.[recurso];
+  puede(accion: Accion, recurso: Recurso, tipo: TipoUsuario | undefined): boolean {
+    if (!tipo) return false;
+    const acciones = this._permisos()[tipo]?.[recurso];
     return acciones?.includes(accion) ?? false;
-  }
-
-  puedeUsuarioActual(accion: Accion, recurso: Recurso): boolean {
-    const tipo = this.authService.currentUser()?.tipo;
-    return this.puede(accion, recurso, tipo);
   }
 
   async toggle(rol: TipoUsuario, recurso: Recurso, accion: Accion): Promise<void> {
