@@ -11,6 +11,20 @@ npm test         # ng test (Karma + Jasmine)
 
 No `lint` or `typecheck` scripts are configured.
 
+## Backend (migración en curso)
+
+- **NestJS 11** en `backend/` + **Prisma 6** + **PostgreSQL 16** (`backend/docker-compose.yml`). API con prefijo global `api` en `:3000`; Angular proxya `/api` y `/socket.io` vía `proxy.conf.json`.
+- Esquema Prisma en `backend/prisma/schema.prisma` (mapea los modelos de `src/app/models`): `User`/`Rol`/`RolPermiso`, `Columna`/`Proyecto`/`Planning`/`PlanningTask` (normalizada, con `orden`), `EquipoProyecto`, `Mensaje`/`MensajeLeido`, `Notificacion`, `RefreshToken`. Enums `Recurso`, `Accion`, `Complejidad`, `CanalChat`, `TipoNotificacion`.
+- **Seed** (`backend/prisma/seed.ts`): roles + matriz de permisos + columnas + admin `admin@devtracker.app`/`admin123` (clave legacy `salt:hash` SHA-256; el login la re-hashea a scrypt en el primer acceso).
+- Scripts: `npm run db:migrate`, `db:migrate:deploy`, `db:seed`, `db:generate`.
+- **Auth implementado** (`backend/src/auth`): login/refresh/logout/me con JWT (`@nestjs/jwt` + passport). Access token en `Authorization: Bearer` (TTL `JWT_ACCESS_TTL`); refresh rotativo en cookie httpOnly (`devtracker_refresh`) y revocable en tabla `RefreshToken` (hash único). **Contraseñas con `crypto.scrypt`** de Node (`PasswordService`, formato `scrypt:salt:hash`) — NO argon2 (binarios nativos crashean en Windows). Verifica y migra claves legacy del frontend (SHA-256 `salt:hash` y base64) al primer login.
+- **RBAC server-side**: `CommonModule` registra como APP_GUARD `JwtAuthGuard` + `PermisosGuard`; rutas públicas con `@Public()`, permisos con `@RequirePermiso(accion, recurso)` (valida en tabla `RolPermiso`; super-admin exento). `@CurrentUser()` expone el payload JWT. Decoradores en `src/common/decorators`, guards en `src/common/guards`.
+- `PasswordService` cubierto con Jest (`src/auth/password.service.spec.ts`).
+- **CRUD implementado**: `UsuariosModule` (protege self-delete y super-admin), `RolesModule` (reglas `ok | protegido | en-uso`, `toggle` permisos, `restablecer` a `MATRIZ_DEFAULT`), `ColumnasModule` (bloquea borrar columna con proyectos), `ProyectosModule`, `PlaningsModule` (tareas anidadas + `clonar`), `EquipoModule` (mapa completo `Record<proyectoId, string[]>` en `GET /equipo`), `NotificacionesModule` (por usuario). Los permisos por recurso siguen `PERMISOS` del frontend (p. ej. columnas → `tablero`, planings → `planning`, tareas/equipo → `proyectos`).
+- **Chat implementado** (`backend/src/chat`): REST `GET/POST /chat/general|privado/:otroId|grupo/:proyectoId`, `GET /chat/no-leidos[/:canal]`, `PATCH /chat/leer`. `leido` se calcula por usuario vía tabla `MensajeLeido` (no hay booleano global). `ChatGateway` (socket.io) autentica sockets con el access JWT, une a `user:{id}` y emite `mensaje:nuevo`/`chat:leido`/`chat:escribiendo` (privado solo a la sala del destino; grupo a `proyecto:{id}` unida con `chat:unirse-proyecto`).
+- Módulos backend pendientes: reportes SQL (opcional; hoy el frontend calcula los reportes client-side).
+- Los servicios del frontend siguen en `localStorage`; la migración a HTTP es incremental y está pendiente.
+
 ## Architecture
 
 - **Angular 19** standalone app (no NgModules). All components use `standalone: true`.

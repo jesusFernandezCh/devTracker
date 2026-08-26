@@ -1,8 +1,8 @@
-import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import {Component, inject, ChangeDetectionStrategy, signal, effect} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
+import {Router} from '@angular/router';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +14,7 @@ import { AuthService } from '../../services/auth.service';
       <!-- Left panel: branding -->
       <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12"
           style="background-image: url('./images/portada.jpeg'); background-size: cover; background-position: center;">
-           
+
         <div class="absolute inset-0 opacity-10">
           <svg class="w-full h-full" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="50" cy="50" r="40" fill="white"/>
@@ -179,9 +179,11 @@ export class LoginComponent {
   });
 
   constructor() {
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/']);
-    }
+    effect(() => {
+      if (this.authService.isLoggedIn()) {
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   protected onLogin(): void {

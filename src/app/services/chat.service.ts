@@ -1,7 +1,33 @@
-import {Injectable, signal} from '@angular/core';
+import {Injectable, signal, inject} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {io, Socket} from 'socket.io-client';
 import {Mensaje, CanalChat} from '../models/mensaje.model';
+import {UsuarioService} from './usuario.service';
+import {EquipoService} from './equipo.service';
 
-const STORAGE_KEY = 'devtracker-chat';
+interface MensajeSerializado {
+  id: string;
+  canal: CanalChat;
+  autorId: string;
+  destinoId: string | null;
+  proyectoId: string | null;
+  texto: string;
+  fecha: Date;
+  leido: boolean;
+}
+
+function aMensaje(m: MensajeSerializado): Mensaje {
+  return {
+    id: m.id,
+    canal: m.canal,
+    autorId: m.autorId,
+    destinoId: m.destinoId ?? undefined,
+    proyectoId: m.proyectoId ?? undefined,
+    texto: m.texto,
+    fecha: new Date(m.fecha).toISOString(),
+    leido: m.leido,
+  };
+}
 
 @Injectable({providedIn: 'root'})
 export class ChatService {
@@ -10,12 +36,10 @@ export class ChatService {
 
   readonly abierto = signal(false);
 
-  constructor() {
-    this._cargar();
-    window.addEventListener('storage', (event) => {
-      if (event.key === STORAGE_KEY) this._cargar();
-    });
-  }
+  private readonly http = inject(HttpClient);
+  private readonly usuarioService = inject(UsuarioService);
+  private readonly equipoService = inject(EquipoService);
+  private socket: Socket | null = null;
 
   noLeidosTotal(yoId: string): number {
     return this._mensajes().filter((m) => m.autorId !== yoId && !m.leido).length;
@@ -50,28 +74,82 @@ export class ChatService {
       .sort((a, b) => a.fecha.localeCompare(b.fecha));
   }
 
-  enviarGeneral(autorId: string, texto: string): void {
-    this._agregar({canal: 'general', autorId, texto});
+  async conectar(yoId: string, token: string | null): Promise<void> {
+    this.desconectar();
+    this._mensajes.set([]);
+    if (!token) return;
+
+    this.socket = io({auth: {token}, transports: ['websocket', 'polling']});
+    this.socket.on('mensaje:nuevo', (m: MensajeSerializado) => this._recibir(m));
+    this.socket.on('chat:leido', (payload: {canal: CanalChat; destinoId?: string; proyectoId?: string}) => {
+      this._marcarLocal((m) => {
+        if (m.autorId !== yoId) return false;
+        if (payload.canal === 'privado') return payload.destinoId ? this._mismaPareja(m, yoId, payload.destinoId) : false;
+        if (payload.canal === 'grupo') return m.proyectoId === payload.proyectoId;
+        return m.canal === 'general';
+      });
+    });
+
+    const proyectos = this.equipoService.proyectosDe(yoId);
+    this.socket.on('connect', () => {
+      for (const pid of proyectos) this.socket?.emit('chat:unirse-proyecto', pid);
+    });
+
+    await this._cargarHistorial(yoId);
   }
 
-  enviarPrivado(autorId: string, destinoId: string, texto: string): void {
-    this._agregar({canal: 'privado', autorId, destinoId, texto});
+  desconectar(): void {
+    this.socket?.disconnect();
+    this.socket = null;
+    this._mensajes.set([]);
   }
 
-  enviarGrupo(autorId: string, proyectoId: string, texto: string): void {
-    this._agregar({canal: 'grupo', autorId, proyectoId, texto});
+  async enviarGeneral(autorId: string, texto: string): Promise<void> {
+    const limpio = texto.trim();
+    if (!limpio) return;
+    try {
+      const m = await this.http.post<MensajeSerializado>('api/chat/general', {texto: limpio}).toPromise();
+      this._recibir(m);
+    } catch {
+      /* error de red: no optimista */
+    }
   }
 
-  marcarLeidosGeneral(yoId: string): void {
-    this._marcar((m) => m.canal === 'general' && m.autorId !== yoId);
+  async enviarPrivado(autorId: string, destinoId: string, texto: string): Promise<void> {
+    const limpio = texto.trim();
+    if (!limpio) return;
+    try {
+      const m = await this.http.post<MensajeSerializado>(`api/chat/privado/${destinoId}`, {texto: limpio}).toPromise();
+      this._recibir(m);
+    } catch {
+      /* ignorar */
+    }
   }
 
-  marcarLeidosPrivados(yoId: string, otroId: string): void {
-    this._marcar((m) => m.canal === 'privado' && this._mismaPareja(m, yoId, otroId) && m.autorId !== yoId);
+  async enviarGrupo(autorId: string, proyectoId: string, texto: string): Promise<void> {
+    const limpio = texto.trim();
+    if (!limpio) return;
+    try {
+      const m = await this.http.post<MensajeSerializado>(`api/chat/grupo/${proyectoId}`, {texto: limpio}).toPromise();
+      this._recibir(m);
+    } catch {
+      /* ignorar */
+    }
   }
 
-  marcarLeidosGrupo(yoId: string, proyectoId: string): void {
-    this._marcar((m) => m.canal === 'grupo' && m.proyectoId === proyectoId && m.autorId !== yoId);
+  async marcarLeidosGeneral(yoId: string): Promise<void> {
+    this._marcarLocal((m) => m.canal === 'general' && m.autorId !== yoId);
+    await this._marcarLeidos({canal: 'general'});
+  }
+
+  async marcarLeidosPrivados(yoId: string, otroId: string): Promise<void> {
+    this._marcarLocal((m) => m.canal === 'privado' && this._mismaPareja(m, yoId, otroId) && m.autorId !== yoId);
+    await this._marcarLeidos({canal: 'privado', destinoId: otroId});
+  }
+
+  async marcarLeidosGrupo(yoId: string, proyectoId: string): Promise<void> {
+    this._marcarLocal((m) => m.canal === 'grupo' && m.proyectoId === proyectoId && m.autorId !== yoId);
+    await this._marcarLeidos({canal: 'grupo', proyectoId});
   }
 
   toggle(): void {
@@ -86,44 +164,59 @@ export class ChatService {
     this.abierto.set(false);
   }
 
-  private _mismaPareja(m: Mensaje, a: string, b: string): boolean {
-    return (m.autorId === a && m.destinoId === b) || (m.autorId === b && m.destinoId === a);
+  private async _cargarHistorial(yoId: string): Promise<void> {
+    const todos: Mensaje[] = [];
+    try {
+      todos.push(...await this.http.get<MensajeSerializado[]>('api/chat/general').toPromise());
+    } catch {
+      /* ignorar */
+    }
+    const otros = this.usuarioService.usuarios().filter((u) => u.id !== yoId);
+    await Promise.all(
+      otros.map(async (u) => {
+        try {
+          todos.push(...await this.http.get<MensajeSerializado[]>(`api/chat/privado/${u.id}`).toPromise());
+        } catch {
+          /* ignorar */
+        }
+      }),
+    );
+    const proyectos = this.equipoService.proyectosDe(yoId);
+    await Promise.all(
+      proyectos.map(async (pid) => {
+        try {
+          todos.push(...await this.http.get<MensajeSerializado[]>(`api/chat/grupo/${pid}`).toPromise());
+        } catch {
+          /* ignorar */
+        }
+      }),
+    );
+    const mapa = new Map<string, Mensaje>();
+    for (const m of todos) mapa.set(m.id, aMensaje(m));
+    this._mensajes.set([...mapa.values()].sort((a, b) => a.fecha.localeCompare(b.fecha)));
   }
 
-  private _agregar(data: {canal: CanalChat; autorId: string; destinoId?: string; proyectoId?: string; texto: string}): void {
-    const texto = data.texto.trim();
-    if (!texto) return;
-    const mensaje: Mensaje = {
-      id: crypto.randomUUID(),
-      canal: data.canal,
-      autorId: data.autorId,
-      destinoId: data.destinoId,
-      proyectoId: data.proyectoId,
-      texto,
-      fecha: new Date().toISOString(),
-      leido: false,
-    };
-    this._mensajes.update((list) => [...list, mensaje]);
-    this._guardar();
+  private _recibir(m: MensajeSerializado): void {
+    const msg = aMensaje(m);
+    this._mensajes.update((list) =>
+      list.some((x) => x.id === msg.id) ? list : [...list, msg],
+    );
   }
 
-  private _marcar(predicado: (m: Mensaje) => boolean): void {
+  private _marcarLocal(predicado: (m: Mensaje) => boolean): void {
     if (!this._mensajes().some(predicado)) return;
     this._mensajes.update((list) => list.map((m) => (predicado(m) ? {...m, leido: true} : m)));
-    this._guardar();
   }
 
-  private _cargar(): void {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+  private async _marcarLeidos(payload: {canal: CanalChat; destinoId?: string; proyectoId?: string}): Promise<void> {
     try {
-      this._mensajes.set(JSON.parse(raw) as Mensaje[]);
+      await this.http.patch('api/chat/marcar-leidos', payload).toPromise();
     } catch {
       /* ignorar */
     }
   }
 
-  private _guardar(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this._mensajes()));
+  private _mismaPareja(m: Mensaje, a: string, b: string): boolean {
+    return (m.autorId === a && m.destinoId === b) || (m.autorId === b && m.destinoId === a);
   }
 }
