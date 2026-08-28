@@ -96,7 +96,7 @@ import {ChatService} from '../../services/chat.service';
             <mat-icon class="sidebar-nav-icon">group</mat-icon>
             <span>Usuarios</span>
           </a>
-          @if (permisoService.puedeUsuarioActual('leer', 'roles')) {
+          @if (permisoService.puede('leer', 'roles', authService.currentUser()?.tipo)) {
             <a routerLink="/roles" routerLinkActive="sidebar-active"
                (click)="onNavClick(); mobileAdminOpen = false"
                class="sidebar-nav-item pl-11">

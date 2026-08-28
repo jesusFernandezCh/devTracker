@@ -1,8 +1,9 @@
-import {Injectable, signal} from '@angular/core';
+import {Injectable, signal, inject} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
 import {Columna, COLUMNAS_DEFAULT} from '../models/columna.model';
-import {generarId} from '../utils/helpers';
 
-const STORAGE_KEY = 'dev-tracker-columns';
+const PALETA = ['#EAB308', '#3B82F6', '#22C55E', '#A855F7', '#EC4899', '#06B6D4'];
 
 @Injectable({
   providedIn: 'root',
@@ -10,65 +11,57 @@ const STORAGE_KEY = 'dev-tracker-columns';
 export class ColumnService {
   private readonly _columnas = signal<Columna[]>([]);
   readonly columnas = this._columnas.asReadonly();
+  private readonly http = inject(HttpClient);
 
-  constructor() {
-    this._cargarDeStorage();
+  async cargar(): Promise<void> {
+    try {
+      const lista = await firstValueFrom(this.http.get<Columna[]>('api/columnas'));
+      this._columnas.set(lista ?? []);
+    } catch {
+      /* sin permiso: mantener estado actual */
+    }
   }
 
-  agregarColumna(nombre: string, color: string): void {
-    this._columnas.update((cols) => {
-      const maxOrden = cols.reduce((max, c) => Math.max(max, c.orden), -1);
-      return [
-        ...cols,
-        {id: generarId(), nombre, orden: maxOrden + 1, color},
-      ].sort((a, b) => a.orden - b.orden);
-    });
-    this._guardar();
+  async agregarColumna(nombre: string, color: string): Promise<Columna> {
+    const creada = await firstValueFrom(this.http.post<Columna>('api/columnas', {nombre, color}));
+    this._columnas.update((cols) => [...cols, creada].sort((a, b) => a.orden - b.orden));
+    return creada;
   }
 
-  renombrarColumna(id: string, nombre: string): void {
-    this._columnas.update((cols) =>
-      cols.map((c) => (c.id === id ? {...c, nombre} : c)),
-    );
-    this._guardar();
+  async renombrarColumna(id: string, nombre: string): Promise<Columna> {
+    const actualizada = await firstValueFrom(this.http.patch<Columna>(`api/columnas/${id}`, {nombre}));
+    this._columnas.update((cols) => cols.map((c) => (c.id === id ? actualizada : c)));
+    return actualizada;
   }
 
-  eliminarColumna(id: string): void {
+  async eliminarColumna(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete(`api/columnas/${id}`));
     this._columnas.update((cols) => cols.filter((c) => c.id !== id));
-    this._guardar();
   }
 
-  reordenarColumnas(previousIndex: number, currentIndex: number): void {
-    this._columnas.update((cols) => {
-      const next = [...cols];
-      const [moved] = next.splice(previousIndex, 1);
-      next.splice(currentIndex, 0, moved);
-      return next.map((c, i) => ({...c, orden: i}));
-    });
-    this._guardar();
+  async reordenarColumnas(previousIndex: number, currentIndex: number): Promise<void> {
+    if (previousIndex === currentIndex) return;
+    const cols = this._columnas();
+    const next = [...cols];
+    const [moved] = next.splice(previousIndex, 1);
+    next.splice(currentIndex, 0, moved);
+    const ids = next.map((c) => c.id);
+    try {
+      const reordenadas = await firstValueFrom(this.http.patch<Columna[]>('api/columnas/reordenar', {ids}));
+      if (reordenadas) this._columnas.set(reordenadas);
+    } catch {
+      /* mantener orden local */
+    }
   }
 
   obtenerColorPorDefecto(): string {
-    const paleta = ['#EAB308', '#3B82F6', '#22C55E', '#A855F7', '#EC4899', '#06B6D4'];
     const usados = this._columnas().map((c) => c.color);
-    return paleta.find((color) => !usados.includes(color)) ?? paleta[paleta.length - 1];
+    return PALETA.find((color) => !usados.includes(color)) ?? PALETA[PALETA.length - 1];
   }
 
-  private _cargarDeStorage(): void {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (data) {
-      try {
-        this._columnas.set(JSON.parse(data));
-        return;
-      } catch {
-        /* ignorar */
-      }
-    }
-    this._columnas.set(COLUMNAS_DEFAULT);
-    this._guardar();
-  }
-
-  private _guardar(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this._columnas()));
+  limpiar(): void {
+    this._columnas.set([]);
   }
 }
+
+export {COLUMNAS_DEFAULT};

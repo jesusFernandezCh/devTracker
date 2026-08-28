@@ -283,7 +283,7 @@ export class RolesComponent {
   });
 
   protected get puedeEditar(): boolean {
-    return this.permisoService.puedeUsuarioActual('editar', 'roles');
+    return this.permisoService.puede('editar', 'roles', this.authService.currentUser()?.tipo);
   }
 
   protected esSuperAdmin(id: string): boolean {
@@ -294,10 +294,9 @@ export class RolesComponent {
     return this.permisoService.permisos()[rol]?.[recurso]?.includes(accion) ?? false;
   }
 
-  protected togglePermiso(rol: string, recurso: Recurso, accion: Accion): void {
-    this.permisoService.toggle(rol, recurso, accion);
+  protected async togglePermiso(rol: string, recurso: Recurso, accion: Accion): Promise<void> {
+    await this.permisoService.toggle(rol, recurso, accion);
   }
-
   protected abrirNuevoRol(): void {
     this.editandoRol = null;
     this.errorNombre.set(null);
@@ -317,14 +316,14 @@ export class RolesComponent {
     this.editandoRol = null;
   }
 
-  protected guardarRol(): void {
+  protected async guardarRol(): Promise<void> {
     if (this.rolForm.invalid) return;
     const nombre = this.rolForm.controls.nombre.value.trim();
     let ok: boolean;
     if (this.editandoRol) {
-      ok = this.rolService.renombrar(this.editandoRol.id, nombre);
+      ok = await this.rolService.renombrar(this.editandoRol.id, nombre);
     } else {
-      ok = this.rolService.crear(nombre);
+      ok = await this.rolService.crear(nombre);
     }
     if (!ok) {
       this.errorNombre.set('Ya existe un rol con ese nombre.');
@@ -341,10 +340,10 @@ export class RolesComponent {
     this.rolAEliminar = null;
   }
 
-  protected ejecutarEliminarRol(): void {
+  protected async ejecutarEliminarRol(): Promise<void> {
     const rol = this.rolAEliminar;
     if (!rol) return;
-    this.rolService.eliminar(rol.id);
+    await this.rolService.eliminar(rol.id);
     this.rolAEliminar = null;
   }
 
@@ -360,8 +359,8 @@ export class RolesComponent {
     this.showRestablecer = false;
   }
 
-  protected ejecutarRestablecer(): void {
-    this.permisoService.restablecer();
+  protected async ejecutarRestablecer(): Promise<void> {
+    await this.permisoService.restablecer();
     this.showRestablecer = false;
   }
 

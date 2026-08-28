@@ -17,9 +17,12 @@ export interface Usuario {
   id: string;
   usuario: string;
   correo: string;
-  /** Hash `salt:hash` (SHA-256). Se mantienen claves base64 legacy hasta migrar. */
-  clave: string;
+  /** Id del rol (`tipo` mapea a `rolId` del backend). */
   tipo: TipoUsuario;
+  /** Nombre del rol (lo resuelve el backend). */
+  rol?: string;
+  /** Solo se usa al crear/actualizar; el backend nunca lo devuelve. */
+  clave?: string;
   nombres?: string;
   apellidos?: string;
   cedula?: string;
@@ -36,7 +39,7 @@ export const USUARIOS_DEFAULT: Usuario[] = [
   {
     id: 'super-admin',
     usuario: 'admin',
-    correo: 'admin@devtracker.app',
+    correo: 'admin@email.com',
     clave: btoa('admin123'),
     tipo: 'super-administrador',
   },

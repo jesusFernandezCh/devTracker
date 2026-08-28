@@ -2,6 +2,28 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.27.
 
+## Backend (NestJS + Prisma + PostgreSQL)
+
+El backend vive en `backend/`. Requiere PostgreSQL (local o vía Docker):
+
+```bash
+# 1. Levantar PostgreSQL 16 (opcional si ya tienes uno)
+docker compose -f backend/docker-compose.yml up -d
+
+# 2. Instalar dependencias y aplicar migración + seed
+cd backend
+npm install
+npm run db:migrate:deploy
+npm run db:seed
+
+# 3. Arrancar la API (http://localhost:3000)
+npm run start:dev
+```
+
+El dev server de Angular (`ng serve`) proxya `/api` y `/socket.io` hacia `:3000` vía `proxy.conf.json`. El usuario admin demo es `admin@devtracker.app` / `admin123`.
+
+Comandos útiles del backend: `npm run db:migrate` (crea/despliega migraciones en dev), `npm run db:seed`, `npm run build`, `npm test`.
+
 ## Development server
 
 To start a local development server, run:

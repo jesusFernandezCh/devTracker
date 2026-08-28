@@ -17,7 +17,7 @@ import {MatIconModule} from '@angular/material/icon';
       <a routerLink="/tablero" routerLinkActive="bottom-nav-active"
          (click)="onNavClick()"
          class="bottom-nav-item">
-        <mat-icon>dashboard</mat-icon>
+        <mat-icon>dashboards</mat-icon>
         <span>Tablero</span>
       </a>
       <a routerLink="/proyectos" routerLinkActive="bottom-nav-active"

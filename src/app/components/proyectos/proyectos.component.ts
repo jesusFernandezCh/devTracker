@@ -544,13 +544,13 @@ export class ProyectosComponent {
     this.irPagina(this.paginaActual() + 1);
   }
 
-  onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): void {
+  async onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): Promise<void> {
     if (this.editandoProyecto) {
-      this.proyectoService.actualizar(this.editandoProyecto.id, data);
-      this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
+      await this.proyectoService.actualizar(this.editandoProyecto.id, data);
+      await this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
     } else {
-      this.proyectoService.crear(data);
-      this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
+      await this.proyectoService.crear(data, this.authService.currentUser()?.id);
+      await this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
     }
     this.cerrarForm();
   }
@@ -559,11 +559,11 @@ export class ProyectosComponent {
     this.deleteConfirmId = id;
   }
 
-  ejecutarEliminar(): void {
+  async ejecutarEliminar(): Promise<void> {
     if (this.deleteConfirmId) {
       const nombre = this.proyectoService.proyectoPorId(this.deleteConfirmId)?.nombre;
-      this.proyectoService.eliminar(this.deleteConfirmId);
-      this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
+      await this.proyectoService.eliminar(this.deleteConfirmId);
+      await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
     }
     this.deleteConfirmId = null;
   }

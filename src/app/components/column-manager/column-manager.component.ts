@@ -146,14 +146,14 @@ export class ColumnManagerComponent {
     this.closeColumnManager.emit();
   }
 
-  protected onDropColumna(event: CdkDragDrop<Columna[]>): void {
-    this.columnService.reordenarColumnas(event.previousIndex, event.currentIndex);
+  protected async onDropColumna(event: CdkDragDrop<Columna[]>): Promise<void> {
+    await this.columnService.reordenarColumnas(event.previousIndex, event.currentIndex);
   }
 
-  protected agregarColumna(): void {
+  protected async agregarColumna(): Promise<void> {
     const nombre = this.nuevaColumnaNombre.trim();
     if (!nombre) return;
-    this.columnService.agregarColumna(nombre, this.nuevaColumnaColor);
+    await this.columnService.agregarColumna(nombre, this.nuevaColumnaColor);
     this.nuevaColumnaNombre = '';
     this.nuevaColumnaColor = this.columnService.obtenerColorPorDefecto();
   }
@@ -163,9 +163,9 @@ export class ColumnManagerComponent {
     this.editandoColumnaNombre = col.nombre;
   }
 
-  protected guardarEditColumna(): void {
+  protected async guardarEditColumna(): Promise<void> {
     if (this.editandoColumnaId && this.editandoColumnaNombre.trim()) {
-      this.columnService.renombrarColumna(this.editandoColumnaId, this.editandoColumnaNombre.trim());
+      await this.columnService.renombrarColumna(this.editandoColumnaId, this.editandoColumnaNombre.trim());
     }
     this.editandoColumnaId = null;
   }
@@ -182,17 +182,18 @@ export class ColumnManagerComponent {
     this.deleteConfirmColumna = null;
   }
 
-  protected ejecutarEliminarColumna(): void {
+  protected async ejecutarEliminarColumna(): Promise<void> {
     if (!this.deleteConfirmColumna) return;
     const colId = this.deleteConfirmColumna.id;
-    this.proyectoService.proyectos()
-      .filter(p => p.columnaId === colId)
-      .forEach(p => {
-        const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
-        plannings.forEach(pl => this.planningService.eliminar(pl.id));
-        this.proyectoService.eliminar(p.id);
-      });
-    this.columnService.eliminarColumna(colId);
+    const proyectos = this.proyectoService.proyectos().filter(p => p.columnaId === colId);
+    for (const p of proyectos) {
+      const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
+      for (const pl of plannings) {
+        await this.planningService.eliminar(pl.id);
+      }
+      await this.proyectoService.eliminar(p.id);
+    }
+    await this.columnService.eliminarColumna(colId);
     this.deleteConfirmColumna = null;
   }
 

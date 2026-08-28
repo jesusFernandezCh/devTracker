@@ -297,16 +297,16 @@ export class NotificacionesPanelComponent {
     this.abierto.update((v) => !v);
   }
 
-  protected marcarTodasLeidas(): void {
-    this.notificacionService.marcarTodasLeidas();
+  protected async marcarTodasLeidas(): Promise<void> {
+    await this.notificacionService.marcarTodasLeidas();
   }
 
   protected limpiar(): void {
     this.notificacionService.limpiar();
   }
 
-  protected abrirNotificacion(n: Notificacion): void {
-    this.notificacionService.eliminar(n.id);
+  protected async abrirNotificacion(n: Notificacion): Promise<void> {
+    await this.notificacionService.eliminar(n.id);
     this.abierto.set(false);
     if (n.url) {
       this.router.navigateByUrl(n.url);

@@ -527,17 +527,17 @@ export class ChatWidgetComponent {
     return new Date(fecha).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
   }
 
-  protected enviar(): void {
+  protected async enviar(): Promise<void> {
     const yoId = this.yo()?.id;
     const conv = this.conversacion();
     const texto = this.texto();
     if (!yoId || !texto.trim() || !conv) return;
     if (conv.canal === 'general') {
-      this.chatService.enviarGeneral(yoId, texto);
+      await this.chatService.enviarGeneral(yoId, texto);
     } else if (conv.canal === 'grupo' && conv.proyectoId) {
-      this.chatService.enviarGrupo(yoId, conv.proyectoId, texto);
+      await this.chatService.enviarGrupo(yoId, conv.proyectoId, texto);
     } else if (conv.destinoId) {
-      this.chatService.enviarPrivado(yoId, conv.destinoId, texto);
+      await this.chatService.enviarPrivado(yoId, conv.destinoId, texto);
     }
     this.texto.set('');
     this.inputEl()?.nativeElement.focus();

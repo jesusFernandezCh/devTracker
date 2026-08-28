@@ -264,9 +264,9 @@ export class BoardComponent {
     this.editandoColumnaNombre.set(col.nombre);
   }
 
-  protected guardarEditColumna(): void {
+  protected async guardarEditColumna(): Promise<void> {
     if (this.editandoColumnaId && this.editandoColumnaNombre().trim()) {
-      this.columnService.renombrarColumna(this.editandoColumnaId, this.editandoColumnaNombre().trim());
+      await this.columnService.renombrarColumna(this.editandoColumnaId, this.editandoColumnaNombre().trim());
     }
     this.editandoColumnaId = null;
   }
@@ -275,8 +275,8 @@ export class BoardComponent {
     this.editandoColumnaId = null;
   }
 
-  onDropColumna(event: CdkDragDrop<Columna[]>): void {
-    this.columnService.reordenarColumnas(event.previousIndex, event.currentIndex);
+  async onDropColumna(event: CdkDragDrop<Columna[]>): Promise<void> {
+    await this.columnService.reordenarColumnas(event.previousIndex, event.currentIndex);
   }
 
   protected connectedDropIds(columnaId: string): string[] {
@@ -289,23 +289,23 @@ export class BoardComponent {
     return this.proyectosPorColumna().get(columnaId)?.length ?? 0;
   }
 
-  onMoverProyecto(event: { proyectoId: string; newStatus: string }): void {
+  async onMoverProyecto(event: { proyectoId: string; newStatus: string }): Promise<void> {
     const proyecto = this.proyectoService.proyectoPorId(event.proyectoId);
     const columna = this.columnService.columnas().find((c) => c.id === event.newStatus)?.nombre ?? event.newStatus;
-    this.proyectoService.actualizarColumna(event.proyectoId, event.newStatus);
-    this.notificacionService.notificar({
+    await this.proyectoService.actualizarColumna(event.proyectoId, event.newStatus);
+    await this.notificacionService.notificar({
       tipo: 'info',
       descripcion: `«${proyecto?.nombre ?? event.proyectoId}» movido a ${columna}`,
       url: '/',
     });
   }
 
-  onToggleCompletada(tareaId: string): void {
+  async onToggleCompletada(tareaId: string): Promise<void> {
     for (const planning of this.planningService.plannings()) {
       const tarea = planning.tareas.find((t: PlanningTask) => t.id === tareaId);
       if (tarea) {
-        this.planningService.toggleCompletada(planning.id, tareaId);
-        this.notificacionService.notificar({
+        await this.planningService.toggleCompletada(planning.id, tareaId);
+        await this.notificacionService.notificar({
           tipo: tarea.completada ? 'info' : 'exito',
           descripcion: `Tarea «${tarea.tarea}» ${tarea.completada ? 'marcada como pendiente' : 'completada'}`,
           url: '/',
@@ -319,30 +319,33 @@ export class BoardComponent {
     this.router.navigate(['/planning'], {queryParams: {proyectoId}});
   }
 
-  onEliminarProyecto(id: string): void {
+  async onEliminarProyecto(id: string): Promise<void> {
     if (confirm('¿Estás seguro de eliminar este proyecto? Se eliminarán también sus planificaciones.')) {
       const nombre = this.proyectoService.proyectoPorId(id)?.nombre;
       const plannings = this.planningService.plannings().filter(p => p.proyectoId === id);
-      plannings.forEach(p => this.planningService.eliminar(p.id));
-      this.proyectoService.eliminar(id);
-      this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? id}» eliminado`});
+      for (const p of plannings) {
+        await this.planningService.eliminar(p.id);
+      }
+      await this.proyectoService.eliminar(id);
+      await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? id}» eliminado`});
     }
   }
 
-  onEliminarColumna(col: Columna): void {
+  async onEliminarColumna(col: Columna): Promise<void> {
     const count = this.proyectosEnColumna(col.id);
     if (count > 0) {
       if (!confirm(`"${col.nombre}" tiene ${count} proyecto(s). ¿Eliminar columna y todos sus proyectos?`)) return;
-      this.proyectoService.proyectos()
-        .filter(p => p.columnaId === col.id)
-        .forEach(p => {
-          const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
-          plannings.forEach(pl => this.planningService.eliminar(pl.id));
-          this.proyectoService.eliminar(p.id);
-        });
+      const proyectos = this.proyectoService.proyectos().filter(p => p.columnaId === col.id);
+      for (const p of proyectos) {
+        const plannings = this.planningService.plannings().filter(pl => pl.proyectoId === p.id);
+        for (const pl of plannings) {
+          await this.planningService.eliminar(pl.id);
+        }
+        await this.proyectoService.eliminar(p.id);
+      }
     }
-    this.columnService.eliminarColumna(col.id);
-    this.notificacionService.notificar({tipo: 'alerta', descripcion: `Columna «${col.nombre}» eliminada`});
+    await this.columnService.eliminarColumna(col.id);
+    await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Columna «${col.nombre}» eliminada`});
   }
 
   nuevaTarea(): void {

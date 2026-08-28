@@ -12,15 +12,16 @@ import {Accion, Recurso} from '../models/permiso.model';
  * validarse en el servidor.
  */
 export function permisoGuard(accion: Accion, recurso: Recurso): CanActivateFn {
-  return () => {
+  return async () => {
     const auth = inject(AuthService);
     const permiso = inject(PermisoService);
     const router = inject(Router);
 
+    await auth.sesionLista();
     if (!auth.isLoggedIn()) {
       return router.parseUrl('/login');
     }
-    if (permiso.puedeUsuarioActual(accion, recurso)) {
+    if (permiso.puede(accion, recurso, auth.currentUser()?.tipo)) {
       return true;
     }
     return router.parseUrl('/');

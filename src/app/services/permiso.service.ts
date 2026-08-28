@@ -1,5 +1,6 @@
-import {Injectable, computed, inject, isDevMode, signal} from '@angular/core';
-import {AuthService} from './auth.service';
+import {Injectable, computed, inject, signal} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
 import {
   ACCIONES,
   RECURSOS_ORDEN,
@@ -11,8 +12,7 @@ import {
   TipoUsuario,
 } from '../models/permiso.model';
 
-const STORAGE_KEY = 'devtracker-permisos';
-const STORAGE_VERSION = 1;
+export type MatrizServidor = Record<string, Partial<Record<Recurso, Accion[]>>>;
 
 function clonarMatriz(matriz: Record<TipoUsuario, MatrizPermisos>): Record<TipoUsuario, MatrizPermisos> {
   return Object.fromEntries(
@@ -28,50 +28,64 @@ function clonarMatriz(matriz: Record<TipoUsuario, MatrizPermisos>): Record<TipoU
   ) as Record<TipoUsuario, MatrizPermisos>;
 }
 
+/**
+ * Matriz de permisos servida por el backend (`/auth/me` o `GET /roles/permisos`).
+ * Se hidrata al iniciar sesión y se mantiene en memoria; las mutaciones
+ * (toggle/restablecer) viajan por HTTP y se reflejan localmente.
+ */
 @Injectable({providedIn: 'root'})
 export class PermisoService {
-  private readonly authService = inject(AuthService);
+  private readonly http = inject(HttpClient);
 
-  private readonly _permisos = signal<Record<TipoUsuario, MatrizPermisos>>(this._cargar());
+  private readonly _permisos = signal<Record<TipoUsuario, MatrizPermisos>>(clonarMatriz(PERMISOS));
   readonly permisos = this._permisos.asReadonly();
 
-  readonly permisosUsuarioActual = computed(() => {
-    const user = this.authService.currentUser();
-    return user ? (this._permisos()[user.tipo] ?? {}) : {};
-  });
+  hidratar(matriz: MatrizServidor): void {
+    const result = clonarMatriz({...PERMISOS, ...matriz} as Record<TipoUsuario, MatrizPermisos>);
+    this._permisos.set(result);
+  }
 
-  puede(accion: Accion, recurso: Recurso, tipo?: TipoUsuario): boolean {
-    const rol = tipo ?? this.authService.currentUser()?.tipo;
-    if (!rol) return false;
-    const acciones = this._permisos()[rol]?.[recurso];
-    const resultado = acciones?.includes(accion) ?? false;
-    if (isDevMode()) {
-      console.debug('[PermisoService] puede', {accion, recurso, rol, acciones: acciones ?? [], resultado});
+  async cargar(): Promise<void> {
+    try {
+      const matriz = await firstValueFrom(this.http.get<MatrizServidor>('api/roles/permisos'));
+      if (matriz) this.hidratar(matriz);
+    } catch {
+      /* sin permiso para roles: mantener lo hidratado desde /auth/me */
     }
-    return resultado;
   }
 
-  puedeUsuarioActual(accion: Accion, recurso: Recurso): boolean {
-    const tipo = this.authService.currentUser()?.tipo;
-    return this.puede(accion, recurso, tipo);
+  puede(accion: Accion, recurso: Recurso, tipo: TipoUsuario | undefined): boolean {
+    if (!tipo) return false;
+    const matriz = this._permisos();
+    const recursos = matriz[tipo];
+    const acciones = recursos?.[recurso];
+    return acciones?.includes(accion) ?? false;
   }
 
-  toggle(rol: TipoUsuario, recurso: Recurso, accion: Accion): void {
+  async toggle(rol: TipoUsuario, recurso: Recurso, accion: Accion): Promise<void> {
     if (rol === ROL_SUPER_ADMIN_ID) return;
-    this._permisos.update((matriz) => {
-      const recursos = {...matriz[rol]};
-      const acciones = [...(recursos[recurso] ?? [])];
-      recursos[recurso] = acciones.includes(accion)
-        ? acciones.filter((a) => a !== accion)
-        : [...acciones, accion];
-      return {...matriz, [rol]: recursos};
-    });
-    this._guardar();
+    this._toggleLocal(rol, recurso, accion);
+    try {
+      await firstValueFrom(this.http.patch(`api/roles/${encodeURIComponent(rol)}/permisos`, {recurso, accion}));
+    } catch {
+      this._toggleLocal(rol, recurso, accion);
+    }
+  }
+
+  async restablecer(): Promise<void> {
+    try {
+      await firstValueFrom(this.http.post('api/roles/permisos/restablecer', {}));
+      await this.cargar();
+    } catch {
+      /* sin permiso o error: ignorar */
+    }
   }
 
   agregarRol(id: TipoUsuario): void {
-    this._permisos.update((matriz) => ({...matriz, [id]: {}}));
-    this._guardar();
+    this._permisos.update((matriz) => {
+      if (id in matriz) return matriz;
+      return {...matriz, [id]: {}};
+    });
   }
 
   eliminarRol(id: TipoUsuario): void {
@@ -81,71 +95,16 @@ export class PermisoService {
       delete copia[id];
       return copia;
     });
-    this._guardar();
   }
 
-  restablecer(): void {
+  private _toggleLocal(rol: TipoUsuario, recurso: Recurso, accion: Accion): void {
     this._permisos.update((matriz) => {
-      const base = clonarMatriz(PERMISOS);
-      for (const id of Object.keys(matriz)) {
-        if (!(id in PERMISOS) && id !== ROL_SUPER_ADMIN_ID) {
-          base[id] = clonarMatriz({[id]: matriz[id]})[id];
-        }
-      }
-      return base;
+      const recursos = {...(matriz[rol] ?? {})};
+      const acciones = [...(recursos[recurso] ?? [])];
+      recursos[recurso] = acciones.includes(accion)
+        ? acciones.filter((a) => a !== accion)
+        : [...acciones, accion];
+      return {...matriz, [rol]: recursos};
     });
-    this._guardar();
-  }
-
-  private _guardar(): void {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({version: STORAGE_VERSION, matriz: this._permisos()}),
-    );
-  }
-
-  private _cargar(): Record<TipoUsuario, MatrizPermisos> {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        const data: Record<TipoUsuario, MatrizPermisos> | null =
-          parsed && parsed.version === STORAGE_VERSION && parsed.matriz ? parsed.matriz : null;
-        if (data) {
-          const base = clonarMatriz(PERMISOS);
-          for (const [rolId, guardado] of Object.entries(data)) {
-            if (rolId === ROL_SUPER_ADMIN_ID) continue;
-            if (!guardado || typeof guardado !== 'object') continue;
-            if (rolId in PERMISOS) {
-              const recursos = {...base[rolId]};
-              for (const recurso of RECURSOS_ORDEN) {
-                const accionesGuardadas = (guardado as Partial<Record<Recurso, unknown>>)[recurso];
-                if (!Array.isArray(accionesGuardadas)) continue;
-                const validas = accionesGuardadas.filter(
-                  (a): a is Accion => (ACCIONES as readonly string[]).includes(a as string),
-                );
-                recursos[recurso] = [...new Set(validas)];
-              }
-              base[rolId] = recursos;
-            } else {
-              const recursos: MatrizPermisos = {};
-              for (const recurso of RECURSOS_ORDEN) {
-                const accionesGuardadas = (guardado as Partial<Record<Recurso, unknown>>)[recurso];
-                if (!Array.isArray(accionesGuardadas)) continue;
-                const validas = accionesGuardadas.filter(
-                  (a): a is Accion => (ACCIONES as readonly string[]).includes(a as string),
-                );
-                recursos[recurso] = [...new Set(validas)];
-              }
-              base[rolId] = recursos;
-            }
-          }
-          return base;
-        }
-      } catch {
-        /* ignorar */
-      }
-    }
-    return clonarMatriz(PERMISOS);
   }
 }
