@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, provideEnvironmentInitializer } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -17,5 +17,12 @@ export const appConfig: ApplicationConfig = {
     provideHighcharts(),
     provideNativeDateAdapter(),
     provideHttpClient(withInterceptors([apiUrlInterceptor, jwtInterceptor])),
+    provideEnvironmentInitializer(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .getRegistrations()
+          .then((registrations) => registrations.forEach((r) => r.unregister()));
+      }
+    }),
   ]
 };
