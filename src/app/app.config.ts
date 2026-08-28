@@ -7,6 +7,7 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 
 import { routes } from './app.routes';
 import { jwtInterceptor } from './services/api/jwt.interceptor';
+import { apiUrlInterceptor } from './services/api/api-url.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,6 +16,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHighcharts(),
     provideNativeDateAdapter(),
-    provideHttpClient(withInterceptors([jwtInterceptor])),
+    provideHttpClient(withInterceptors([apiUrlInterceptor, jwtInterceptor])),
   ]
 };
