@@ -39,7 +39,7 @@ export const USUARIOS_DEFAULT: Usuario[] = [
   {
     id: 'super-admin',
     usuario: 'admin',
-    correo: 'admin@devtracker.app',
+    correo: 'admin@email.com',
     clave: btoa('admin123'),
     tipo: 'super-administrador',
   },

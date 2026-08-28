@@ -10,7 +10,7 @@ export const routes: Routes = [
   {path: 'planning', loadComponent: () => import('./components/planning/planning.component').then(m => m.PlanningComponent), canActivate: [authGuard]},
   {path: 'calendario', loadComponent: () => import('./components/calendario/calendario.component').then(m => m.CalendarioComponent), canActivate: [authGuard]},
   {path: 'reportes', loadComponent: () => import('./components/reportes/reportes.component').then(m => m.ReportesComponent), canActivate: [authGuard, permisoGuard('leer', 'reportes')]},
-  {path: 'documentacion', loadComponent: () => import('./components/documentacion/documentacion.component').then(m => m.DocumentacionComponent), canActivate: [authGuard, permisoGuard('leer', 'reportes')]},
+  {path: 'documentacion', loadComponent: () => import('./components/documentacion/documentacion.component').then(m => m.DocumentacionComponent), canActivate: [authGuard]},
   {path: 'usuarios', loadComponent: () => import('./components/usuarios/usuarios.component').then(m => m.UsuariosComponent), canActivate: [authGuard, permisoGuard('leer', 'usuarios')]},
   {path: 'roles', loadComponent: () => import('./components/roles/roles.component').then(m => m.RolesComponent), canActivate: [authGuard, permisoGuard('leer', 'roles')]},
   {path: 'tarea/nueva', loadComponent: () => import('./components/task-form/task-form.component').then(m => m.TaskFormComponent), canActivate: [authGuard, permisoGuard('crear', 'tareas')]},

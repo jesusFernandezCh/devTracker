@@ -41,7 +41,8 @@ export class PermisoService {
   readonly permisos = this._permisos.asReadonly();
 
   hidratar(matriz: MatrizServidor): void {
-    this._permisos.set(clonarMatriz({...PERMISOS, ...matriz} as Record<TipoUsuario, MatrizPermisos>));
+    const result = clonarMatriz({...PERMISOS, ...matriz} as Record<TipoUsuario, MatrizPermisos>);
+    this._permisos.set(result);
   }
 
   async cargar(): Promise<void> {
@@ -55,7 +56,9 @@ export class PermisoService {
 
   puede(accion: Accion, recurso: Recurso, tipo: TipoUsuario | undefined): boolean {
     if (!tipo) return false;
-    const acciones = this._permisos()[tipo]?.[recurso];
+    const matriz = this._permisos();
+    const recursos = matriz[tipo];
+    const acciones = recursos?.[recurso];
     return acciones?.includes(accion) ?? false;
   }
 
@@ -79,7 +82,10 @@ export class PermisoService {
   }
 
   agregarRol(id: TipoUsuario): void {
-    this._permisos.update((matriz) => ({...matriz, [id]: {}}));
+    this._permisos.update((matriz) => {
+      if (id in matriz) return matriz;
+      return {...matriz, [id]: {}};
+    });
   }
 
   eliminarRol(id: TipoUsuario): void {

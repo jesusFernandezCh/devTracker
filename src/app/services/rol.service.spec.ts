@@ -34,42 +34,42 @@ describe('RolService', () => {
     expect(service.rolPorId(ROL_SUPER_ADMIN_ID)?.nombre).toBe('Super Administrador');
   });
 
-  it('crear agrega un rol con permisos vacíos', () => {
-    expect(service.crear('Desarrollador')).toBeTrue();
+  it('crear agrega un rol con permisos vacíos', async () => {
+    await service.crear('Desarrollador');
     const nuevo = service.roles().find(r => r.nombre === 'Desarrollador');
     expect(nuevo).toBeDefined();
     expect(nuevo!.sistema).toBeFalse();
     expect(permisoService.permisos()[nuevo!.id]).toEqual({});
   });
 
-  it('crear rechaza nombres duplicados', () => {
-    expect(service.crear('Desarrollador')).toBeTrue();
-    expect(service.crear('desarrollador')).toBeFalse();
+  it('crear rechaza nombres duplicados', async () => {
+    await service.crear('Desarrollador');
+    expect(await service.crear('desarrollador')).toBeFalse();
   });
 
-  it('renombrar actualiza el nombre y bloquea el super-administrador', () => {
-    expect(service.renombrar(ROL_SUPER_ADMIN_ID, 'Dios')).toBeFalse();
+  it('renombrar actualiza el nombre y bloquea el super-administrador', async () => {
+    expect(await service.renombrar(ROL_SUPER_ADMIN_ID, 'Dios')).toBeFalse();
     expect(service.rolPorId(ROL_SUPER_ADMIN_ID)?.nombre).toBe('Super Administrador');
     const qa = service.rolPorId('qa')!;
-    expect(service.renombrar(qa.id, 'QA Senior')).toBeTrue();
+    expect(await service.renombrar(qa.id, 'QA Senior')).toBeTrue();
     expect(service.rolPorId(qa.id)?.nombre).toBe('QA Senior');
   });
 
-  it('eliminar bloquea al super-administrador', () => {
-    expect(service.eliminar(ROL_SUPER_ADMIN_ID)).toBe('protegido');
+  it('eliminar bloquea al super-administrador', async () => {
+    expect(await service.eliminar(ROL_SUPER_ADMIN_ID)).toBe('protegido');
     expect(service.rolPorId(ROL_SUPER_ADMIN_ID)).toBeDefined();
   });
 
   it('eliminar bloquea roles con usuarios asignados', async () => {
     await usuarioService.crear({usuario: 'juan', correo: 'juan@correo.com', clave: '1234', tipo: 'qa'});
-    expect(service.eliminar('qa')).toBe('en-uso');
+    expect(await service.eliminar('qa')).toBe('en-uso');
     expect(service.rolPorId('qa')).toBeDefined();
   });
 
-  it('eliminar remueve el rol y su matriz cuando no está en uso', () => {
-    expect(service.crear('Desarrollador')).toBeTrue();
+  it('eliminar remueve el rol y su matriz cuando no está en uso', async () => {
+    await service.crear('Desarrollador');
     const nuevo = service.rolPorId(service.roles().find(r => r.nombre === 'Desarrollador')!.id)!;
-    expect(service.eliminar(nuevo.id)).toBe('ok');
+    expect(await service.eliminar(nuevo.id)).toBe('ok');
     expect(service.rolPorId(nuevo.id)).toBeUndefined();
     expect(permisoService.permisos()[nuevo.id]).toBeUndefined();
   });
@@ -80,8 +80,8 @@ describe('RolService', () => {
     expect(service.contarUsuarios('usuario')).toBe(2);
   });
 
-  it('persiste los roles en localStorage y los recupera', () => {
-    service.crear('Desarrollador');
+  it('persiste los roles en localStorage y los recupera', async () => {
+    await service.crear('Desarrollador');
     const nueva = TestBed.inject(RolService);
     expect(nueva.roles().some(r => r.nombre === 'Desarrollador')).toBeTrue();
     expect(nueva.roles().some(r => r.id === ROL_SUPER_ADMIN_ID)).toBeTrue();

@@ -90,7 +90,7 @@ export const PERMISOS: Record<TipoUsuario, MatrizPermisos> = {
     proyectos: TODAS,
     usuarios: ['leer'],
     roles: [],
-    planning: ['leer'],
+    planning: ['leer', 'crear'],
     calendario: ['leer'],
     tablero: ['leer'],
     reportes: ['leer'],

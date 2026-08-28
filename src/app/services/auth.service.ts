@@ -35,7 +35,7 @@ export interface UsuarioDto {
 }
 
 export interface MeResponse extends UsuarioDto {
-  permisos: Record<string, Partial<Record<Recurso, Accion[]>>>;
+  permisos: Partial<Record<Recurso, Accion[]>>;
 }
 
 export function aUsuario(dto: UsuarioDto): Usuario {
@@ -143,7 +143,7 @@ export class AuthService {
     const me = await firstValueFrom(this.http.get<MeResponse>('api/auth/me', {withCredentials: true}));
     const usuario = aUsuario(me);
     this._currentUser.set(usuario);
-    this.permisoService.hidratar(me.permisos);
+    this.permisoService.hidratar({[me.rolId]: me.permisos});
     this._sesionCargada.set(true);
     await this._hidratarDatos(usuario);
     this.notificacionService.notificar({tipo: 'info', descripcion: `Sesión iniciada como «${usuario.usuario}»`, url: '/'});
