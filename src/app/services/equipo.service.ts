@@ -1,6 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 
 /**
  * Relación N:N proyecto ↔ usuario como `Record<proyectoId, string[]>`.
@@ -25,7 +26,7 @@ export class EquipoService {
 
   async cargar(): Promise<void> {
     try {
-      const mapa = await firstValueFrom(this.http.get<Record<string, string[]>>('api/equipo'));
+      const mapa = await firstValueFrom(this.http.get<Record<string, string[]>>(`${environment.apiUrl}/equipo`));
       this._porProyecto.set(mapa ?? {});
     } catch {
       /* sin permiso: mantener estado actual */
@@ -40,7 +41,7 @@ export class EquipoService {
       return {...map, [proyectoId]: [...ids, usuarioId]};
     });
     try {
-      await firstValueFrom(this.http.post(`api/equipo/proyecto/${proyectoId}/${usuarioId}`, {}));
+      await firstValueFrom(this.http.post(`${environment.apiUrl}/equipo/proyecto/${proyectoId}/${usuarioId}`, {}));
     } catch {
       this._porProyecto.set(previo);
     }
@@ -54,7 +55,7 @@ export class EquipoService {
       return {...map, [proyectoId]: ids.filter((id) => id !== usuarioId)};
     });
     try {
-      await firstValueFrom(this.http.delete(`api/equipo/proyecto/${proyectoId}/${usuarioId}`));
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/equipo/proyecto/${proyectoId}/${usuarioId}`));
     } catch {
       this._porProyecto.set(previo);
     }
@@ -64,7 +65,7 @@ export class EquipoService {
     const previo = this._porProyecto();
     this._porProyecto.update((map) => ({...map, [proyectoId]: [...usuarioIds]}));
     try {
-      await firstValueFrom(this.http.put(`api/equipo/proyecto/${proyectoId}`, {usuarioIds}));
+      await firstValueFrom(this.http.put(`${environment.apiUrl}/equipo/proyecto/${proyectoId}`, {usuarioIds}));
     } catch {
       this._porProyecto.set(previo);
     }

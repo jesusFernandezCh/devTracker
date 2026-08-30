@@ -1,6 +1,7 @@
 import {Injectable, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../../environments/environment';
 import {TokenService} from './token.service';
 import {Usuario} from '../../models/usuario.model';
 
@@ -22,7 +23,7 @@ export class RefreshService {
   refrescar(): Promise<boolean> {
     if (this.enProceso) return this.enProceso;
     const resultado = firstValueFrom(
-      this.http.post<RefreshResponse>('api/auth/refresh', {}, {withCredentials: true}),
+      this.http.post<RefreshResponse>(`${environment.apiUrl}/auth/refresh`, {}, {withCredentials: true}),
     )
       .then((r) => {
         if (r.accessToken && r.user) {

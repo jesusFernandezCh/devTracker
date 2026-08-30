@@ -1,6 +1,7 @@
 import {Injectable, computed, inject, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {
   ACCIONES,
   RECURSOS_ORDEN,
@@ -47,7 +48,7 @@ export class PermisoService {
 
   async cargar(): Promise<void> {
     try {
-      const matriz = await firstValueFrom(this.http.get<MatrizServidor>('api/roles/permisos'));
+      const matriz = await firstValueFrom(this.http.get<MatrizServidor>(`${environment.apiUrl}/roles/permisos`));
       if (matriz) this.hidratar(matriz);
     } catch {
       /* sin permiso para roles: mantener lo hidratado desde /auth/me */
@@ -66,7 +67,7 @@ export class PermisoService {
     if (rol === ROL_SUPER_ADMIN_ID) return;
     this._toggleLocal(rol, recurso, accion);
     try {
-      await firstValueFrom(this.http.patch(`api/roles/${encodeURIComponent(rol)}/permisos`, {recurso, accion}));
+      await firstValueFrom(this.http.patch(`${environment.apiUrl}/roles/${encodeURIComponent(rol)}/permisos`, {recurso, accion}));
     } catch {
       this._toggleLocal(rol, recurso, accion);
     }
@@ -74,7 +75,7 @@ export class PermisoService {
 
   async restablecer(): Promise<void> {
     try {
-      await firstValueFrom(this.http.post('api/roles/permisos/restablecer', {}));
+      await firstValueFrom(this.http.post(`${environment.apiUrl}/roles/permisos/restablecer`, {}));
       await this.cargar();
     } catch {
       /* sin permiso o error: ignorar */

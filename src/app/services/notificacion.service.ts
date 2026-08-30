@@ -1,6 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Notificacion, TipoNotificacion} from '../models/notificacion.model';
 
 @Injectable({providedIn: 'root'})
@@ -15,7 +16,7 @@ export class NotificacionService {
 
   async cargar(): Promise<void> {
     try {
-      const lista = await firstValueFrom(this.http.get<Notificacion[]>('api/notificaciones'));
+      const lista = await firstValueFrom(this.http.get<Notificacion[]>(`${environment.apiUrl}/notificaciones`));
       this._notificaciones.set(lista ?? []);
     } catch {
       /* sin permiso o no autenticado */
@@ -24,7 +25,7 @@ export class NotificacionService {
 
   async notificar(data: {tipo: TipoNotificacion; descripcion: string; url?: string}): Promise<void> {
     try {
-      const creada = await firstValueFrom(this.http.post<Notificacion>('api/notificaciones', data));
+      const creada = await firstValueFrom(this.http.post<Notificacion>(`${environment.apiUrl}/notificaciones`, data));
       this._notificaciones.update((list) => [creada, ...list]);
     } catch {
       /* sin sesión (p. ej. en el login): no notificar */
@@ -33,7 +34,7 @@ export class NotificacionService {
 
   async marcarLeida(id: string): Promise<void> {
     try {
-      const actualizada = await firstValueFrom(this.http.patch<Notificacion>(`api/notificaciones/${id}/leer`, {}));
+      const actualizada = await firstValueFrom(this.http.patch<Notificacion>(`${environment.apiUrl}/notificaciones/${id}/leer`, {}));
       this._notificaciones.update((list) => list.map((n) => (n.id === id ? actualizada : n)));
     } catch {
       /* ignorar */
@@ -42,7 +43,7 @@ export class NotificacionService {
 
   async marcarTodasLeidas(): Promise<void> {
     try {
-      await firstValueFrom(this.http.patch('api/notificaciones/leer-todas', {}));
+      await firstValueFrom(this.http.patch(`${environment.apiUrl}/notificaciones/leer-todas`, {}));
       this._notificaciones.update((list) => list.map((n) => ({...n, leida: true})));
     } catch {
       /* ignorar */
@@ -51,7 +52,7 @@ export class NotificacionService {
 
   async eliminar(id: string): Promise<void> {
     try {
-      await firstValueFrom(this.http.delete(`api/notificaciones/${id}`));
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/notificaciones/${id}`));
       this._notificaciones.update((list) => list.filter((n) => n.id !== id));
     } catch {
       /* ignorar */

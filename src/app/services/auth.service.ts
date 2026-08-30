@@ -2,6 +2,7 @@ import {Injectable, signal, computed, inject} from '@angular/core';
 import {Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Usuario} from '../models/usuario.model';
 import {Accion, Recurso} from '../models/permiso.model';
 import {TokenService} from './api/token.service';
@@ -102,7 +103,7 @@ export class AuthService {
   async login(correo: string, clave: string): Promise<boolean> {
     try {
       const r = await firstValueFrom(
-        this.http.post<{accessToken: string; user: UsuarioDto}>('api/auth/login', {correo, clave}, {withCredentials: true}),
+        this.http.post<{accessToken: string; user: UsuarioDto}>(`${environment.apiUrl}/auth/login`, {correo, clave}, {withCredentials: true}),
       );
       this.tokenService.setToken(r.accessToken);
       await this._aplicarSesion();
@@ -119,7 +120,7 @@ export class AuthService {
 
   async logout(): Promise<void> {
     try {
-      await firstValueFrom(this.http.post('api/auth/logout', {}, {withCredentials: true}));
+      await firstValueFrom(this.http.post(`${environment.apiUrl}/auth/logout`, {}, {withCredentials: true}));
     } catch {
       /* ignorar: la cookie puede no existir */
     }
@@ -140,7 +141,7 @@ export class AuthService {
   }
 
   private async _aplicarSesion(): Promise<void> {
-    const me = await firstValueFrom(this.http.get<MeResponse>('api/auth/me', {withCredentials: true}));
+    const me = await firstValueFrom(this.http.get<MeResponse>(`${environment.apiUrl}/auth/me`, {withCredentials: true}));
     const usuario = aUsuario(me);
     this._currentUser.set(usuario);
     this.permisoService.hidratar({[me.rolId]: me.permisos});

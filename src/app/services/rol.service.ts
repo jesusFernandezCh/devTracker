@@ -1,6 +1,7 @@
 import {Injectable, computed, inject, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Rol, ROLES_DEFAULT, ROL_SUPER_ADMIN_ID} from '../models/permiso.model';
 import {UsuarioService} from './usuario.service';
 import {PermisoService} from './permiso.service';
@@ -51,7 +52,7 @@ export class RolService {
 
   async cargar(): Promise<void> {
     try {
-      const roles = await firstValueFrom(this.http.get<RolDto[]>('api/roles'));
+      const roles = await firstValueFrom(this.http.get<RolDto[]>(`${environment.apiUrl}/roles`));
       const lista = (roles ?? []).map(r => ({id: r.id, nombre: r.nombre, sistema: r.sistema}));
       if (!lista.some(r => r.id === ROL_SUPER_ADMIN_ID)) {
         const superAdmin = ROLES_DEFAULT.find(r => r.id === ROL_SUPER_ADMIN_ID);
@@ -71,7 +72,7 @@ export class RolService {
     const limpio = nombre.trim();
     if (!limpio || this.existeNombre(limpio)) return false;
     try {
-      const rol = await firstValueFrom(this.http.post<RolDto>('api/roles', {nombre: limpio}));
+      const rol = await firstValueFrom(this.http.post<RolDto>(`${environment.apiUrl}/roles`, {nombre: limpio}));
       this._roles.update(list => [...list, {id: rol.id, nombre: rol.nombre, sistema: rol.sistema}]);
       this._conteos.update(m => ({...m, [rol.id]: 0}));
       this.permisoService.agregarRol(rol.id);
@@ -86,7 +87,7 @@ export class RolService {
     const limpio = nombre.trim();
     if (!limpio || this.existeNombre(limpio, id)) return false;
     try {
-      const rol = await firstValueFrom(this.http.patch<RolDto>(`api/roles/${encodeURIComponent(id)}`, {nombre: limpio}));
+      const rol = await firstValueFrom(this.http.patch<RolDto>(`${environment.apiUrl}/roles/${encodeURIComponent(id)}`, {nombre: limpio}));
       this._roles.update(list => list.map(r => (r.id === id ? {...r, nombre: rol.nombre} : r)));
       return true;
     } catch {
@@ -97,7 +98,7 @@ export class RolService {
   async eliminar(id: string): Promise<ResultadoEliminarRol> {
     if (this.esSuperAdmin(id)) return 'protegido';
     try {
-      const {resultado} = await firstValueFrom(this.http.delete<{resultado: ResultadoEliminarRol}>(`api/roles/${encodeURIComponent(id)}`));
+      const {resultado} = await firstValueFrom(this.http.delete<{resultado: ResultadoEliminarRol}>(`${environment.apiUrl}/roles/${encodeURIComponent(id)}`));
       if (resultado === 'ok') {
         this.permisoService.eliminarRol(id);
         this._roles.update(list => list.filter(r => r.id !== id));

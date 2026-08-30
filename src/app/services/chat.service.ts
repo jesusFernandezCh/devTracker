@@ -2,6 +2,7 @@ import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
 import {io, Socket} from 'socket.io-client';
+import {environment} from '../../environments/environment';
 import {Mensaje, CanalChat} from '../models/mensaje.model';
 import {UsuarioService} from './usuario.service';
 import {EquipoService} from './equipo.service';
@@ -80,7 +81,7 @@ export class ChatService {
     this._mensajes.set([]);
     if (!token) return;
 
-    this.socket = io({auth: {token}, transports: ['websocket', 'polling']});
+    this.socket = io(environment.socketUrl, {auth: {token}, transports: ['websocket', 'polling']});
     this.socket.on('mensaje:nuevo', (m: MensajeSerializado) => this._recibir(m));
     this.socket.on('chat:leido', (payload: {canal: CanalChat; destinoId?: string; proyectoId?: string}) => {
       this._marcarLocal((m) => {
@@ -109,7 +110,7 @@ export class ChatService {
     const limpio = texto.trim();
     if (!limpio) return;
     try {
-      const m = await firstValueFrom(this.http.post<MensajeSerializado>('api/chat/general', {texto: limpio}));
+      const m = await firstValueFrom(this.http.post<MensajeSerializado>(`${environment.apiUrl}/chat/general`, {texto: limpio}));
       this._recibir(m);
     } catch {
       /* error de red: no optimista */
@@ -120,7 +121,7 @@ export class ChatService {
     const limpio = texto.trim();
     if (!limpio) return;
     try {
-      const m = await firstValueFrom(this.http.post<MensajeSerializado>(`api/chat/privado/${destinoId}`, {texto: limpio}));
+      const m = await firstValueFrom(this.http.post<MensajeSerializado>(`${environment.apiUrl}/chat/privado/${destinoId}`, {texto: limpio}));
       this._recibir(m);
     } catch {
       /* ignorar */
@@ -131,7 +132,7 @@ export class ChatService {
     const limpio = texto.trim();
     if (!limpio) return;
     try {
-      const m = await firstValueFrom(this.http.post<MensajeSerializado>(`api/chat/grupo/${proyectoId}`, {texto: limpio}));
+      const m = await firstValueFrom(this.http.post<MensajeSerializado>(`${environment.apiUrl}/chat/grupo/${proyectoId}`, {texto: limpio}));
       this._recibir(m);
     } catch {
       /* ignorar */
@@ -168,7 +169,7 @@ export class ChatService {
   private async _cargarHistorial(yoId: string): Promise<void> {
     const todos: MensajeSerializado[] = [];
     try {
-      const general = await firstValueFrom(this.http.get<MensajeSerializado[]>('api/chat/general'));
+      const general = await firstValueFrom(this.http.get<MensajeSerializado[]>(`${environment.apiUrl}/chat/general`));
       if (general) todos.push(...general);
     } catch {
       /* ignorar */
@@ -177,7 +178,7 @@ export class ChatService {
     await Promise.all(
       otros.map(async (u) => {
         try {
-          const privados = await firstValueFrom(this.http.get<MensajeSerializado[]>(`api/chat/privado/${u.id}`));
+          const privados = await firstValueFrom(this.http.get<MensajeSerializado[]>(`${environment.apiUrl}/chat/privado/${u.id}`));
           if (privados) todos.push(...privados);
         } catch {
           /* ignorar */
@@ -188,7 +189,7 @@ export class ChatService {
     await Promise.all(
       proyectos.map(async (pid) => {
         try {
-          const grupo = await firstValueFrom(this.http.get<MensajeSerializado[]>(`api/chat/grupo/${pid}`));
+          const grupo = await firstValueFrom(this.http.get<MensajeSerializado[]>(`${environment.apiUrl}/chat/grupo/${pid}`));
           if (grupo) todos.push(...grupo);
         } catch {
           /* ignorar */
@@ -214,7 +215,7 @@ export class ChatService {
 
   private async _marcarLeidos(payload: {canal: CanalChat; destinoId?: string; proyectoId?: string}): Promise<void> {
     try {
-      await firstValueFrom(this.http.patch('api/chat/leer', payload));
+      await firstValueFrom(this.http.patch(`${environment.apiUrl}/chat/leer`, payload));
     } catch {
       /* ignorar */
     }

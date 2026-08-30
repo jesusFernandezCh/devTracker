@@ -1,6 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Cliente} from '../models/cliente.model';
 import {ProyectoService} from './proyecto.service';
 
@@ -32,7 +33,7 @@ export class ClienteService {
 
   async cargar(): Promise<void> {
     try {
-      const lista = await firstValueFrom(this.http.get<ClienteDto[]>('api/clientes'));
+      const lista = await firstValueFrom(this.http.get<ClienteDto[]>(`${environment.apiUrl}/clientes`));
       this._clientes.set((lista ?? []).map(aCliente));
     } catch {
       /* sin permiso: mantener estado actual */
@@ -43,7 +44,7 @@ export class ClienteService {
     const n = nombre.trim();
     if (!n || this.existeNombre(nombre)) return false;
     try {
-      const creado = await firstValueFrom(this.http.post<ClienteDto>('api/clientes', {nombre: n}));
+      const creado = await firstValueFrom(this.http.post<ClienteDto>(`${environment.apiUrl}/clientes`, {nombre: n}));
       this._clientes.update((list) => [...list, aCliente(creado)]);
       return true;
     } catch {
@@ -57,7 +58,7 @@ export class ClienteService {
     const actual = this.clientePorId(id);
     if (!actual || actual.nombre === n) return true;
     try {
-      const actualizado = await firstValueFrom(this.http.patch<ClienteDto>(`api/clientes/${id}`, {nombre: n}));
+      const actualizado = await firstValueFrom(this.http.patch<ClienteDto>(`${environment.apiUrl}/clientes/${id}`, {nombre: n}));
       this._clientes.update((list) => list.map((c) => (c.id === id ? aCliente(actualizado) : c)));
       this.proyectoService.renombrarCliente(actual.nombre, n);
       return true;
@@ -70,7 +71,7 @@ export class ClienteService {
     const cliente = this.clientePorId(id);
     if (!cliente) return 'ok';
     try {
-      await firstValueFrom(this.http.delete(`api/clientes/${id}`));
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/clientes/${id}`));
       this._clientes.update((list) => list.filter((c) => c.id !== id));
       return 'ok';
     } catch {

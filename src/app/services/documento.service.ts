@@ -1,6 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Documento} from '../models/documento.model';
 
 interface DocumentoDto {
@@ -45,7 +46,7 @@ export class DocumentoService {
 
   async cargar(): Promise<void> {
     try {
-      const lista = await firstValueFrom(this.http.get<DocumentoDto[]>('api/documentos'));
+      const lista = await firstValueFrom(this.http.get<DocumentoDto[]>(`${environment.apiUrl}/documentos`));
       this._documentos.set((lista ?? []).map(aDocumento));
     } catch {
       /* sin permiso: mantener estado actual */
@@ -54,7 +55,7 @@ export class DocumentoService {
 
   async crear(data: Omit<Documento, 'id' | 'fechaCreacion' | 'fechaModificacion' | 'autorId'>): Promise<void> {
     try {
-      const creado = await firstValueFrom(this.http.post<DocumentoDto>('api/documentos', {
+      const creado = await firstValueFrom(this.http.post<DocumentoDto>(`${environment.apiUrl}/documentos`, {
         nombre: data.nombre,
         descripcion: data.descripcion || undefined,
         archivoBase64: data.archivoBase64,
@@ -69,7 +70,7 @@ export class DocumentoService {
 
   async actualizar(id: string, data: Partial<Omit<Documento, 'id' | 'fechaCreacion' | 'autorId'>>): Promise<void> {
     try {
-      const actualizado = await firstValueFrom(this.http.patch<DocumentoDto>(`api/documentos/${id}`, {
+      const actualizado = await firstValueFrom(this.http.patch<DocumentoDto>(`${environment.apiUrl}/documentos/${id}`, {
         nombre: data.nombre,
         descripcion: data.descripcion,
         archivoBase64: data.archivoBase64,
@@ -83,7 +84,7 @@ export class DocumentoService {
 
   async eliminar(id: string): Promise<void> {
     try {
-      await firstValueFrom(this.http.delete(`api/documentos/${id}`));
+      await firstValueFrom(this.http.delete(`${environment.apiUrl}/documentos/${id}`));
       this._documentos.update((list) => list.filter((d) => d.id !== id));
     } catch {
       /* ignorar */

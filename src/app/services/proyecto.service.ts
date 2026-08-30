@@ -1,6 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Proyecto} from '../models/proyecto.model';
 import {EquipoService} from './equipo.service';
 
@@ -50,7 +51,7 @@ export class ProyectoService {
 
   async cargar(): Promise<void> {
     try {
-      const lista = await firstValueFrom(this.http.get<ProyectoDto[]>('api/proyectos'));
+      const lista = await firstValueFrom(this.http.get<ProyectoDto[]>(`${environment.apiUrl}/proyectos`));
       this._proyectos.set((lista ?? []).map(aProyecto));
     } catch {
       /* sin permiso: mantener lista actual */
@@ -69,7 +70,7 @@ export class ProyectoService {
       fechaHasta: data.fechaHasta || undefined,
       documentacion: data.documentacion || undefined,
     };
-    const creado = await firstValueFrom(this.http.post<ProyectoDto>('api/proyectos', payload));
+    const creado = await firstValueFrom(this.http.post<ProyectoDto>(`${environment.apiUrl}/proyectos`, payload));
     const proyecto = aProyecto(creado);
     this._proyectos.update((list) => [...list, proyecto]);
 
@@ -81,7 +82,7 @@ export class ProyectoService {
 
   async actualizar(id: string, data: Partial<Omit<Proyecto, 'id' | 'createdAt'>>): Promise<Proyecto> {
     const actualizado = await firstValueFrom(
-      this.http.patch<ProyectoDto>(`api/proyectos/${id}`, this.aPayload(data)),
+      this.http.patch<ProyectoDto>(`${environment.apiUrl}/proyectos/${id}`, this.aPayload(data)),
     );
     const proyecto = aProyecto(actualizado);
     this._proyectos.update((list) => list.map((p) => (p.id === id ? proyecto : p)));
@@ -93,7 +94,7 @@ export class ProyectoService {
   }
 
   async eliminar(id: string): Promise<void> {
-    await firstValueFrom(this.http.delete(`api/proyectos/${id}`));
+    await firstValueFrom(this.http.delete(`${environment.apiUrl}/proyectos/${id}`));
     this._proyectos.update((list) => list.filter((p) => p.id !== id));
   }
 

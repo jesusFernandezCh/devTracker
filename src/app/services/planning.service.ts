@@ -1,6 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Planning, PlanningTask} from '../models/planning.model';
 
 function fechaHoyLocal(): string {
@@ -44,7 +45,7 @@ export class PlanningService {
 
   async cargar(): Promise<void> {
     try {
-      const lista = await firstValueFrom(this.http.get<PlanningDto[]>('api/planings'));
+      const lista = await firstValueFrom(this.http.get<PlanningDto[]>(`${environment.apiUrl}/planings`));
       this._plannings.set((lista ?? []).map(aPlanning));
     } catch {
       /* sin permiso: mantener estado actual */
@@ -53,7 +54,7 @@ export class PlanningService {
 
   async crear(data: Omit<Planning, 'id' | 'createdAt'>): Promise<Planning> {
     const creado = await firstValueFrom(
-      this.http.post<PlanningDto>('api/planings', {
+      this.http.post<PlanningDto>(`${environment.apiUrl}/planings`, {
         fecha: data.fecha,
         proyectoId: data.proyectoId,
         descripcion: data.descripcion,
@@ -67,7 +68,7 @@ export class PlanningService {
 
   async actualizar(id: string, data: Partial<Omit<Planning, 'id' | 'createdAt'>>): Promise<Planning> {
     const actualizado = await firstValueFrom(
-      this.http.patch<PlanningDto>(`api/planings/${id}`, {
+      this.http.patch<PlanningDto>(`${environment.apiUrl}/planings/${id}`, {
         fecha: data.fecha,
         descripcion: data.descripcion,
         tareas: data.tareas,
@@ -79,7 +80,7 @@ export class PlanningService {
   }
 
   async eliminar(id: string): Promise<void> {
-    await firstValueFrom(this.http.delete(`api/planings/${id}`));
+    await firstValueFrom(this.http.delete(`${environment.apiUrl}/planings/${id}`));
     this._plannings.update((list) => list.filter((p) => p.id !== id));
   }
 
@@ -87,7 +88,7 @@ export class PlanningService {
     const original = this._plannings().find((p) => p.id === id);
     if (!original) return undefined;
     const clonado = await firstValueFrom(
-      this.http.post<PlanningDto>(`api/planings/${id}/clonar`, {fecha: fechaHoyLocal()}),
+      this.http.post<PlanningDto>(`${environment.apiUrl}/planings/${id}/clonar`, {fecha: fechaHoyLocal()}),
     );
     const planning = aPlanning(clonado);
     this._plannings.update((list) => [...list, planning]);

@@ -1,6 +1,7 @@
 import {Injectable, signal, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {environment} from '../../environments/environment';
 import {Usuario} from '../models/usuario.model';
 import {EquipoService} from './equipo.service';
 import {aUsuario, UsuarioDto} from './auth.service';
@@ -22,7 +23,7 @@ export class UsuarioService {
 
   async cargar(): Promise<void> {
     try {
-      const lista = await firstValueFrom(this.http.get<UsuarioDto[]>('api/usuarios'));
+      const lista = await firstValueFrom(this.http.get<UsuarioDto[]>(`${environment.apiUrl}/usuarios`));
       this._usuarios.set((lista ?? []).map(aUsuario));
     } catch {
       /* sin permiso para usuarios: dejar la lista como está */
@@ -31,7 +32,7 @@ export class UsuarioService {
 
   async crear(data: Omit<Usuario, 'id'> & {clave: string}): Promise<Usuario> {
     const creado = await firstValueFrom(
-      this.http.post<UsuarioDto>('api/usuarios', this.aPayload(data)),
+      this.http.post<UsuarioDto>(`${environment.apiUrl}/usuarios`, this.aPayload(data)),
     );
     const usuario = aUsuario(creado);
     this._usuarios.update(list => [...list, usuario]);
@@ -40,7 +41,7 @@ export class UsuarioService {
 
   async actualizar(id: string, data: Partial<Omit<Usuario, 'id'>>): Promise<Usuario> {
     const actualizado = await firstValueFrom(
-      this.http.patch<UsuarioDto>(`api/usuarios/${id}`, this.aPayload(data as Omit<Usuario, 'id'> & {clave?: string})),
+      this.http.patch<UsuarioDto>(`${environment.apiUrl}/usuarios/${id}`, this.aPayload(data as Omit<Usuario, 'id'> & {clave?: string})),
     );
     const usuario = aUsuario(actualizado);
     this._usuarios.update(list => list.map(u => (u.id === id ? usuario : u)));
@@ -48,7 +49,7 @@ export class UsuarioService {
   }
 
   async eliminar(id: string): Promise<void> {
-    await firstValueFrom(this.http.delete(`api/usuarios/${id}`));
+    await firstValueFrom(this.http.delete(`${environment.apiUrl}/usuarios/${id}`));
     this._usuarios.update(list => list.filter(u => u.id !== id));
     this.equipoService.eliminarUsuarioDeTodos(id);
   }
