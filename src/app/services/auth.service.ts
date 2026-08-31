@@ -113,9 +113,121 @@ export class AuthService {
     }
   }
 
-  /** Login social: el backend no tiene proveedores OAuth, así que devuelve false. */
-  async loginSocial(_proveedor: 'google' | 'facebook'): Promise<void> {
-    return;
+  /** Login social: inicia OAuth con Google o Facebook y envía el token al backend. */
+  async loginSocial(proveedor: 'google' | 'facebook'): Promise<boolean> {
+    try {
+      if (proveedor === 'google') {
+        return await this._loginGoogle();
+      }
+      return await this._loginFacebook();
+    } catch {
+      return false;
+    }
+  }
+
+  private async _loginGoogle(): Promise<boolean> {
+    const clientId = environment.googleClientId;
+    if (!clientId) {
+      console.warn('Google Client ID no configurado');
+      return false;
+    }
+
+    return new Promise<boolean>((resolve) => {
+      this._loadScript('https://accounts.google.com/gsi/client').then(() => {
+        const google = (window as any).google;
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response: any) => {
+            try {
+              const payload = this._decodeJwtPayload(response.credential);
+              const ok = await this._enviarSocial({
+                provider: 'google',
+                providerId: payload.sub,
+                correo: payload.email,
+                usuario: payload.name || payload.email.split('@')[0],
+                foto: payload.picture,
+              });
+              resolve(ok);
+            } catch {
+              resolve(false);
+            }
+          },
+        });
+        google.accounts.id.prompt();
+      });
+    });
+  }
+
+  private async _loginFacebook(): Promise<boolean> {
+    const appId = environment.facebookAppId;
+    if (!appId) {
+      console.warn('Facebook App ID no configurado');
+      return false;
+    }
+
+    return new Promise<boolean>((resolve) => {
+      this._loadScript('https://connect.facebook.net/es_LA/sdk.js').then(() => {
+        const FB = (window as any).FB;
+        FB.init({ appId, cookie: true, xfbml: false, version: 'v21.0' });
+        FB.login(async (response: any) => {
+          if (!response.authResponse) {
+            resolve(false);
+            return;
+          }
+          try {
+            FB.api('/me?fields=id,name,email,picture.type(large)', async (me: any) => {
+              const ok = await this._enviarSocial({
+                provider: 'facebook',
+                providerId: me.id,
+                correo: me.email,
+                usuario: me.name || me.email?.split('@')[0] || '',
+                foto: me.picture?.data?.url,
+              });
+              resolve(ok);
+            });
+          } catch {
+            resolve(false);
+          }
+        }, { scope: 'email' });
+      });
+    });
+  }
+
+  private async _enviarSocial(data: {
+    provider: string;
+    providerId: string;
+    correo: string;
+    usuario: string;
+    foto?: string;
+  }): Promise<boolean> {
+    const r = await firstValueFrom(
+      this.http.post<{accessToken: string; user: UsuarioDto}>(`${environment.apiUrl}/auth/social`, data, {withCredentials: true}),
+    );
+    this.tokenService.setToken(r.accessToken);
+    await this._aplicarSesion();
+    return true;
+  }
+
+  private _decodeJwtPayload(token: string): any {
+    const base64 = token.split('.')[1];
+    const json = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(json);
+  }
+
+  private _loadScript(src: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load ${src}`));
+      document.head.appendChild(script);
+    });
   }
 
   async logout(): Promise<void> {
