@@ -5,6 +5,7 @@ import {io, Socket} from 'socket.io-client';
 import {Mensaje, CanalChat} from '../models/mensaje.model';
 import {UsuarioService} from './usuario.service';
 import {EquipoService} from './equipo.service';
+import {NotificacionService} from './notificacion.service';
 import {environment} from '../../environments/environment';
 
 interface MensajeSerializado {
@@ -41,6 +42,7 @@ export class ChatService {
   private readonly http = inject(HttpClient);
   private readonly usuarioService = inject(UsuarioService);
   private readonly equipoService = inject(EquipoService);
+  private readonly notificacionService = inject(NotificacionService);
   private socket: Socket | null = null;
 
   noLeidosTotal(yoId: string): number {
@@ -90,6 +92,17 @@ export class ChatService {
         if (payload.canal === 'grupo') return m.proyectoId === payload.proyectoId;
         return m.canal === 'general';
       });
+    });
+
+    this.socket.on('equipo:cambiado', (payload: {proyectoId: string; usuarioIds: string[]; usuarioAgregado?: string}) => {
+      this.equipoService._actualizarDesdeServidor(payload.proyectoId, payload.usuarioIds);
+      if (payload.usuarioAgregado === yoId) {
+        this.socket?.emit('chat:unirse-proyecto', payload.proyectoId);
+      }
+    });
+
+    this.socket.on('notificacion:nueva', (notificacion: any) => {
+      this.notificacionService._agregarLocal(notificacion);
     });
 
     const proyectos = this.equipoService.proyectosDe(yoId);

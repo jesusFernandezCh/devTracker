@@ -61,4 +61,11 @@ export class NotificacionService {
   limpiar(): void {
     this._notificaciones.set([]);
   }
+
+  _agregarLocal(notificacion: Notificacion): void {
+    this._notificaciones.update((list) => {
+      if (list.some((n) => n.id === notificacion.id)) return list;
+      return [notificacion, ...list];
+    });
+  }
 }

@@ -84,4 +84,8 @@ export class EquipoService {
   limpiar(): void {
     this._porProyecto.set({});
   }
+
+  _actualizarDesdeServidor(proyectoId: string, usuarioIds: string[]): void {
+    this._porProyecto.update((map) => ({...map, [proyectoId]: usuarioIds}));
+  }
 }
