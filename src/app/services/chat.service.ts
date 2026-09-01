@@ -6,6 +6,9 @@ import {Mensaje, CanalChat} from '../models/mensaje.model';
 import {UsuarioService} from './usuario.service';
 import {EquipoService} from './equipo.service';
 import {NotificacionService} from './notificacion.service';
+import {ProyectoService} from './proyecto.service';
+import {ColumnService} from './column.service';
+import {PlanningService} from './planning.service';
 import {environment} from '../../environments/environment';
 
 interface MensajeSerializado {
@@ -43,6 +46,9 @@ export class ChatService {
   private readonly usuarioService = inject(UsuarioService);
   private readonly equipoService = inject(EquipoService);
   private readonly notificacionService = inject(NotificacionService);
+  private readonly proyectoService = inject(ProyectoService);
+  private readonly columnService = inject(ColumnService);
+  private readonly planningService = inject(PlanningService);
   private socket: Socket | null = null;
 
   noLeidosTotal(yoId: string): number {
@@ -104,6 +110,17 @@ export class ChatService {
     this.socket.on('notificacion:nueva', (notificacion: any) => {
       this.notificacionService._agregarLocal(notificacion);
     });
+
+    this.socket.on('tablero:proyecto-creado', (p: any) => this.proyectoService._creado(p));
+    this.socket.on('tablero:proyecto-actualizado', (p: any) => this.proyectoService._actualizado(p));
+    this.socket.on('tablero:proyecto-eliminado', (p: {id: string}) => this.proyectoService._eliminado(p.id));
+    this.socket.on('tablero:columna-creada', (c: any) => this.columnService._creada(c));
+    this.socket.on('tablero:columna-actualizada', (c: any) => this.columnService._actualizada(c));
+    this.socket.on('tablero:columna-eliminada', (c: {id: string}) => this.columnService._eliminada(c.id));
+    this.socket.on('tablero:columnas-reordenadas', (cs: any[]) => this.columnService._reordenadas(cs));
+    this.socket.on('planning:creado', (p: any) => this.planningService._creado(p));
+    this.socket.on('planning:actualizado', (p: any) => this.planningService._actualizado(p));
+    this.socket.on('planning:eliminado', (p: {id: string}) => this.planningService._eliminado(p.id));
 
     const proyectos = this.equipoService.proyectosDe(yoId);
     this.socket.on('connect', () => {

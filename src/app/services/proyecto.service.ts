@@ -107,6 +107,23 @@ export class ProyectoService {
     this._proyectos.set([]);
   }
 
+  _creado(p: ProyectoDto): void {
+    const proyecto = aProyecto(p);
+    this._proyectos.update((list) => {
+      if (list.some((x) => x.id === proyecto.id)) return list;
+      return [...list, proyecto];
+    });
+  }
+
+  _actualizado(p: ProyectoDto): void {
+    const proyecto = aProyecto(p);
+    this._proyectos.update((list) => list.map((x) => (x.id === proyecto.id ? proyecto : x)));
+  }
+
+  _eliminado(id: string): void {
+    this._proyectos.update((list) => list.filter((x) => x.id !== id));
+  }
+
   private aPayload(data: Partial<Omit<Proyecto, 'id' | 'createdAt'>>): Record<string, unknown> {
     return {
       nombre: data.nombre,

@@ -62,6 +62,25 @@ export class ColumnService {
   limpiar(): void {
     this._columnas.set([]);
   }
+
+  _creada(c: Columna): void {
+    this._columnas.update((list) => {
+      if (list.some((x) => x.id === c.id)) return list;
+      return [...list, c].sort((a, b) => a.orden - b.orden);
+    });
+  }
+
+  _actualizada(c: Columna): void {
+    this._columnas.update((list) => list.map((x) => (x.id === c.id ? c : x)));
+  }
+
+  _eliminada(id: string): void {
+    this._columnas.update((list) => list.filter((x) => x.id !== id));
+  }
+
+  _reordenadas(cs: Columna[]): void {
+    this._columnas.set(cs);
+  }
 }
 
 export {COLUMNAS_DEFAULT};

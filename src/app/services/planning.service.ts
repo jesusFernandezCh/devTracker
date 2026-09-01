@@ -116,4 +116,21 @@ export class PlanningService {
   limpiar(): void {
     this._plannings.set([]);
   }
+
+  _creado(p: PlanningDto): void {
+    const planning = aPlanning(p);
+    this._plannings.update((list) => {
+      if (list.some((x) => x.id === planning.id)) return list;
+      return [...list, planning];
+    });
+  }
+
+  _actualizado(p: PlanningDto): void {
+    const planning = aPlanning(p);
+    this._plannings.update((list) => list.map((x) => (x.id === planning.id ? planning : x)));
+  }
+
+  _eliminado(id: string): void {
+    this._plannings.update((list) => list.filter((x) => x.id !== id));
+  }
 }
