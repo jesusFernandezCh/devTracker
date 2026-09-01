@@ -4,7 +4,6 @@ import {Proyecto} from '../../models/proyecto.model';
 import {UsuarioService} from '../../services/usuario.service';
 import {EquipoService} from '../../services/equipo.service';
 import {RolService} from '../../services/rol.service';
-import {NotificacionService} from '../../services/notificacion.service';
 import {iniciales, tipoColor} from '../../utils/helpers';
 
 @Component({
@@ -119,7 +118,6 @@ export class EquipoModalComponent {
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly equipoService = inject(EquipoService);
   protected readonly rolService = inject(RolService);
-  private readonly notificacionService = inject(NotificacionService);
   protected readonly iniciales = iniciales;
   protected readonly tipoColor = tipoColor;
 
@@ -143,27 +141,15 @@ export class EquipoModalComponent {
   }
 
   protected async toggle(usuarioId: string): Promise<void> {
-    const nombre = this.usuarioService.usuarioPorId(usuarioId)?.usuario ?? usuarioId;
     const asignando = !this.estaAsignado(usuarioId);
     if (asignando) {
       await this.equipoService.asignar(this.proyecto().id, usuarioId);
     } else {
       await this.equipoService.quitar(this.proyecto().id, usuarioId);
     }
-    await this.notificacionService.notificar({
-      tipo: 'info',
-      descripcion: `«${nombre}» ${asignando ? 'agregado al' : 'quitado del'} equipo de «${this.proyecto().nombre}»`,
-      url: '/proyectos',
-    });
   }
 
   protected async quitar(usuarioId: string): Promise<void> {
-    const nombre = this.usuarioService.usuarioPorId(usuarioId)?.usuario ?? usuarioId;
     await this.equipoService.quitar(this.proyecto().id, usuarioId);
-    await this.notificacionService.notificar({
-      tipo: 'info',
-      descripcion: `«${nombre}» quitado del equipo de «${this.proyecto().nombre}»`,
-      url: '/proyectos',
-    });
   }
 }
