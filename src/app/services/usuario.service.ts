@@ -63,6 +63,7 @@ export class UsuarioService {
       correo: data.correo,
       clave: data.clave,
       rolId: data.tipo,
+      estatus: data.estatus,
       nombres: data.nombres,
       apellidos: data.apellidos,
       cedula: data.cedula,

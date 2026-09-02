@@ -1,6 +1,8 @@
-import {Component, inject, ChangeDetectionStrategy, effect} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, effect, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
 import {UsuarioService} from '../../services/usuario.service';
 import {RolService} from '../../services/rol.service';
 import {PermisoDirective} from '../../directives/permiso.directive';
@@ -17,6 +19,15 @@ function tipoColor(tipo: string): {text: string; bg: string} {
   }
 }
 
+function estatusColor(estatus: string): {text: string; bg: string; label: string} {
+  switch (estatus) {
+    case 'activo': return {text: '#ffffff', bg: 'var(--color-emerald-600)', label: 'Activo'};
+    case 'pendiente': return {text: 'var(--color-gray-900)', bg: 'var(--color-amber-400)', label: 'Pendiente'};
+    case 'suspendido': return {text: '#ffffff', bg: 'var(--color-rose-600)', label: 'Suspendido'};
+    default: return {text: 'var(--color-gray-700)', bg: 'var(--color-gray-200)', label: estatus};
+  }
+}
+
 @Component({
   selector: 'app-usuarios',
   standalone: true,
@@ -30,9 +41,23 @@ function tipoColor(tipo: string): {text: string; bg: string} {
         </h1>
         <p class="mt-1 text-sm" style="color: var(--color-gray-500)">
           {{ usuarios().length }} usuario{{ usuarios().length !== 1 ? 's' : '' }}
+          @if (pendientes() > 0) {
+            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                  style="background-color: var(--color-amber-100); color: var(--color-amber-800);">
+              {{ pendientes() }} pendiente{{ pendientes() !== 1 ? 's' : '' }}
+            </span>
+          }
         </p>
       </div>
-      <div class="col-12 col-md-auto mt-3 mt-md-0">
+      <div class="col-12 col-md-auto mt-3 mt-md-0 flex gap-2">
+        <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirInvitar()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm border"
+                style="border-color: var(--color-gray-300); color: var(--color-gray-700); background-color: var(--color-surface);">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="d-none d-sm-inline">Invitar</span>
+        </button>
         <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -67,6 +92,7 @@ function tipoColor(tipo: string): {text: string; bg: string} {
                 <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Usuario</th>
                 <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Correo</th>
                 <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Tipo</th>
+                <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estatus</th>
                 <th class="text-right px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
               </tr>
             </thead>
@@ -98,8 +124,21 @@ function tipoColor(tipo: string): {text: string; bg: string} {
                       {{ rolService.nombreDe(usuario.tipo) }}
                     </span>
                   </td>
+                  <td class="px-4 sm:px-6 py-2.5">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          [style.color]="estatusColor(usuario.estatus ?? 'activo').text"
+                          [style.background-color]="estatusColor(usuario.estatus ?? 'activo').bg">
+                      {{ estatusColor(usuario.estatus ?? 'activo').label }}
+                    </span>
+                  </td>
                   <td class="px-4 sm:px-6 py-2.5 text-right">
                     <div class="flex items-center justify-end gap-1">
+                      @if (usuario.estatus === 'pendiente') {
+                        <button *appPermiso="'editar'; recurso: 'usuarios'" (click)="abrirAprobar(usuario)"
+                                class="px-2 py-1 text-xs font-medium text-white rounded-lg transition-colors bg-[var(--color-emerald-600)] hover:bg-[var(--color-emerald-700)]">
+                          Aprobar
+                        </button>
+                      }
                       <button *appPermiso="'editar'; recurso: 'usuarios'" (click)="abrirEditar(usuario)"
                               class="p-2 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
                               [attr.aria-label]="'Editar ' + usuario.usuario">
@@ -142,6 +181,129 @@ function tipoColor(tipo: string): {text: string; bg: string} {
               Eliminar
             </button>
           </div>
+        </div>
+      </div>
+    }
+
+    <!-- Invite modal -->
+    @if (showInvitar) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarInvitar()">
+        <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
+            <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">Invitar usuario</h2>
+            <button (click)="cerrarInvitar()"
+                    class="p-0.5 rounded transition-colors" style="color: var(--color-gray-400);">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          @if (invitacionExito()) {
+            <div class="p-4">
+              <div class="px-4 py-3 rounded-lg text-sm flex items-center gap-2 mb-4"
+                   style="background-color: var(--color-emerald-50); color: var(--color-emerald-700); border: 1px solid var(--color-emerald-200);">
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ invitacionExito() }}
+              </div>
+              <button (click)="cerrarInvitar()"
+                      class="w-full px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                Cerrar
+              </button>
+            </div>
+          } @else {
+            @if (invitacionError()) {
+              <div class="px-4 py-3 mx-4 mt-4 rounded-lg text-sm flex items-center gap-2"
+                   style="background-color: var(--color-rose-50); color: var(--color-rose-700); border: 1px solid var(--color-rose-200);">
+                {{ invitacionError() }}
+              </div>
+            }
+
+            <form [formGroup]="invitarForm" (ngSubmit)="onInvitar()" class="p-4 space-y-3">
+              <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Correo electrónico</label>
+                <input formControlName="correo" type="email" autocomplete="off"
+                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
+                       placeholder="correo@ejemplo.com">
+                @if (invitarForm.controls.correo.touched && invitarForm.controls.correo.invalid) {
+                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">Ingresa un correo válido.</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Rol sugerido (opcional)</label>
+                <select formControlName="rolId"
+                        class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                        style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                  <option value="">Sin rol específico</option>
+                  @for (rol of rolService.rolesUsables(); track rol.id) {
+                    <option [value]="rol.id">{{ rol.nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
+                <button type="button" (click)="cerrarInvitar()"
+                        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                  Cancelar
+                </button>
+                <button type="submit"
+                        class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                        [disabled]="invitarForm.invalid || invitacionLoading()">
+                  {{ invitacionLoading() ? 'Enviando...' : 'Enviar invitación' }}
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Approve modal -->
+    @if (aprobarUsuario) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarAprobar()">
+        <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
+            <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">Aprobar usuario</h2>
+            <button (click)="cerrarAprobar()"
+                    class="p-0.5 rounded transition-colors" style="color: var(--color-gray-400);">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <form [formGroup]="aprobarForm" (ngSubmit)="onAprobar()" class="p-4 space-y-3">
+            <p class="text-sm" style="color: var(--color-gray-500);">
+              Asigna un rol a <strong>{{ aprobarUsuario.usuario }}</strong> ({{ aprobarUsuario.correo }}) para activar su cuenta.
+            </p>
+
+            <div>
+              <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Rol</label>
+              <select formControlName="rolId"
+                      class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                      style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                @for (rol of rolService.rolesUsables(); track rol.id) {
+                  <option [value]="rol.id">{{ rol.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
+              <button type="button" (click)="cerrarAprobar()"
+                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                Cancelar
+              </button>
+              <button type="submit"
+                      class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-emerald-600)] hover:bg-[var(--color-emerald-700)]"
+                      [disabled]="aprobarForm.invalid">
+                Aprobar y activar
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     }
@@ -237,15 +399,26 @@ function tipoColor(tipo: string): {text: string; bg: string} {
 })
 export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly http = inject(HttpClient);
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly rolService = inject(RolService);
 
   protected readonly usuarios = this.usuarioService.usuarios;
   protected readonly tipoColor = tipoColor;
+  protected readonly estatusColor = estatusColor;
+
+  protected readonly pendientes = signal(0);
 
   protected showForm = false;
   protected editandoUsuario: Usuario | null = null;
   protected deleteConfirmId: string | null = null;
+
+  protected showInvitar = false;
+  protected readonly invitacionLoading = signal(false);
+  protected readonly invitacionExito = signal<string | null>(null);
+  protected readonly invitacionError = signal<string | null>(null);
+
+  protected aprobarUsuario: Usuario | null = null;
 
   protected userForm = this.fb.nonNullable.group({
     usuario: ['', [Validators.required, Validators.minLength(3)]],
@@ -254,11 +427,25 @@ export class UsuariosComponent {
     tipo: ['usuario', Validators.required],
   });
 
+  protected invitarForm = this.fb.nonNullable.group({
+    correo: ['', [Validators.required, Validators.email]],
+    rolId: [''],
+  });
+
+  protected aprobarForm = this.fb.nonNullable.group({
+    rolId: ['usuario', Validators.required],
+  });
+
   private tipoPorDefecto(): string {
     return this.rolService.rolesUsables()[0]?.id ?? 'usuario';
   }
 
   constructor() {
+    effect(() => {
+      const lista = this.usuarios();
+      this.pendientes.set(lista.filter(u => u.estatus === 'pendiente').length);
+    });
+
     effect(() => {
       const user = this.editandoUsuario;
       if (user) {
@@ -334,5 +521,57 @@ export class UsuariosComponent {
 
   cancelarEliminar(): void {
     this.deleteConfirmId = null;
+  }
+
+  abrirInvitar(): void {
+    this.invitarForm.reset({correo: '', rolId: ''});
+    this.invitacionExito.set(null);
+    this.invitacionError.set(null);
+    this.showInvitar = true;
+  }
+
+  cerrarInvitar(): void {
+    this.showInvitar = false;
+  }
+
+  async onInvitar(): Promise<void> {
+    if (this.invitarForm.invalid) return;
+    this.invitacionLoading.set(true);
+    this.invitacionError.set(null);
+
+    const raw = this.invitarForm.getRawValue();
+    try {
+      const response = await firstValueFrom(
+        this.http.post<{correo: string}>('api/usuarios/invitar', {
+          correo: raw.correo,
+          rolId: raw.rolId || undefined,
+        }),
+      );
+      this.invitacionExito.set(`Invitación enviada a ${response.correo}`);
+    } catch (e: any) {
+      const msg = e?.error?.message ?? 'Error al enviar la invitación';
+      this.invitacionError.set(Array.isArray(msg) ? msg.join('. ') : msg);
+    } finally {
+      this.invitacionLoading.set(false);
+    }
+  }
+
+  abrirAprobar(usuario: Usuario): void {
+    this.aprobarUsuario = usuario;
+    this.aprobarForm.reset({rolId: 'usuario'});
+  }
+
+  cerrarAprobar(): void {
+    this.aprobarUsuario = null;
+  }
+
+  async onAprobar(): Promise<void> {
+    if (this.aprobarForm.invalid || !this.aprobarUsuario) return;
+    const raw = this.aprobarForm.getRawValue();
+    await this.usuarioService.actualizar(this.aprobarUsuario.id, {
+      estatus: 'activo',
+      tipo: raw.rolId,
+    });
+    this.cerrarAprobar();
   }
 }
