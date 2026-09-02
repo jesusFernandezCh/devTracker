@@ -16,7 +16,7 @@ export class NotificacionService {
   async cargar(): Promise<void> {
     try {
       const lista = await firstValueFrom(this.http.get<Notificacion[]>('api/notificaciones'));
-      this._notificaciones.set(lista ?? []);
+      this._notificaciones.set((lista ?? []).filter((n) => !n.descripcion?.startsWith('Sesión iniciada')));
     } catch {
       /* sin permiso o no autenticado */
     }
@@ -63,6 +63,7 @@ export class NotificacionService {
   }
 
   _agregarLocal(notificacion: Notificacion): void {
+    if (notificacion.descripcion?.startsWith('Sesión iniciada')) return;
     this._notificaciones.update((list) => {
       if (list.some((n) => n.id === notificacion.id)) return list;
       return [notificacion, ...list];
