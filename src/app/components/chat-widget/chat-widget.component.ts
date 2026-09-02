@@ -1,4 +1,4 @@
-import {Component, inject, signal, computed, effect, viewChild, ElementRef, ChangeDetectionStrategy} from '@angular/core';
+import {Component, inject, signal, computed, effect, viewChild, ElementRef, ChangeDetectionStrategy, NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ChatService} from '../../services/chat.service';
 import {UsuarioService} from '../../services/usuario.service';

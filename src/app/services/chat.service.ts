@@ -1,4 +1,4 @@
-import {Injectable, signal, inject} from '@angular/core';
+import {Injectable, signal, inject, NgZone} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
 import {io, Socket} from 'socket.io-client';
@@ -43,6 +43,7 @@ export class ChatService {
   readonly abierto = signal(false);
 
   private readonly http = inject(HttpClient);
+  private readonly ngZone = inject(NgZone);
   private readonly usuarioService = inject(UsuarioService);
   private readonly equipoService = inject(EquipoService);
   private readonly notificacionService = inject(NotificacionService);
@@ -90,41 +91,47 @@ export class ChatService {
     if (!token) return;
 
     this.socket = io(environment.socketUrl || undefined, {auth: {token}, transports: ['websocket', 'polling']});
-    this.socket.on('mensaje:nuevo', (m: MensajeSerializado) => this._recibir(m));
+    this.socket.on('mensaje:nuevo', (m: MensajeSerializado) => this.ngZone.run(() => this._recibir(m)));
     this.socket.on('chat:leido', (payload: {canal: CanalChat; destinoId?: string; proyectoId?: string}) => {
-      this._marcarLocal((m) => {
-        if (m.autorId !== yoId) return false;
-        if (payload.canal === 'privado') return payload.destinoId ? this._mismaPareja(m, yoId, payload.destinoId) : false;
-        if (payload.canal === 'grupo') return m.proyectoId === payload.proyectoId;
-        return m.canal === 'general';
+      this.ngZone.run(() => {
+        this._marcarLocal((m) => {
+          if (m.autorId !== yoId) return false;
+          if (payload.canal === 'privado') return payload.destinoId ? this._mismaPareja(m, yoId, payload.destinoId) : false;
+          if (payload.canal === 'grupo') return m.proyectoId === payload.proyectoId;
+          return m.canal === 'general';
+        });
       });
     });
 
     this.socket.on('equipo:cambiado', (payload: {proyectoId: string; usuarioIds: string[]; usuarioAgregado?: string}) => {
-      this.equipoService._actualizarDesdeServidor(payload.proyectoId, payload.usuarioIds);
-      if (payload.usuarioAgregado === yoId) {
-        this.socket?.emit('chat:unirse-proyecto', payload.proyectoId);
-      }
+      this.ngZone.run(() => {
+        this.equipoService._actualizarDesdeServidor(payload.proyectoId, payload.usuarioIds);
+        if (payload.usuarioAgregado === yoId) {
+          this.socket?.emit('chat:unirse-proyecto', payload.proyectoId);
+        }
+      });
     });
 
     this.socket.on('notificacion:nueva', (notificacion: any) => {
-      this.notificacionService._agregarLocal(notificacion);
+      this.ngZone.run(() => this.notificacionService._agregarLocal(notificacion));
     });
 
-    this.socket.on('tablero:proyecto-creado', (p: any) => this.proyectoService._creado(p));
-    this.socket.on('tablero:proyecto-actualizado', (p: any) => this.proyectoService._actualizado(p));
-    this.socket.on('tablero:proyecto-eliminado', (p: {id: string}) => this.proyectoService._eliminado(p.id));
-    this.socket.on('tablero:columna-creada', (c: any) => this.columnService._creada(c));
-    this.socket.on('tablero:columna-actualizada', (c: any) => this.columnService._actualizada(c));
-    this.socket.on('tablero:columna-eliminada', (c: {id: string}) => this.columnService._eliminada(c.id));
-    this.socket.on('tablero:columnas-reordenadas', (cs: any[]) => this.columnService._reordenadas(cs));
-    this.socket.on('planning:creado', (p: any) => this.planningService._creado(p));
-    this.socket.on('planning:actualizado', (p: any) => this.planningService._actualizado(p));
-    this.socket.on('planning:eliminado', (p: {id: string}) => this.planningService._eliminado(p.id));
+    this.socket.on('tablero:proyecto-creado', (p: any) => this.ngZone.run(() => this.proyectoService._creado(p)));
+    this.socket.on('tablero:proyecto-actualizado', (p: any) => this.ngZone.run(() => this.proyectoService._actualizado(p)));
+    this.socket.on('tablero:proyecto-eliminado', (p: {id: string}) => this.ngZone.run(() => this.proyectoService._eliminado(p.id)));
+    this.socket.on('tablero:columna-creada', (c: any) => this.ngZone.run(() => this.columnService._creada(c)));
+    this.socket.on('tablero:columna-actualizada', (c: any) => this.ngZone.run(() => this.columnService._actualizada(c)));
+    this.socket.on('tablero:columna-eliminada', (c: {id: string}) => this.ngZone.run(() => this.columnService._eliminada(c.id)));
+    this.socket.on('tablero:columnas-reordenadas', (cs: any[]) => this.ngZone.run(() => this.columnService._reordenadas(cs)));
+    this.socket.on('planning:creado', (p: any) => this.ngZone.run(() => this.planningService._creado(p)));
+    this.socket.on('planning:actualizado', (p: any) => this.ngZone.run(() => this.planningService._actualizado(p)));
+    this.socket.on('planning:eliminado', (p: {id: string}) => this.ngZone.run(() => this.planningService._eliminado(p.id)));
 
     const proyectos = this.equipoService.proyectosDe(yoId);
     this.socket.on('connect', () => {
-      for (const pid of proyectos) this.socket?.emit('chat:unirse-proyecto', pid);
+      this.ngZone.run(() => {
+        for (const pid of proyectos) this.socket?.emit('chat:unirse-proyecto', pid);
+      });
     });
 
     await this._cargarHistorial(yoId);
@@ -170,17 +177,17 @@ export class ChatService {
   }
 
   async marcarLeidosGeneral(yoId: string): Promise<void> {
-    this._marcarLocal((m) => m.canal === 'general' && m.autorId !== yoId);
+    this._marcarLocal((m) => m.canal === 'general' && m.autorId !== yoId && !m.leido);
     await this._marcarLeidos({canal: 'general'});
   }
 
   async marcarLeidosPrivados(yoId: string, otroId: string): Promise<void> {
-    this._marcarLocal((m) => m.canal === 'privado' && this._mismaPareja(m, yoId, otroId) && m.autorId !== yoId);
+    this._marcarLocal((m) => m.canal === 'privado' && this._mismaPareja(m, yoId, otroId) && m.autorId !== yoId && !m.leido);
     await this._marcarLeidos({canal: 'privado', destinoId: otroId});
   }
 
   async marcarLeidosGrupo(yoId: string, proyectoId: string): Promise<void> {
-    this._marcarLocal((m) => m.canal === 'grupo' && m.proyectoId === proyectoId && m.autorId !== yoId);
+    this._marcarLocal((m) => m.canal === 'grupo' && m.proyectoId === proyectoId && m.autorId !== yoId && !m.leido);
     await this._marcarLeidos({canal: 'grupo', proyectoId});
   }
 
