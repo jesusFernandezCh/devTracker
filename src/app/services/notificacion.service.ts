@@ -58,7 +58,12 @@ export class NotificacionService {
     }
   }
 
-  limpiar(): void {
+  async limpiar(): Promise<void> {
+    try {
+      await firstValueFrom(this.http.delete('api/notificaciones'));
+    } catch {
+      /* ignorar */
+    }
     this._notificaciones.set([]);
   }
 
