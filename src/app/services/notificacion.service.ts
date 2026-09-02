@@ -25,7 +25,9 @@ export class NotificacionService {
   async notificar(data: {tipo: TipoNotificacion; descripcion: string; url?: string}): Promise<void> {
     try {
       const creada = await firstValueFrom(this.http.post<Notificacion>('api/notificaciones', data));
-      this._notificaciones.update((list) => [creada, ...list]);
+      if (!creada.descripcion?.startsWith('Sesión iniciada')) {
+        this._notificaciones.update((list) => [creada, ...list]);
+      }
     } catch {
       /* sin sesión (p. ej. en el login): no notificar */
     }
