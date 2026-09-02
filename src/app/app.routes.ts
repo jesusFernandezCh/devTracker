@@ -4,6 +4,7 @@ import {permisoGuard} from './guards/permiso.guard';
 
 export const routes: Routes = [
   {path: 'login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)},
+  {path: 'registro', loadComponent: () => import('./components/registro/registro.component').then(m => m.RegistroComponent)},
   {path: '', loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [authGuard]},
   {path: 'tablero', loadComponent: () => import('./components/board/board.component').then(m => m.BoardComponent), canActivate: [authGuard]},
   {path: 'proyectos', loadComponent: () => import('./components/proyectos/proyectos.component').then(m => m.ProyectosComponent), canActivate: [authGuard]},

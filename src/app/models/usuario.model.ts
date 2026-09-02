@@ -21,6 +21,10 @@ export interface Usuario {
   tipo: TipoUsuario;
   /** Nombre del rol (lo resuelve el backend). */
   rol?: string;
+  /** Estado del usuario: pendiente, activo, suspendido. */
+  estatus?: string;
+  /** Proveedor OAuth si se registró con login social. */
+  proveedor?: string;
   /** Solo se usa al crear/actualizar; el backend nunca lo devuelve. */
   clave?: string;
   nombres?: string;

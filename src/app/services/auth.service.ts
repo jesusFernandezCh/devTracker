@@ -24,6 +24,8 @@ export interface UsuarioDto {
   correo: string;
   rolId: string;
   rol: string;
+  estatus?: string;
+  proveedor?: string | null;
   nombres?: string | null;
   apellidos?: string | null;
   cedula?: string | null;
@@ -45,6 +47,8 @@ export function aUsuario(dto: UsuarioDto): Usuario {
     correo: dto.correo,
     tipo: dto.rolId,
     rol: dto.rol,
+    estatus: dto.estatus,
+    proveedor: dto.proveedor ?? undefined,
     nombres: dto.nombres ?? undefined,
     apellidos: dto.apellidos ?? undefined,
     cedula: dto.cedula ?? undefined,
@@ -112,9 +116,12 @@ export class AuthService {
     }
   }
 
-  /** Login social: el backend no tiene proveedores OAuth, así que devuelve false. */
-  async loginSocial(_proveedor: 'google' | 'facebook'): Promise<void> {
-    return;
+  /** Login social: redirige al proveedor OAuth del backend. */
+  async loginSocial(proveedor: 'google' | 'github' | 'facebook'): Promise<void> {
+    const backendUrl = window.location.origin.includes('localhost')
+      ? 'http://localhost:3000'
+      : window.location.origin;
+    window.location.href = `${backendUrl}/api/auth/oauth/${proveedor}`;
   }
 
   async logout(): Promise<void> {
