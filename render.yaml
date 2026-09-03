@@ -1,0 +1,10 @@
+services:
+  - type: static_site
+    name: devtracker
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist/devTracker/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
