@@ -39,6 +39,17 @@ export interface Usuario {
   curriculum?: Curriculum;
 }
 
+export interface Invitacion {
+  id: string;
+  correo: string;
+  token: string;
+  rolId?: string;
+  invitadoPor: string;
+  expiraEn: string;
+  usadoEn?: string | null;
+  createdAt: string;
+}
+
 export const USUARIOS_DEFAULT: Usuario[] = [
   {
     id: 'super-admin',

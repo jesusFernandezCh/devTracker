@@ -6,7 +6,7 @@ import {firstValueFrom} from 'rxjs';
 import {UsuarioService} from '../../services/usuario.service';
 import {RolService} from '../../services/rol.service';
 import {PermisoDirective} from '../../directives/permiso.directive';
-import {Usuario} from '../../models/usuario.model';
+import {Usuario, Invitacion} from '../../models/usuario.model';
 
 function tipoColor(tipo: string): {text: string; bg: string} {
   switch (tipo) {
@@ -57,6 +57,14 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
           <span class="d-none d-sm-inline">Invitar</span>
+        </button>
+        <button *appPermiso="'leer'; recurso: 'usuarios'" (click)="abrirGestionarInvitaciones()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm border"
+                style="border-color: var(--color-gray-300); color: var(--color-gray-700); background-color: var(--color-surface);">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+          </svg>
+          <span class="d-none d-sm-inline">Gestionar</span>
         </button>
         <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
@@ -394,6 +402,165 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
         </div>
       </div>
     }
+
+    <!-- Gestionar invitaciones modal -->
+    @if (showGestionarInvitaciones) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);" (click)="cerrarGestionarInvitaciones()">
+        <div class="modal-enter rounded-xl shadow-xl w-full max-w-3xl border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">Invitaciones</h2>
+              @if (invitaciones().length > 0) {
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                      style="background-color: var(--color-gray-100); color: var(--color-gray-600);">
+                  {{ invitaciones().length }}
+                </span>
+              }
+            </div>
+            <button (click)="cerrarGestionarInvitaciones()"
+                    class="p-0.5 rounded transition-colors" style="color: var(--color-gray-400);">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-4">
+            @if (invitacionesLoading()) {
+              <div class="text-center py-12">
+                <p class="text-sm" style="color: var(--color-gray-400);">Cargando invitaciones...</p>
+              </div>
+            } @else if (invitaciones().length === 0) {
+              <div class="text-center py-12">
+                <svg class="w-12 h-12 mx-auto mb-3" style="color: var(--color-gray-300)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+                </svg>
+                <p class="text-sm mb-1" style="color: var(--color-gray-500);">No hay invitaciones</p>
+                <p class="text-xs" style="color: var(--color-gray-400);">Las invitaciones enviadas aparecerán aquí.</p>
+              </div>
+            } @else {
+              <div class="rounded-lg border overflow-hidden mb-4" style="border-color: var(--color-gray-200);">
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                        <th class="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Correo</th>
+                        <th class="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: var(--color-gray-400);">Rol</th>
+                        <th class="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="color: var(--color-gray-400);">Enviada</th>
+                        <th class="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="color: var(--color-gray-400);">Expira</th>
+                        <th class="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</th>
+                        <th class="text-right px-4 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody style="border-top: 1px solid var(--color-gray-100);">
+                      @for (inv of invitaciones(); track inv.id) {
+                        <tr style="border-bottom: 1px solid var(--color-gray-50);">
+                          <td class="px-4 py-2.5">
+                            <span class="text-sm font-medium" style="color: var(--color-gray-900);">{{ inv.correo }}</span>
+                          </td>
+                          <td class="px-4 py-2.5 hidden sm:table-cell">
+                            <span class="text-sm" style="color: var(--color-gray-500);">{{ inv.rolId ? rolService.nombreDe(inv.rolId) : '—' }}</span>
+                          </td>
+                          <td class="px-4 py-2.5 hidden md:table-cell">
+                            <span class="text-xs" style="color: var(--color-gray-400);">{{ inv.createdAt | date:'dd/MM/yy HH:mm' }}</span>
+                          </td>
+                          <td class="px-4 py-2.5 hidden md:table-cell">
+                            <span class="text-xs" style="color: var(--color-gray-400);">{{ inv.expiraEn | date:'dd/MM/yy HH:mm' }}</span>
+                          </td>
+                          <td class="px-4 py-2.5">
+                            @if (inv.usadoEn) {
+                              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                    style="background-color: var(--color-emerald-100); color: var(--color-emerald-700);">
+                                Registrado
+                              </span>
+                            } @else if (isExpirada(inv)) {
+                              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                    style="background-color: var(--color-gray-100); color: var(--color-gray-500);">
+                                Expirado
+                              </span>
+                            } @else {
+                              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                    style="background-color: var(--color-amber-100); color: var(--color-amber-700);">
+                                Pendiente
+                              </span>
+                            }
+                          </td>
+                          <td class="px-4 py-2.5 text-right">
+                            @if (!inv.usadoEn && !isExpirada(inv)) {
+                              <div class="flex items-center justify-end gap-1">
+                                <button *appPermiso="'editar'; recurso: 'usuarios'"
+                                        (click)="reenviarInvitacion(inv)" [disabled]="reenviandoId() === inv.id"
+                                        class="p-1.5 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-teal-600)] hover:bg-[var(--color-gray-100)]"
+                                        title="Reenviar invitación">
+                                  @if (reenviandoId() === inv.id) {
+                                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    </svg>
+                                  } @else {
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                  }
+                                </button>
+                                <button *appPermiso="'eliminar'; recurso: 'usuarios'"
+                                        (click)="confirmarCancelarInvitacion(inv)"
+                                        class="p-1.5 rounded-lg transition-colors text-[var(--color-gray-400)] hover:text-[var(--color-rose-600)] hover:bg-[var(--color-gray-100)]"
+                                        title="Cancelar invitación">
+                                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                  </svg>
+                                </button>
+                              </div>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+
+            <div class="flex justify-between items-center pt-3 border-t" style="border-color: var(--color-gray-200);">
+              <button (click)="cerrarGestionarInvitaciones(); abrirInvitar()"
+                      class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-teal-700)] bg-[var(--color-teal-50)] hover:bg-[var(--color-teal-100)]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nueva invitación
+              </button>
+              <button (click)="cerrarGestionarInvitaciones()"
+                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Cancel invitation confirmation -->
+    @if (cancelarInvitacionId) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center-modal p-4" style="background-color: rgba(0,0,0,0.4);">
+        <div class="modal-enter rounded-xl shadow-xl p-6 w-full max-w-sm border" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+          <h3 class="text-lg font-semibold mb-2" style="color: var(--color-gray-900);">Cancelar invitación</h3>
+          <p class="text-sm mb-6" style="color: var(--color-gray-500);">
+            ¿Cancelar la invitación a <strong>{{ cancelarInvitacionCorreo }}</strong>? Esta acción no se puede deshacer.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button (click)="cancelarCancelarInvitacion()"
+                    class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+              No, mantener
+            </button>
+            <button (click)="ejecutarCancelarInvitacion()"
+                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-rose-600)] hover:bg-[var(--color-rose-700)]">
+              Sí, cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: []
 })
@@ -419,6 +586,13 @@ export class UsuariosComponent {
   protected readonly invitacionError = signal<string | null>(null);
 
   protected aprobarUsuario: Usuario | null = null;
+
+  protected showGestionarInvitaciones = false;
+  protected readonly invitaciones = signal<Invitacion[]>([]);
+  protected readonly invitacionesLoading = signal(false);
+  protected readonly reenviandoId = signal<string | null>(null);
+  protected cancelarInvitacionId: string | null = null;
+  protected cancelarInvitacionCorreo = '';
 
   protected userForm = this.fb.nonNullable.group({
     usuario: ['', [Validators.required, Validators.minLength(3)]],
@@ -573,5 +747,65 @@ export class UsuariosComponent {
       tipo: raw.rolId,
     });
     this.cerrarAprobar();
+  }
+
+  async abrirGestionarInvitaciones(): Promise<void> {
+    this.showGestionarInvitaciones = true;
+    await this.cargarInvitaciones();
+  }
+
+  cerrarGestionarInvitaciones(): void {
+    this.showGestionarInvitaciones = false;
+  }
+
+  async cargarInvitaciones(): Promise<void> {
+    this.invitacionesLoading.set(true);
+    try {
+      const lista = await firstValueFrom(this.http.get<Invitacion[]>('api/usuarios/invitaciones'));
+      this.invitaciones.set(lista ?? []);
+    } catch {
+      this.invitaciones.set([]);
+    } finally {
+      this.invitacionesLoading.set(false);
+    }
+  }
+
+  isExpirada(inv: Invitacion): boolean {
+    return !inv.usadoEn && new Date(inv.expiraEn).getTime() < Date.now();
+  }
+
+  async reenviarInvitacion(inv: Invitacion): Promise<void> {
+    this.reenviandoId.set(inv.id);
+    try {
+      await firstValueFrom(this.http.post(`api/usuarios/invitaciones/${inv.id}/reenviar`, {}));
+      await this.cargarInvitaciones();
+    } catch {
+      /* error silencioso */
+    } finally {
+      this.reenviandoId.set(null);
+    }
+  }
+
+  confirmarCancelarInvitacion(inv: Invitacion): void {
+    this.cancelarInvitacionId = inv.id;
+    this.cancelarInvitacionCorreo = inv.correo;
+  }
+
+  cancelarCancelarInvitacion(): void {
+    this.cancelarInvitacionId = null;
+    this.cancelarInvitacionCorreo = '';
+  }
+
+  async ejecutarCancelarInvitacion(): Promise<void> {
+    if (!this.cancelarInvitacionId) return;
+    try {
+      await firstValueFrom(this.http.delete(`api/usuarios/invitaciones/${this.cancelarInvitacionId}`));
+      this.invitaciones.update(list => list.filter(i => i.id !== this.cancelarInvitacionId));
+    } catch {
+      /* error silencioso */
+    } finally {
+      this.cancelarInvitacionId = null;
+      this.cancelarInvitacionCorreo = '';
+    }
   }
 }
