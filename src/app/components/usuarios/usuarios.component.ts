@@ -1,4 +1,4 @@
-import {Component, inject, ChangeDetectionStrategy, effect, signal} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy, effect, signal, ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -567,6 +567,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
 export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly rolService = inject(RolService);
 
@@ -632,10 +633,10 @@ export class UsuariosComponent {
     this.userForm.controls.clave.setValidators([Validators.required, Validators.minLength(4)]);
     this.userForm.controls.clave.updateValueAndValidity();
     this.showForm = true;
+    this.cdr.markForCheck();
   }
 
   abrirEditar(usuario: Usuario): void {
-    alert('Editar usuario: ' + JSON.stringify(usuario));
     this.editandoUsuario.set(usuario);
     this.userForm.setValue({
       usuario: usuario.usuario,
@@ -646,6 +647,7 @@ export class UsuariosComponent {
     this.userForm.controls.clave.clearValidators();
     this.userForm.controls.clave.updateValueAndValidity();
     this.showForm = true;
+    this.cdr.markForCheck();
   }
 
   cerrarForm(): void {
