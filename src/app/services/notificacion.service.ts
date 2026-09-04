@@ -61,11 +61,6 @@ export class NotificacionService {
   }
 
   async limpiar(): Promise<void> {
-    try {
-      await firstValueFrom(this.http.delete('api/notificaciones'));
-    } catch {
-      /* ignorar */
-    }
     this._notificaciones.set([]);
   }
 

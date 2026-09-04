@@ -719,12 +719,16 @@ export class UsuariosComponent {
     const raw = this.invitarForm.getRawValue();
     try {
       const response = await firstValueFrom(
-        this.http.post<{correo: string}>('api/usuarios/invitar', {
+        this.http.post<{correo: string; aviso?: string}>('api/usuarios/invitar', {
           correo: raw.correo,
           rolId: raw.rolId || undefined,
         }),
       );
-      this.invitacionExito.set(`Invitación enviada a ${response.correo}`);
+      if (response.aviso) {
+        this.invitacionError.set(response.aviso);
+      } else {
+        this.invitacionExito.set(`Invitación enviada a ${response.correo}`);
+      }
     } catch (e: any) {
       const msg = e?.error?.message ?? 'Error al enviar la invitación';
       this.invitacionError.set(Array.isArray(msg) ? msg.join('. ') : msg);
