@@ -322,7 +322,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
         <div class="modal-enter rounded-xl shadow-xl w-full max-w-md border overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--color-gray-200);">
             <h2 class="text-sm font-bold" style="color: var(--color-gray-900);">
-              {{ editandoUsuario ? 'Editar usuario' : 'Nuevo usuario' }}
+              {{ editandoUsuario() ? 'Editar usuario' : 'Nuevo usuario' }}
             </h2>
             <button (click)="cerrarForm()"
                     class="p-0.5 rounded transition-colors" style="color: var(--color-gray-400);">
@@ -358,14 +358,14 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
             <div>
               <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">
                 Contraseña
-                @if (editandoUsuario) {
+                @if (editandoUsuario()) {
                   <span style="color: var(--color-gray-400); font-weight: 400;">(dejar en blanco para mantener)</span>
                 }
               </label>
               <input formControlName="clave" type="password" autocomplete="new-password"
                      class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
                      style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
-                     placeholder="{{ editandoUsuario ? 'Sin cambios' : 'Contraseña' }}">
+                      placeholder="{{ editandoUsuario() ? 'Sin cambios' : 'Contraseña' }}">
               @if (userForm.controls.clave.touched && userForm.controls.clave.invalid) {
                 @if (userForm.controls.clave.errors?.['required']) {
                   <p class="mt-1 text-xs" style="color: var(--color-rose-500);">La contraseña es requerida.</p>
@@ -395,7 +395,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
               <button type="submit"
                       class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
                       [disabled]="userForm.invalid">
-                {{ editandoUsuario ? 'Guardar' : 'Crear' }}
+                {{ editandoUsuario() ? 'Guardar' : 'Crear' }}
               </button>
             </div>
           </form>
@@ -577,7 +577,7 @@ export class UsuariosComponent {
   protected readonly pendientes = signal(0);
 
   protected showForm = false;
-  protected editandoUsuario: Usuario | null = null;
+  protected editandoUsuario = signal<Usuario | null>(null);
   protected deleteConfirmId: string | null = null;
 
   protected showInvitar = false;
@@ -619,49 +619,52 @@ export class UsuariosComponent {
       const lista = this.usuarios();
       this.pendientes.set(lista.filter(u => u.estatus === 'pendiente').length);
     });
-
-    effect(() => {
-      const user = this.editandoUsuario;
-      if (user) {
-        this.userForm.setValue({
-          usuario: user.usuario,
-          correo: user.correo,
-          clave: '',
-          tipo: user.tipo,
-        });
-        this.userForm.controls.clave.clearValidators();
-      } else {
-        this.userForm.reset({
-          usuario: '',
-          correo: '',
-          clave: '',
-          tipo: this.tipoPorDefecto(),
-        });
-        this.userForm.controls.clave.setValidators([Validators.required, Validators.minLength(4)]);
-      }
-      this.userForm.controls.clave.updateValueAndValidity();
-    });
   }
 
   abrirNuevo(): void {
-    this.editandoUsuario = null;
+    this.editandoUsuario.set(null);
+    this.userForm.reset({
+      usuario: '',
+      correo: '',
+      clave: '',
+      tipo: this.tipoPorDefecto(),
+    });
+    this.userForm.controls.clave.setValidators([Validators.required, Validators.minLength(4)]);
+    this.userForm.controls.clave.updateValueAndValidity();
     this.showForm = true;
   }
 
   abrirEditar(usuario: Usuario): void {
-    this.editandoUsuario = usuario;
+    alert('Editar usuario: ' + JSON.stringify(usuario));
+    this.editandoUsuario.set(usuario);
+    this.userForm.setValue({
+      usuario: usuario.usuario,
+      correo: usuario.correo,
+      clave: '',
+      tipo: usuario.tipo,
+    });
+    this.userForm.controls.clave.clearValidators();
+    this.userForm.controls.clave.updateValueAndValidity();
     this.showForm = true;
   }
 
   cerrarForm(): void {
     this.showForm = false;
-    this.editandoUsuario = null;
+    this.editandoUsuario.set(null);
+    this.userForm.reset({
+      usuario: '',
+      correo: '',
+      clave: '',
+      tipo: this.tipoPorDefecto(),
+    });
+    this.userForm.controls.clave.setValidators([Validators.required, Validators.minLength(4)]);
+    this.userForm.controls.clave.updateValueAndValidity();
   }
 
   async onGuardar(): Promise<void> {
     if (this.userForm.invalid) return;
     const raw = this.userForm.getRawValue();
-    if (this.editandoUsuario) {
+    if (this.editandoUsuario()) {
       const data: Partial<Omit<Usuario, 'id'>> = {
         usuario: raw.usuario,
         correo: raw.correo,
@@ -670,7 +673,7 @@ export class UsuariosComponent {
       if (raw.clave) {
         data.clave = raw.clave;
       }
-      await this.usuarioService.actualizar(this.editandoUsuario.id, data);
+      await this.usuarioService.actualizar(this.editandoUsuario()!.id, data);
     } else {
       await this.usuarioService.crear({
         usuario: raw.usuario,
