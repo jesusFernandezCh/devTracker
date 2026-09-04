@@ -1,5 +1,6 @@
 import {Component, inject, computed, signal, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
+import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {FullCalendarModule} from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -11,6 +12,7 @@ import {PlanningService} from '../../services/planning.service';
 import {ThemeService} from '../../services/theme.service';
 import {EquipoService} from '../../services/equipo.service';
 import {AuthService} from '../../services/auth.service';
+import {EventoService} from '../../services/evento.service';
 import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {statusColor, complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
 import type {Proyecto} from '../../models/proyecto.model';
@@ -66,7 +68,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
   selector: 'app-calendario',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FullCalendarModule, DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FullCalendarModule, DatePipe],
   template: `
     <div class="calendario-page">
       <div class="flex justify-between items-center mb-6">
@@ -228,6 +230,99 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
                 Proyectos
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showEventoModal) {
+      <div class="modal-backdrop" (click)="cerrarModalEvento()">
+        <div class="modal-card modal-enter" style="max-width: 440px;" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 style="color: var(--color-gray-900);">Nuevo evento</h2>
+            <button (click)="cerrarModalEvento()" class="close-btn" style="color: var(--color-gray-400);">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="eventoForm" (ngSubmit)="onGuardarEvento()" class="space-y-3">
+              <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Título *</label>
+                <input formControlName="titulo" type="text" autocomplete="off"
+                       class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                       style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
+                       placeholder="Nombre del evento">
+                @if (eventoForm.controls.titulo.touched && eventoForm.controls.titulo.invalid) {
+                  <p class="mt-1 text-xs" style="color: var(--color-rose-500);">El título es requerido (mín. 2 caracteres).</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Descripción</label>
+                <textarea formControlName="descripcion" rows="2"
+                          class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors resize-none"
+                          style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);"
+                          placeholder="Opcional"></textarea>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Inicio *</label>
+                  <input formControlName="fechaInicio" type="date"
+                         class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                         style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Fin *</label>
+                  <input formControlName="fechaFin" type="date"
+                         class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                         style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                </div>
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input formControlName="todoElDia" type="checkbox"
+                         class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-sm" style="color: var(--color-gray-700);">Todo el día</span>
+                </label>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Categoría</label>
+                <select formControlName="categoria"
+                        class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                        style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+                  @for (cat of categorias; track cat.id) {
+                    <option [value]="cat.id">{{ cat.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Color</label>
+                <div class="flex items-center gap-2">
+                  @for (c of colores; track c) {
+                    <button type="button"
+                            (click)="eventoForm.patchValue({color: c})"
+                            class="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                            [style.background-color]="c"
+                            [style.border-color]="eventoForm.value.color === c ? 'var(--color-gray-900)' : 'transparent'">
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="flex justify-end gap-3 pt-2 border-t" style="border-color: var(--color-gray-200);">
+                <button type="button" (click)="cerrarModalEvento()"
+                        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                  Cancelar
+                </button>
+                <button type="submit"
+                        class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                        [disabled]="eventoForm.invalid">
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -493,6 +588,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
   `]
 })
 export class CalendarioComponent {
+  private readonly fb = inject(FormBuilder);
   protected readonly router = inject(Router);
   private readonly proyectoService = inject(ProyectoService);
   private readonly columnService = inject(ColumnService);
@@ -500,6 +596,66 @@ export class CalendarioComponent {
   protected readonly themeService = inject(ThemeService);
   private readonly equipoService = inject(EquipoService);
   private readonly authService = inject(AuthService);
+  private readonly eventoService = inject(EventoService);
+
+  protected showEventoModal = false;
+  protected eventoFechaInicio = '';
+  protected eventoFechaFin = '';
+
+  protected readonly eventoForm = this.fb.nonNullable.group({
+    titulo: ['', [Validators.required, Validators.minLength(2)]],
+    descripcion: [''],
+    fechaInicio: ['', Validators.required],
+    fechaFin: ['', Validators.required],
+    todoElDia: [true],
+    categoria: ['general'],
+    color: ['#6366F1'],
+  });
+
+  protected readonly categorias = [
+    {id: 'general', label: 'General'},
+    {id: 'reunion', label: 'Reunión'},
+    {id: 'deadline', label: 'Deadline'},
+    {id: 'otro', label: 'Otro'},
+  ];
+
+  protected readonly colores = [
+    '#6366F1', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280',
+  ];
+
+  protected abrirModalEvento(fechaInicio: string, fechaFin: string): void {
+    this.eventoFechaInicio = fechaInicio;
+    this.eventoFechaFin = fechaFin;
+    this.eventoForm.reset({
+      titulo: '',
+      descripcion: '',
+      fechaInicio,
+      fechaFin,
+      todoElDia: true,
+      categoria: 'general',
+      color: '#6366F1',
+    });
+    this.showEventoModal = true;
+  }
+
+  protected cerrarModalEvento(): void {
+    this.showEventoModal = false;
+  }
+
+  protected async onGuardarEvento(): Promise<void> {
+    if (this.eventoForm.invalid) return;
+    const raw = this.eventoForm.getRawValue();
+    await this.eventoService.crear({
+      titulo: raw.titulo,
+      descripcion: raw.descripcion || undefined,
+      fechaInicio: raw.fechaInicio,
+      fechaFin: raw.fechaFin,
+      todoElDia: raw.todoElDia,
+      categoria: raw.categoria,
+      color: raw.color,
+    });
+    this.cerrarModalEvento();
+  }
 
   protected mostrarPlanificaciones = false;
   protected mostrarTareas = false;
@@ -538,12 +694,28 @@ export class CalendarioComponent {
     initialView: 'dayGridMonth',
     locale: esLocale,
     height: 'auto',
+    selectable: true,
+    selectMirror: true,
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
       right: 'dayGridMonth,dayGridWeek',
     },
+    dateClick: (info: any) => {
+      if (this.esAdmin()) {
+        this.abrirModalEvento(info.dateStr, info.dateStr);
+      }
+    },
+    select: (info: any) => {
+      if (this.esAdmin()) {
+        this.abrirModalEvento(info.startStr, info.endStr);
+      }
+    },
     eventClick: (info: any) => {
+      const tipo = info.event.extendedProps['tipo'];
+      if (tipo === 'evento') {
+        return;
+      }
       const id = info.event.extendedProps['proyectoId'] as string;
       const proyecto = this.proyectoService.proyectoPorId(id);
       if (proyecto) {
@@ -565,8 +737,8 @@ export class CalendarioComponent {
     return lista.filter((p) => this.equipoService.miembrosDe(p.id).includes(id));
   });
 
-  protected readonly events = computed(() =>
-    this.proyectosVisibles().flatMap((p) => {
+  protected readonly events = computed(() => {
+    const proyectoEvents = this.proyectosVisibles().flatMap((p) => {
       const colors = statusColor(p.status);
       return getWeekdaySegments(p.fechaDesde, p.fechaHasta).map(seg => ({
         title: p.nombre,
@@ -578,8 +750,19 @@ export class CalendarioComponent {
         textColor: '#ffffff',
         extendedProps: {proyectoId: p.id},
       }));
-    }),
-  );
+    });
+    const eventoEvents = this.eventoService.eventos().map(e => ({
+      title: e.titulo,
+      start: e.fechaInicio,
+      end: e.fechaFin,
+      allDay: e.todoElDia,
+      backgroundColor: e.color ?? '#6366F1',
+      borderColor: e.color ?? '#6366F1',
+      textColor: '#ffffff',
+      extendedProps: {tipo: 'evento', eventoId: e.id},
+    }));
+    return [...proyectoEvents, ...eventoEvents];
+  });
 
   protected cerrarModal(): void {
     this.selectedProyecto.set(null);
