@@ -75,7 +75,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
         <h1>Calendario de Proyectos</h1>
       </div>
 
-      <div class="fc-wrapper">
+      <div class="fc-wrapper" (click)="onCalendarClick($event)">
         <full-calendar
           [options]="calendarOptions"
           [events]="events()"
@@ -699,12 +699,6 @@ export class CalendarioComponent {
       center: 'title',
       right: 'dayGridMonth,dayGridWeek',
     },
-    dateClick: (info: any) => {
-      if (info.jsEvent.target.closest('.fc-event')) return;
-      if (this.esAdmin()) {
-        this.abrirModalEvento(info.dateStr, info.dateStr);
-      }
-    },
     eventClick: (info: any) => {
       const tipo = info.event.extendedProps['tipo'];
       if (tipo === 'evento') {
@@ -772,5 +766,15 @@ export class CalendarioComponent {
 
   protected statusInfo(status: string) {
     return statusColor(status);
+  }
+
+  protected onCalendarClick(event: Event): void {
+    if (!this.esAdmin()) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('.fc-event')) return;
+    const dayCell = target.closest('.fc-daygrid-day') as HTMLElement | null;
+    if (dayCell?.dataset['date']) {
+      this.abrirModalEvento(dayCell.dataset['date'], dayCell.dataset['date']);
+    }
   }
 }
