@@ -700,6 +700,7 @@ export class CalendarioComponent {
       right: 'dayGridMonth,dayGridWeek',
     },
     dateClick: (info: any) => {
+      if (info.jsEvent.target.closest('.fc-event')) return;
       if (this.esAdmin()) {
         this.abrirModalEvento(info.dateStr, info.dateStr);
       }
