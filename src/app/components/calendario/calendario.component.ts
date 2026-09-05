@@ -694,8 +694,6 @@ export class CalendarioComponent {
     initialView: 'dayGridMonth',
     locale: esLocale,
     height: 'auto',
-    selectable: true,
-    selectMirror: true,
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
@@ -704,11 +702,6 @@ export class CalendarioComponent {
     dateClick: (info: any) => {
       if (this.esAdmin()) {
         this.abrirModalEvento(info.dateStr, info.dateStr);
-      }
-    },
-    select: (info: any) => {
-      if (this.esAdmin()) {
-        this.abrirModalEvento(info.startStr, info.endStr);
       }
     },
     eventClick: (info: any) => {
