@@ -2,7 +2,6 @@ import { ApplicationConfig, provideZoneChangeDetection, provideEnvironmentInitia
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideHighcharts } from 'highcharts-angular';
 import { provideNativeDateAdapter } from '@angular/material/core';
 
 import { routes } from './app.routes';
@@ -14,7 +13,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideAnimations(),
-    provideHighcharts(),
     provideNativeDateAdapter(),
     provideHttpClient(withInterceptors([apiUrlInterceptor, jwtInterceptor])),
     provideEnvironmentInitializer(() => {

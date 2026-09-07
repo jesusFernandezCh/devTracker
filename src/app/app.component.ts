@@ -53,7 +53,9 @@ import {AuthService} from './services/auth.service';
         }
       </mat-sidenav-content>
     </mat-sidenav-container>
-    <app-chat-widget />
+    @defer {
+      <app-chat-widget />
+    }
     } @else {
       @if (authService.sesionCargada()) {
         <router-outlet />
