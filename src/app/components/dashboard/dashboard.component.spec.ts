@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {provideRouter} from '@angular/router';
-import {provideHighcharts} from 'highcharts-angular';
+import {providePartialHighcharts} from 'highcharts-angular';
 import {DashboardComponent} from './dashboard.component';
 
 describe('DashboardComponent', () => {
@@ -44,7 +44,7 @@ describe('DashboardComponent', () => {
     }
     TestBed.configureTestingModule({
       imports: [DashboardComponent],
-      providers: [provideHighcharts(), provideRouter([])],
+      providers: [providePartialHighcharts(), provideRouter([])],
       schemas: [NO_ERRORS_SCHEMA],
     });
     fixture = TestBed.createComponent(DashboardComponent);

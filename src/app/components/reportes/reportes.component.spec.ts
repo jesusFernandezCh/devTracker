@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {provideHighcharts} from 'highcharts-angular';
+import {providePartialHighcharts} from 'highcharts-angular';
 import {ReportesComponent} from './reportes.component';
 
 describe('ReportesComponent', () => {
@@ -51,7 +51,7 @@ describe('ReportesComponent', () => {
     localStorage.setItem('devtracker-planning', JSON.stringify(plannings));
     TestBed.configureTestingModule({
       imports: [ReportesComponent],
-      providers: [provideHighcharts()],
+      providers: [providePartialHighcharts({modules: () => []})],
       schemas: [NO_ERRORS_SCHEMA],
     });
     fixture = TestBed.createComponent(ReportesComponent);

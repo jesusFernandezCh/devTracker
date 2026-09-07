@@ -25,7 +25,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HighchartsChartComponent],
-  providers: [providePartialHighcharts({})],
+  providers: [providePartialHighcharts({modules: () => []})],
   template: `
     <div class="mb-6">
       <div class="flex items-center justify-between gap-4 flex-wrap">
