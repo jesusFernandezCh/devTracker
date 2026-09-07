@@ -17,6 +17,7 @@ import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {statusColor, complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
 import type {Proyecto} from '../../models/proyecto.model';
 import type {Columna} from '../../models/columna.model';
+import type {EventoCalendario} from '../../models/evento.model';
 
 function addDay(dateStr: string): string {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -227,6 +228,58 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"/>
                 </svg>
                 Proyectos
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (selectedEvento(); as ev) {
+      <div class="modal-backdrop" (click)="cerrarEvento()">
+        <div class="modal-card modal-enter" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full shrink-0" [style.background-color]="ev.color ?? '#6366F1'"></span>
+              <h2 style="color: var(--color-gray-900);">{{ ev.titulo }}</h2>
+            </div>
+            <button (click)="cerrarEvento()" class="close-btn" style="color: var(--color-gray-400);">&times;</button>
+          </div>
+          <div class="modal-body">
+            @if (ev.descripcion) {
+              <div class="rounded-lg p-3 mb-3" style="background-color: var(--color-gray-50);">
+                <p class="text-sm leading-relaxed" style="color: var(--color-gray-600);">{{ ev.descripcion }}</p>
+              </div>
+            }
+            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Inicio</span>
+                <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ ev.fechaInicio | date:'dd/MM/yyyy' }}</p>
+              </div>
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fin</span>
+                <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ ev.fechaFin | date:'dd/MM/yyyy' }}</p>
+              </div>
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Categoría</span>
+                <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ nombreCategoria(ev.categoria) }}</p>
+              </div>
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Todo el día</span>
+                <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ ev.todoElDia ? 'Sí' : 'No' }}</p>
+              </div>
+            </div>
+            <div class="flex justify-between pt-3 mt-3 border-t" style="border-color: var(--color-gray-200);">
+              <button (click)="eliminarEvento(ev)"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Eliminar
+              </button>
+              <button (click)="cerrarEvento()"
+                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                Cerrar
               </button>
             </div>
           </div>
@@ -687,6 +740,7 @@ export class CalendarioComponent {
   }
 
   protected readonly selectedProyecto = signal<Proyecto | null>(null);
+  protected readonly selectedEvento = signal<EventoCalendario | null>(null);
 
   readonly calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, interactionPlugin],
@@ -702,6 +756,9 @@ export class CalendarioComponent {
     eventClick: (info: any) => {
       const tipo = info.event.extendedProps['tipo'];
       if (tipo === 'evento') {
+        const eventoId = info.event.extendedProps['eventoId'] as string;
+        const evento = this.eventoService.eventos().find(e => e.id === eventoId);
+        if (evento) this.selectedEvento.set(evento);
         return;
       }
       const id = info.event.extendedProps['proyectoId'] as string;
@@ -757,6 +814,20 @@ export class CalendarioComponent {
 
   protected cerrarModal(): void {
     this.selectedProyecto.set(null);
+  }
+
+  protected cerrarEvento(): void {
+    this.selectedEvento.set(null);
+  }
+
+  protected nombreCategoria(id: string): string {
+    return this.categorias.find(c => c.id === id)?.label ?? id;
+  }
+
+  protected async eliminarEvento(evento: EventoCalendario): Promise<void> {
+    if (!confirm(`¿Eliminar evento "${evento.titulo}"?`)) return;
+    await this.eventoService.eliminar(evento.id);
+    this.selectedEvento.set(null);
   }
 
   protected columnaNombre(columnaId: string): string {
