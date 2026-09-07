@@ -5,6 +5,8 @@ export interface Proyecto {
   nombre: string;
   descripcion: string;
   cliente: string;
+  canalAreaId: string;
+  canalAreaNombre?: string;
   status: string;
   prioridad: string;
   columnaId: string;

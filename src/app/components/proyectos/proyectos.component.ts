@@ -16,6 +16,7 @@ import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
 import {EquipoModalComponent} from '../equipo-modal/equipo-modal.component';
 import {ClienteModalComponent} from '../cliente-modal/cliente-modal.component';
+import {CanalAreaModalComponent} from '../canal-area-modal/canal-area-modal.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
 
 const PAGINA_SIZE = 10;
@@ -24,7 +25,7 @@ const PAGINA_SIZE = 10;
   selector: 'app-proyectos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, ClienteModalComponent, PermisoDirective],
+  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, ClienteModalComponent, CanalAreaModalComponent, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -43,6 +44,14 @@ const PAGINA_SIZE = 10;
             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
           </svg>
           <span class="d-none d-sm-inline">Clientes</span>
+        </button>
+        <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirCanalArea()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm bg-[var(--color-surface)] hover:bg-[var(--color-gray-100)] border"
+                style="color: var(--color-gray-700); border-color: var(--color-gray-300);">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+          </svg>
+          <span class="d-none d-sm-inline">Canal/Área</span>
         </button>
         <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
@@ -77,12 +86,13 @@ const PAGINA_SIZE = 10;
       } @else {
         <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[1050px]">
+            <table class="w-full min-w-[1150px]">
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Nombre</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha inicio</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Canal/Área</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Prioridad</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Equipo</th>
@@ -108,6 +118,9 @@ const PAGINA_SIZE = 10;
                     </td>
                     <td class="px-4 sm:px-6 py-2.5">
                       <span class="text-sm" style="color: var(--color-gray-600);">{{ proyecto.cliente || '—' }}</span>
+                    </td>
+                    <td class="px-4 sm:px-6 py-2.5">
+                      <span class="text-sm" style="color: var(--color-gray-600);">{{ proyecto.canalAreaNombre || '—' }}</span>
                     </td>
                     <td class="px-4 sm:px-6 py-2.5">
                       @if (proyecto.status) {
@@ -297,6 +310,14 @@ const PAGINA_SIZE = 10;
                   </div>
                 </div>
                 <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</span>
+                  <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ detalle.proyecto.cliente || '—' }}</p>
+                </div>
+                <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Canal/Área</span>
+                  <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ detalle.proyecto.canalAreaNombre || '—' }}</p>
+                </div>
+                <div>
                   <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Ambiente</span>
                   <p class="mt-1 text-sm flex items-center gap-1.5" style="color: var(--color-gray-800);">
                     <span class="w-2 h-2 rounded-full" [style.background-color]="columnaColor(detalle.proyecto.columnaId)"></span>
@@ -394,6 +415,10 @@ const PAGINA_SIZE = 10;
       @if (clientesAbierto) {
         <app-cliente-modal (cerrar)="cerrarClientes()"/>
       }
+
+      @if (canalAreaAbierto) {
+        <app-canal-area-modal (cerrar)="cerrarCanalArea()"/>
+      }
   `,
   styles: [],
 })
@@ -418,6 +443,7 @@ export class ProyectosComponent {
   editandoProyecto: Proyecto | null = null;
   deleteConfirmId: string | null = null;
   clientesAbierto = false;
+  canalAreaAbierto = false;
 
   protected readonly equipoProyecto = signal<Proyecto | null>(null);
 
@@ -491,6 +517,14 @@ export class ProyectosComponent {
     this.clientesAbierto = false;
   }
 
+  abrirCanalArea(): void {
+    this.canalAreaAbierto = true;
+  }
+
+  cerrarCanalArea(): void {
+    this.canalAreaAbierto = false;
+  }
+
   abrirEditar(proyecto: Proyecto): void {
     this.editandoProyecto = proyecto;
     this.showForm = true;
@@ -544,7 +578,7 @@ export class ProyectosComponent {
     this.irPagina(this.paginaActual() + 1);
   }
 
-  async onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): Promise<void> {
+  async onGuardar(data: {nombre: string; descripcion: string; cliente: string; canalAreaId: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): Promise<void> {
     if (this.editandoProyecto) {
       await this.proyectoService.actualizar(this.editandoProyecto.id, data);
       await this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});

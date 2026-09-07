@@ -16,6 +16,7 @@ import {EquipoService} from './equipo.service';
 import {NotificacionService} from './notificacion.service';
 import {ChatService} from './chat.service';
 import {ClienteService} from './cliente.service';
+import {CanalAreaService} from './canal-area.service';
 import {DocumentoService} from './documento.service';
 import {EventoService} from './evento.service';
 
@@ -83,6 +84,7 @@ export class AuthService {
   private readonly notificacionService = inject(NotificacionService);
   private readonly chatService = inject(ChatService);
   private readonly clienteService = inject(ClienteService);
+  private readonly canalAreaService = inject(CanalAreaService);
   private readonly documentoService = inject(DocumentoService);
   private readonly eventoService = inject(EventoService);
 
@@ -169,6 +171,7 @@ export class AuthService {
       this.equipoService.cargar(),
       this.notificacionService.cargar(),
       this.clienteService.cargar(),
+      this.canalAreaService.cargar(),
       this.documentoService.cargar(),
       this.eventoService.cargar(),
     ]);
@@ -186,6 +189,7 @@ export class AuthService {
     this.equipoService.limpiar();
     this.notificacionService.limpiar();
     this.clienteService.limpiar();
+    this.canalAreaService.limpiar();
     this.documentoService.limpiar();
     this.eventoService.limpiar();
     this.chatService.desconectar();

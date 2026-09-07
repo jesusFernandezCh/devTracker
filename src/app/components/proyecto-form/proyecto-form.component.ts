@@ -4,6 +4,7 @@ import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {Proyecto} from '../../models/proyecto.model';
 import {ClienteService} from '../../services/cliente.service';
+import {CanalAreaService} from '../../services/canal-area.service';
 
 @Component({
   selector: 'app-proyecto-form',
@@ -81,6 +82,18 @@ import {ClienteService} from '../../services/cliente.service';
                 <option value="alta">Alta</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Canal / Área</label>
+            <select formControlName="canalAreaId"
+                    class="w-full px-2.5 py-2 text-sm rounded-lg outline-none transition-colors"
+                    style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
+              <option value="">Selecciona</option>
+              @for (canal of canalAreas(); track canal.id) {
+                <option [value]="canal.id">{{ canal.nombre }}</option>
+              }
+            </select>
           </div>
 
           <div>
@@ -188,11 +201,13 @@ import {ClienteService} from '../../services/cliente.service';
 export class ProyectoFormComponent {
   private fb = inject(FormBuilder);
   private clienteService = inject(ClienteService);
+  private canalAreaService = inject(CanalAreaService);
 
   protected readonly clientes = this.clienteService.clientes;
+  protected readonly canalAreas = this.canalAreaService.canalAreas;
 
   readonly editando = input<Proyecto | null>(null);
-  readonly guardar = output<{nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}>();
+  readonly guardar = output<{nombre: string; descripcion: string; cliente: string; canalAreaId: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}>();
   readonly cerrar = output();
 
   readonly rangoFechas = this.fb.group({
@@ -204,6 +219,7 @@ export class ProyectoFormComponent {
     nombre: ['', [Validators.required, Validators.minLength(3)]],
     descripcion: [''],
     cliente: ['', Validators.required],
+    canalAreaId: [''],
     status: ['Activo', Validators.required],
     prioridad: ['', Validators.required],
     rangoFechas: this.rangoFechas,
@@ -218,6 +234,7 @@ export class ProyectoFormComponent {
           nombre: proj.nombre,
           descripcion: proj.descripcion,
           cliente: proj.cliente,
+          canalAreaId: proj.canalAreaId,
           status: proj.status,
           prioridad: proj.prioridad,
           documentacion: proj.documentacion,
@@ -240,6 +257,7 @@ export class ProyectoFormComponent {
       nombre: v.nombre,
       descripcion: v.descripcion,
       cliente: v.cliente,
+      canalAreaId: v.canalAreaId,
       status: v.status || 'Activo',
       prioridad: v.prioridad,
       fechaDesde: this.aISO(v.rangoFechas.start),
