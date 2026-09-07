@@ -77,8 +77,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
 
       <div class="fc-wrapper" (click)="onCalendarClick($event)">
         <full-calendar
-          [options]="calendarOptions"
-          [events]="events()"
+          [options]="calendarOptions()"
         ></full-calendar>
       </div>
     </div>
@@ -689,7 +688,7 @@ export class CalendarioComponent {
 
   protected readonly selectedProyecto = signal<Proyecto | null>(null);
 
-  readonly calendarOptions = {
+  readonly calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
     locale: esLocale,
@@ -699,6 +698,7 @@ export class CalendarioComponent {
       center: 'title',
       right: 'dayGridMonth,dayGridWeek',
     },
+    events: this.events(),
     eventClick: (info: any) => {
       const tipo = info.event.extendedProps['tipo'];
       if (tipo === 'evento') {
@@ -710,7 +710,7 @@ export class CalendarioComponent {
         this.selectedProyecto.set(proyecto);
       }
     },
-  };
+  }));
 
   protected readonly esAdmin = computed(() => {
     const tipo = this.authService.currentUser()?.tipo;
@@ -727,6 +727,7 @@ export class CalendarioComponent {
 
   protected readonly events = computed(() => {
     const proyectoEvents = this.proyectosVisibles().flatMap((p) => {
+      if (!p.fechaDesde || !p.fechaHasta) return [];
       const colors = statusColor(p.status);
       return getWeekdaySegments(p.fechaDesde, p.fechaHasta).map(seg => ({
         title: p.nombre,
@@ -739,16 +740,18 @@ export class CalendarioComponent {
         extendedProps: {proyectoId: p.id},
       }));
     });
-    const eventoEvents = this.eventoService.eventos().map(e => ({
-      title: e.titulo,
-      start: e.fechaInicio,
-      end: e.fechaFin,
-      allDay: e.todoElDia,
-      backgroundColor: e.color ?? '#6366F1',
-      borderColor: e.color ?? '#6366F1',
-      textColor: '#ffffff',
-      extendedProps: {tipo: 'evento', eventoId: e.id},
-    }));
+    const eventoEvents = this.eventoService.eventos()
+      .filter(e => e.fechaInicio && e.fechaFin)
+      .map(e => ({
+        title: e.titulo,
+        start: e.fechaInicio,
+        end: e.fechaFin,
+        allDay: e.todoElDia,
+        backgroundColor: e.color ?? '#6366F1',
+        borderColor: e.color ?? '#6366F1',
+        textColor: '#ffffff',
+        extendedProps: {tipo: 'evento', eventoId: e.id},
+      }));
     return [...proyectoEvents, ...eventoEvents];
   });
 
