@@ -471,3 +471,28 @@ input:focus, textarea:focus {
 .font-mono {
   font-family: 'JetBrains Mono', monospace;
 }
+
+/* ── MatSnackBar theming ── */
+.snack-success {
+  --mdc-snackbar-container-color: #ecfdf5;
+  --mdc-snackbar-supporting-text-color: #065f46;
+  --mat-snack-bar-button-color: #065f46;
+}
+
+.snack-error {
+  --mdc-snackbar-container-color: #fef2f2;
+  --mdc-snackbar-supporting-text-color: #991b1b;
+  --mat-snack-bar-button-color: #991b1b;
+}
+
+[data-theme="dark"] .snack-success {
+  --mdc-snackbar-container-color: #064e3b;
+  --mdc-snackbar-supporting-text-color: #a7f3d0;
+  --mat-snack-bar-button-color: #a7f3d0;
+}
+
+[data-theme="dark"] .snack-error {
+  --mdc-snackbar-container-color: #7f1d1d;
+  --mdc-snackbar-supporting-text-color: #fecaca;
+  --mat-snack-bar-button-color: #fecaca;
+}

@@ -4,12 +4,13 @@ import {ReactiveFormsModule, FormBuilder, Validators, AbstractControl, Validatio
 import {Router, ActivatedRoute} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-registro',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule],
   template: `
     <div class="min-h-screen flex items-center justify-center p-6" style="background-color: var(--color-gray-50);">
       <div class="w-full max-w-sm">
@@ -26,30 +27,13 @@ import {firstValueFrom} from 'rxjs';
           </p>
         </div>
 
-        @if (exito()) {
-          <div class="mb-4 px-4 py-3 rounded-lg text-sm flex items-center gap-2"
-               style="background-color: var(--color-emerald-50); color: var(--color-emerald-700); border: 1px solid var(--color-emerald-200);">
-            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            {{ exito() }}
-          </div>
+        @if (registroExitoso()) {
           <button (click)="irLogin()"
                   class="w-full py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
                   style="background-color: var(--color-teal-600);">
-            Ir a iniciar sesión
+            Ir a iniciar sesion
           </button>
         } @else {
-          @if (error()) {
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm flex items-center gap-2"
-                 style="background-color: var(--color-rose-50); color: var(--color-rose-700); border: 1px solid var(--color-rose-200);">
-              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-              </svg>
-              {{ error() }}
-            </div>
-          }
-
           <form [formGroup]="registroForm" (ngSubmit)="onRegistro()" class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-1.5" style="color: var(--color-gray-700);">Correo electrónico</label>
@@ -168,10 +152,10 @@ export class RegistroComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly loading = signal(false);
-  protected readonly error = signal<string | null>(null);
-  protected readonly exito = signal<string | null>(null);
+  protected readonly registroExitoso = signal(false);
 
   protected token: string | null = null;
   protected correoDesdeToken: string | null = null;
@@ -208,7 +192,6 @@ export class RegistroComponent implements OnInit {
   async onRegistro(): Promise<void> {
     if (this.registroForm.invalid) return;
     this.loading.set(true);
-    this.error.set(null);
 
     const raw = this.registroForm.getRawValue();
 
@@ -222,10 +205,17 @@ export class RegistroComponent implements OnInit {
           token: this.token,
         }),
       );
-      this.exito.set(response.mensaje);
+      this.snackBar.open(response.mensaje, 'Cerrar', {
+        duration: 5000,
+        panelClass: 'snack-success',
+      });
+      this.registroExitoso.set(true);
     } catch (e: any) {
       const msg = e?.error?.message ?? 'Error al registrar. Intenta de nuevo.';
-      this.error.set(Array.isArray(msg) ? msg.join('. ') : msg);
+      this.snackBar.open(Array.isArray(msg) ? msg.join('. ') : msg, 'Cerrar', {
+        duration: 5000,
+        panelClass: 'snack-error',
+      });
     } finally {
       this.loading.set(false);
     }
@@ -234,7 +224,10 @@ export class RegistroComponent implements OnInit {
   onOAuth(proveedor: 'google' | 'github' | 'facebook'): void {
     const clientId = this.obtenerClientId(proveedor);
     if (!clientId) {
-      this.error.set(`OAuth no configurado para ${proveedor}`);
+      this.snackBar.open(`OAuth no configurado para ${proveedor}`, 'Cerrar', {
+        duration: 5000,
+        panelClass: 'snack-error',
+      });
       return;
     }
     const redirectUri = `${window.location.origin}/registro?oauth=${proveedor}`;

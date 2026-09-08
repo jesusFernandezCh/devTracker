@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {UsuarioService} from '../../services/usuario.service';
 import {RolService} from '../../services/rol.service';
 import {PermisoDirective} from '../../directives/permiso.directive';
@@ -32,7 +33,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
   selector: 'app-usuarios',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, PermisoDirective],
+  imports: [CommonModule, ReactiveFormsModule, PermisoDirective, MatSnackBarModule],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -207,28 +208,14 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
             </button>
           </div>
 
-          @if (invitacionExito()) {
+          @if (invitarExitoso()) {
             <div class="p-4">
-              <div class="px-4 py-3 rounded-lg text-sm flex items-center gap-2 mb-4"
-                   style="background-color: var(--color-emerald-50); color: var(--color-emerald-700); border: 1px solid var(--color-emerald-200);">
-                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                {{ invitacionExito() }}
-              </div>
               <button (click)="cerrarInvitar()"
                       class="w-full px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
                 Cerrar
               </button>
             </div>
           } @else {
-            @if (invitacionError()) {
-              <div class="px-4 py-3 mx-4 mt-4 rounded-lg text-sm flex items-center gap-2"
-                   style="background-color: var(--color-rose-50); color: var(--color-rose-700); border: 1px solid var(--color-rose-200);">
-                {{ invitacionError() }}
-              </div>
-            }
-
             <form [formGroup]="invitarForm" (ngSubmit)="onInvitar()" class="p-4 space-y-3">
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Correo electrónico</label>
@@ -568,6 +555,7 @@ export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly snackBar = inject(MatSnackBar);
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly rolService = inject(RolService);
 
@@ -583,8 +571,7 @@ export class UsuariosComponent {
 
   protected showInvitar = false;
   protected readonly invitacionLoading = signal(false);
-  protected readonly invitacionExito = signal<string | null>(null);
-  protected readonly invitacionError = signal<string | null>(null);
+  protected readonly invitarExitoso = signal(false);
 
   protected aprobarUsuario: Usuario | null = null;
 
@@ -704,8 +691,7 @@ export class UsuariosComponent {
 
   abrirInvitar(): void {
     this.invitarForm.reset({correo: '', rolId: ''});
-    this.invitacionExito.set(null);
-    this.invitacionError.set(null);
+    this.invitarExitoso.set(false);
     this.showInvitar = true;
   }
 
@@ -716,7 +702,6 @@ export class UsuariosComponent {
   async onInvitar(): Promise<void> {
     if (this.invitarForm.invalid) return;
     this.invitacionLoading.set(true);
-    this.invitacionError.set(null);
 
     const raw = this.invitarForm.getRawValue();
     try {
@@ -727,13 +712,23 @@ export class UsuariosComponent {
         }),
       );
       if (response.aviso) {
-        this.invitacionError.set(response.aviso);
+        this.snackBar.open(response.aviso, 'Cerrar', {
+          duration: 5000,
+          panelClass: 'snack-error',
+        });
       } else {
-        this.invitacionExito.set(`Invitación enviada a ${response.correo}`);
+        this.snackBar.open(`Invitacion enviada a ${response.correo}`, 'Cerrar', {
+          duration: 3000,
+          panelClass: 'snack-success',
+        });
+        this.invitarExitoso.set(true);
       }
     } catch (e: any) {
-      const msg = e?.error?.message ?? 'Error al enviar la invitación';
-      this.invitacionError.set(Array.isArray(msg) ? msg.join('. ') : msg);
+      const msg = e?.error?.message ?? 'Error al enviar la invitacion';
+      this.snackBar.open(Array.isArray(msg) ? msg.join('. ') : msg, 'Cerrar', {
+        duration: 5000,
+        panelClass: 'snack-error',
+      });
     } finally {
       this.invitacionLoading.set(false);
     }

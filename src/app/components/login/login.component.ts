@@ -2,13 +2,14 @@ import {Component, inject, ChangeDetectionStrategy, signal, effect} from '@angul
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule],
   template: `
     <div class="min-h-screen flex" style="background-color: var(--color-gray-50);">
       <!-- Left panel: branding -->
@@ -57,16 +58,6 @@ import {AuthService} from '../../services/auth.service';
             <h2 class="text-2xl font-bold mb-1" style="color: var(--color-gray-900);">Iniciar sesión</h2>
             <p style="color: var(--color-gray-500);" class="text-sm">Ingresa tus credenciales para acceder al sistema.</p>
           </div>
-
-          @if (error()) {
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm flex items-center gap-2"
-                 style="background-color: var(--color-rose-50); color: var(--color-rose-700); border: 1px solid var(--color-rose-200);">
-              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-              </svg>
-              {{ error() }}
-            </div>
-          }
 
           <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-4">
             <div>
@@ -176,9 +167,9 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly loading = signal(false);
-  protected readonly error = signal<string | null>(null);
 
   protected readonly loginForm = this.fb.nonNullable.group({
     correo: ['', [Validators.required, Validators.email]],
@@ -197,22 +188,23 @@ export class LoginComponent {
   protected onLogin(): void {
     if (this.loginForm.invalid) return;
     this.loading.set(true);
-    this.error.set(null);
 
     const { correo, clave } = this.loginForm.getRawValue();
 
     setTimeout(async () => {
       const ok = await this.authService.login(correo, clave);
       if (!ok) {
-        this.error.set('Correo o contraseña incorrectos.');
-        this.loading.set(false);
+        this.snackBar.open('Correo o contrasena incorrectos.', 'Cerrar', {
+          duration: 5000,
+          panelClass: 'snack-error',
+        });
       }
+      this.loading.set(false);
     }, 800);
   }
 
   protected onSocialLogin(proveedor: 'google' | 'github' | 'facebook'): void {
     this.loading.set(true);
-    this.error.set(null);
 
     setTimeout(() => {
       this.authService.loginSocial(proveedor);
