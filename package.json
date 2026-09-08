@@ -7,7 +7,8 @@
     "build": "ng build --base-href /",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "deploy": "npm run build:gh && node scripts/check-base.cjs && angular-cli-ghpages --dir dist/devtracker/browser"
+    "deploy": "npm run build:gh && node scripts/check-base.cjs && angular-cli-ghpages --dir dist/devtracker/browser",
+    "deploy:render": "ng build --configuration production && node scripts/render-deploy.cjs"
   },
   "private": true,
   "dependencies": {
