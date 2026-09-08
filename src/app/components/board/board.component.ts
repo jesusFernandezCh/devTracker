@@ -4,6 +4,7 @@ import {ColumnService} from '../../services/column.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {PlanningService} from '../../services/planning.service';
 import {NotificacionService} from '../../services/notificacion.service';
+import {ToastService} from '../../services/toast.service';
 import {EquipoService} from '../../services/equipo.service';
 import {AuthService} from '../../services/auth.service';
 import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
@@ -151,6 +152,7 @@ export class BoardComponent {
   protected readonly proyectoService = inject(ProyectoService);
   protected readonly planningService = inject(PlanningService);
   private readonly notificacionService = inject(NotificacionService);
+  private readonly toast = inject(ToastService);
   private readonly equipoService = inject(EquipoService);
   private readonly authService = inject(AuthService);
 
@@ -298,6 +300,7 @@ export class BoardComponent {
       descripcion: `«${proyecto?.nombre ?? event.proyectoId}» movido a ${columna}`,
       url: '/',
     });
+    this.toast.info('Proyecto movido');
   }
 
   async onToggleCompletada(tareaId: string): Promise<void> {
@@ -310,6 +313,7 @@ export class BoardComponent {
           descripcion: `Tarea «${tarea.tarea}» ${tarea.completada ? 'marcada como pendiente' : 'completada'}`,
           url: '/',
         });
+        this.toast.success('Tarea actualizada');
         break;
       }
     }
@@ -328,6 +332,7 @@ export class BoardComponent {
       }
       await this.proyectoService.eliminar(id);
       await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? id}» eliminado`});
+      this.toast.warning('Proyecto eliminado');
     }
   }
 
@@ -346,6 +351,7 @@ export class BoardComponent {
     }
     await this.columnService.eliminarColumna(col.id);
     await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Columna «${col.nombre}» eliminada`});
+    this.toast.warning('Columna eliminada');
   }
 
   nuevaTarea(): void {

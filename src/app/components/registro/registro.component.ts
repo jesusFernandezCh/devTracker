@@ -4,13 +4,13 @@ import {ReactiveFormsModule, FormBuilder, Validators, AbstractControl, Validatio
 import {Router, ActivatedRoute} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
-import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {ToastService} from '../../services/toast.service';
 
 @Component({
   selector: 'app-registro',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="min-h-screen flex items-center justify-center p-6" style="background-color: var(--color-gray-50);">
       <div class="w-full max-w-sm">
@@ -152,7 +152,7 @@ export class RegistroComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly toast = inject(ToastService);
 
   protected readonly loading = signal(false);
   protected readonly registroExitoso = signal(false);
@@ -205,17 +205,11 @@ export class RegistroComponent implements OnInit {
           token: this.token,
         }),
       );
-      this.snackBar.open(response.mensaje, 'Cerrar', {
-        duration: 5000,
-        panelClass: 'snack-success',
-      });
+      this.toast.success(response.mensaje);
       this.registroExitoso.set(true);
     } catch (e: any) {
       const msg = e?.error?.message ?? 'Error al registrar. Intenta de nuevo.';
-      this.snackBar.open(Array.isArray(msg) ? msg.join('. ') : msg, 'Cerrar', {
-        duration: 5000,
-        panelClass: 'snack-error',
-      });
+      this.toast.error(Array.isArray(msg) ? msg.join('. ') : msg);
     } finally {
       this.loading.set(false);
     }
@@ -224,10 +218,7 @@ export class RegistroComponent implements OnInit {
   onOAuth(proveedor: 'google' | 'github' | 'facebook'): void {
     const clientId = this.obtenerClientId(proveedor);
     if (!clientId) {
-      this.snackBar.open(`OAuth no configurado para ${proveedor}`, 'Cerrar', {
-        duration: 5000,
-        panelClass: 'snack-error',
-      });
+      this.toast.error(`OAuth no configurado para ${proveedor}`);
       return;
     }
     const redirectUri = `${window.location.origin}/registro?oauth=${proveedor}`;

@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
-import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {ToastService} from '../../services/toast.service';
 import {AuthService, MeResponse, aUsuario} from '../../services/auth.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {Usuario, Curriculum} from '../../models/usuario.model';
@@ -22,7 +22,7 @@ function formatoTamano(bytes: number): string {
   selector: 'app-perfil',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="max-w-4xl">
       <div class="mb-8">
@@ -214,7 +214,7 @@ export class PerfilComponent {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly usuarioService = inject(UsuarioService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly toast = inject(ToastService);
   protected readonly formatoTamano = formatoTamano;
 
   protected readonly usuario = computed(() => this.authService.currentUser());
@@ -270,10 +270,7 @@ export class PerfilComponent {
       const foto = await this._redimensionarFoto(file);
       this.foto.set(foto);
     } catch {
-      this.snackBar.open('No se pudo procesar la imagen. Prueba con otra foto.', 'Cerrar', {
-        duration: 5000,
-        panelClass: 'snack-error',
-      });
+      this.toast.error('No se pudo procesar la imagen. Prueba con otra foto.');
     }
   }
 
@@ -287,10 +284,7 @@ export class PerfilComponent {
     input.value = '';
     if (!file) return;
     if (file.size > MAX_CV_BYTES) {
-      this.snackBar.open('El curriculum supera el tamano maximo de 2 MB.', 'Cerrar', {
-        duration: 5000,
-        panelClass: 'snack-error',
-      });
+      this.toast.error('El curriculum supera el tamano maximo de 2 MB.');
       return;
     }
     const datos = await this._leerArchivo(file);
@@ -330,15 +324,9 @@ export class PerfilComponent {
         this.http.patch<MeResponse>('api/auth/me/perfil', data, {withCredentials: true}),
       );
       this.authService.actualizarUsuarioActual(aUsuario(me));
-      this.snackBar.open('Perfil guardado correctamente.', 'Cerrar', {
-        duration: 3000,
-        panelClass: 'snack-success',
-      });
+      this.toast.success('Perfil guardado correctamente.');
     } catch {
-      this.snackBar.open('No se pudo guardar el perfil. Intenta de nuevo.', 'Cerrar', {
-        duration: 5000,
-        panelClass: 'snack-error',
-      });
+      this.toast.error('No se pudo guardar el perfil. Intenta de nuevo.');
     }
   }
 

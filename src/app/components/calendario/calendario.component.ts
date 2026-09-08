@@ -13,6 +13,7 @@ import {ThemeService} from '../../services/theme.service';
 import {EquipoService} from '../../services/equipo.service';
 import {AuthService} from '../../services/auth.service';
 import {EventoService} from '../../services/evento.service';
+import {ToastService} from '../../services/toast.service';
 import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {statusColor, complejidadEstilo, estimacionTotal} from '../../utils/estimacion';
 import type {Proyecto} from '../../models/proyecto.model';
@@ -649,6 +650,7 @@ export class CalendarioComponent {
   private readonly equipoService = inject(EquipoService);
   private readonly authService = inject(AuthService);
   private readonly eventoService = inject(EventoService);
+  private readonly toast = inject(ToastService);
 
   protected showEventoModal = false;
   protected eventoFechaInicio = '';
@@ -827,6 +829,7 @@ export class CalendarioComponent {
   protected async eliminarEvento(evento: EventoCalendario): Promise<void> {
     if (!confirm(`¿Eliminar evento "${evento.titulo}"?`)) return;
     await this.eventoService.eliminar(evento.id);
+    this.toast.success('Evento eliminado');
     this.selectedEvento.set(null);
   }
 

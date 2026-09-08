@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
-import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {ToastService} from '../../services/toast.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {RolService} from '../../services/rol.service';
 import {PermisoDirective} from '../../directives/permiso.directive';
@@ -33,7 +33,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
   selector: 'app-usuarios',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, PermisoDirective, MatSnackBarModule],
+  imports: [CommonModule, ReactiveFormsModule, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -555,7 +555,7 @@ export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly toast = inject(ToastService);
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly rolService = inject(RolService);
 
@@ -712,23 +712,14 @@ export class UsuariosComponent {
         }),
       );
       if (response.aviso) {
-        this.snackBar.open(response.aviso, 'Cerrar', {
-          duration: 5000,
-          panelClass: 'snack-error',
-        });
+        this.toast.error(response.aviso);
       } else {
-        this.snackBar.open(`Invitacion enviada a ${response.correo}`, 'Cerrar', {
-          duration: 3000,
-          panelClass: 'snack-success',
-        });
+        this.toast.success(`Invitacion enviada a ${response.correo}`);
         this.invitarExitoso.set(true);
       }
     } catch (e: any) {
       const msg = e?.error?.message ?? 'Error al enviar la invitacion';
-      this.snackBar.open(Array.isArray(msg) ? msg.join('. ') : msg, 'Cerrar', {
-        duration: 5000,
-        panelClass: 'snack-error',
-      });
+      this.toast.error(Array.isArray(msg) ? msg.join('. ') : msg);
     } finally {
       this.invitacionLoading.set(false);
     }

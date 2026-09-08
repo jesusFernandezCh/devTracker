@@ -2,14 +2,14 @@ import {Component, inject, ChangeDetectionStrategy, signal, effect} from '@angul
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
-import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {ToastService} from '../../services/toast.service';
 import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="min-h-screen flex" style="background-color: var(--color-gray-50);">
       <!-- Left panel: branding -->
@@ -167,7 +167,7 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly toast = inject(ToastService);
 
   protected readonly loading = signal(false);
 
@@ -194,10 +194,7 @@ export class LoginComponent {
     setTimeout(async () => {
       const ok = await this.authService.login(correo, clave);
       if (!ok) {
-        this.snackBar.open('Correo o contrasena incorrectos.', 'Cerrar', {
-          duration: 5000,
-          panelClass: 'snack-error',
-        });
+        this.toast.error('Correo o contrasena incorrectos.');
       }
       this.loading.set(false);
     }, 800);

@@ -5,6 +5,7 @@ import {ProyectoService} from '../../services/proyecto.service';
 import {AuthService} from '../../services/auth.service';
 import {EquipoService} from '../../services/equipo.service';
 import {NotificacionService} from '../../services/notificacion.service';
+import {ToastService} from '../../services/toast.service';
 import {Documento, nombreTipoMime, iconoTipoMime, colorTipoMime} from '../../models/documento.model';
 import {Proyecto} from '../../models/proyecto.model';
 import {DocumentoFormComponent} from '../documento-form/documento-form.component';
@@ -230,6 +231,7 @@ export class DocumentacionComponent {
   private authService = inject(AuthService);
   private equipoService = inject(EquipoService);
   private notificacionService = inject(NotificacionService);
+  private toast = inject(ToastService);
 
   protected readonly documentos = this.documentoService.documentos;
 
@@ -308,9 +310,11 @@ export class DocumentacionComponent {
     if (this.editandoDoc) {
       await this.documentoService.actualizar(this.editandoDoc.id, data);
       await this.notificacionService.notificar({tipo: 'info', descripcion: `Documento «${data.nombre}» actualizado`, url: '/documentacion'});
+      this.toast.info('Documento actualizado');
     } else {
       await this.documentoService.crear(data);
       await this.notificacionService.notificar({tipo: 'exito', descripcion: `Documento «${data.nombre}» subido`, url: '/documentacion'});
+      this.toast.success('Documento subido');
     }
     this.cerrarForm();
   }
@@ -324,6 +328,7 @@ export class DocumentacionComponent {
     if (doc) {
       await this.documentoService.eliminar(doc.id);
       await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Documento «${doc.nombre}» eliminado`});
+      this.toast.warning('Documento eliminado');
     }
     this.deleteConfirmDoc.set(null);
   }

@@ -8,6 +8,7 @@ import {EquipoService} from '../../services/equipo.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {AuthService} from '../../services/auth.service';
 import {NotificacionService} from '../../services/notificacion.service';
+import {ToastService} from '../../services/toast.service';
 import {Proyecto, ProyectoConDatos} from '../../models/proyecto.model';
 import {Usuario} from '../../models/usuario.model';
 import {statusColor, prioridadColor, estimacionTotal} from '../../utils/estimacion';
@@ -430,6 +431,7 @@ export class ProyectosComponent {
   private usuarioService = inject(UsuarioService);
   private authService = inject(AuthService);
   private notificacionService = inject(NotificacionService);
+  private toast = inject(ToastService);
   private router = inject(Router);
 
   proyectos = this.proyectoService.proyectos;
@@ -583,13 +585,15 @@ export class ProyectosComponent {
       if (this.editandoProyecto) {
         await this.proyectoService.actualizar(this.editandoProyecto.id, data);
         await this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
+        this.toast.info('Proyecto actualizado');
       } else {
         await this.proyectoService.crear(data, this.authService.currentUser()?.id);
         await this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
+        this.toast.success('Proyecto creado');
       }
       this.cerrarForm();
     } catch {
-      await this.notificacionService.notificar({tipo: 'error', descripcion: 'Error al guardar el proyecto. Verifica tu sesión.'});
+      this.toast.error('Error al guardar el proyecto. Verifica tu sesion.');
     }
   }
 
@@ -604,8 +608,9 @@ export class ProyectosComponent {
         const nombre = this.proyectoService.proyectoPorId(id)?.nombre;
         await this.proyectoService.eliminar(id);
         await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
+        this.toast.warning('Proyecto eliminado');
       } catch {
-        await this.notificacionService.notificar({tipo: 'error', descripcion: 'Error al eliminar el proyecto.'});
+        this.toast.error('Error al eliminar el proyecto.');
       }
     }
     this.deleteConfirmId.set(null);
