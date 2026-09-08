@@ -127,6 +127,10 @@ export class AuthService {
     window.location.href = `${backendUrl}/api/auth/oauth/${proveedor}`;
   }
 
+  actualizarUsuarioActual(usuario: Usuario): void {
+    this._currentUser.set(usuario);
+  }
+
   async logout(): Promise<void> {
     try {
       await firstValueFrom(this.http.post('api/auth/logout', {}, {withCredentials: true}));

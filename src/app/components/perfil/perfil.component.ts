@@ -1,7 +1,9 @@
 import {Component, inject, signal, computed, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
-import {AuthService} from '../../services/auth.service';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
+import {AuthService, MeResponse, aUsuario} from '../../services/auth.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {Usuario, Curriculum} from '../../models/usuario.model';
 import {iniciales} from '../../utils/helpers';
@@ -228,6 +230,7 @@ function formatoTamano(bytes: number): string {
 })
 export class PerfilComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly http = inject(HttpClient);
   protected readonly authService = inject(AuthService);
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly formatoTamano = formatoTamano;
@@ -328,24 +331,26 @@ export class PerfilComponent {
     const u = this.usuario();
     if (!u) return;
     const raw = this.perfilForm.getRawValue();
-    const data: Partial<Omit<Usuario, 'id'>> = {
+    const data = {
       nombres: raw.nombres.trim() || undefined,
       apellidos: raw.apellidos.trim() || undefined,
       cedula: raw.cedula.trim() || undefined,
       telefono: raw.telefono.trim() || undefined,
       telefonoContacto: raw.telefonoContacto.trim() || undefined,
-      correo: raw.correo.trim(),
       direccion: raw.direccion.trim() || undefined,
       foto: this.foto() ?? undefined,
       curriculum: this.curriculum() ?? undefined,
     };
     try {
-      await this.usuarioService.actualizar(u.id, data);
+      const me = await firstValueFrom(
+        this.http.patch<MeResponse>('api/auth/me/perfil', data, {withCredentials: true}),
+      );
+      this.authService.actualizarUsuarioActual(aUsuario(me));
       this.guardado.set(true);
       this.errorGuardado.set(null);
       setTimeout(() => this.guardado.set(false), 2500);
     } catch {
-      this.errorGuardado.set('No se pudo guardar: el almacenamiento local está lleno. Reduce el tamaño de la foto o el curriculum.');
+      this.errorGuardado.set('No se pudo guardar el perfil. Intenta de nuevo.');
     }
   }
 
