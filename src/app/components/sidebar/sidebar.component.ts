@@ -18,7 +18,7 @@ import {ChatService} from '../../services/chat.service';
           <!-- <svg class="w-7 h-7 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-3 4v6m-3-3h6"/>
           </svg> -->
-          <img src="./images/bdv.png" alt="logo" height="35px">
+          <img src="./images/bdv.png" alt="logo" class="logo">
           <span class="text-lg font-bold truncate" style="color: var(--color-gray-900);">DevTracker</span>
         </div>
         @if (isMobile()) {
@@ -197,6 +197,10 @@ import {ChatService} from '../../services/chat.service';
     [data-theme="dark"] .sidebar-active .sidebar-nav-icon {
       color: var(--color-indigo-500);
     }
+    .logo {
+    max-width: 100%;
+    height: 35px;
+}
   `]
 })
 export class SidebarComponent {
