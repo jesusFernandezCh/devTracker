@@ -1,8 +1,8 @@
-import {Component, inject, ChangeDetectionStrategy, signal} from '@angular/core';
-import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
-import {AuthService} from '../../services/auth.service';
-import {PermisoService} from '../../services/permiso.service';
-import {RolService} from '../../services/rol.service';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { PermisoService } from '../../services/permiso.service';
+import { RolService } from '../../services/rol.service';
 import {
   ACCIONES,
   RECURSOS_ORDEN,
@@ -227,6 +227,11 @@ import {
       min-width: 150px;
     }
 
+    .sticky{
+      position: sticky;
+      z-index: 1;
+    }
+
     .permiso-cell {
       width: 1.5rem;
       height: 1.5rem;
@@ -303,14 +308,14 @@ export class RolesComponent {
   protected abrirNuevoRol(): void {
     this.editandoRol = null;
     this.errorNombre.set(null);
-    this.rolForm.reset({nombre: ''});
+    this.rolForm.reset({ nombre: '' });
     this.showRolForm = true;
   }
 
   protected abrirEditarRol(rol: Rol): void {
     this.editandoRol = rol;
     this.errorNombre.set(null);
-    this.rolForm.reset({nombre: rol.nombre});
+    this.rolForm.reset({ nombre: rol.nombre });
     this.showRolForm = true;
   }
 
