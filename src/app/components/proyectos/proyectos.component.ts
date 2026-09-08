@@ -381,7 +381,7 @@ const PAGINA_SIZE = 10;
         </div>
       }
 
-      @if (deleteConfirmId) {
+      @if (deleteConfirmId()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);">
           <div class="modal-enter rounded-xl shadow-xl p-6 w-full max-w-sm border" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
             <h3 class="text-lg font-semibold mb-2" style="color: var(--color-gray-900);">Eliminar proyecto</h3>
@@ -441,7 +441,7 @@ export class ProyectosComponent {
 
   showForm = false;
   editandoProyecto: Proyecto | null = null;
-  deleteConfirmId: string | null = null;
+  deleteConfirmId = signal<string | null>(null);
   clientesAbierto = false;
   canalAreaAbierto = false;
 
@@ -579,31 +579,40 @@ export class ProyectosComponent {
   }
 
   async onGuardar(data: {nombre: string; descripcion: string; cliente: string; canalAreaId: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): Promise<void> {
-    if (this.editandoProyecto) {
-      await this.proyectoService.actualizar(this.editandoProyecto.id, data);
-      await this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
-    } else {
-      await this.proyectoService.crear(data, this.authService.currentUser()?.id);
-      await this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
+    try {
+      if (this.editandoProyecto) {
+        await this.proyectoService.actualizar(this.editandoProyecto.id, data);
+        await this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
+      } else {
+        await this.proyectoService.crear(data, this.authService.currentUser()?.id);
+        await this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
+      }
+      this.cerrarForm();
+    } catch {
+      await this.notificacionService.notificar({tipo: 'error', descripcion: 'Error al guardar el proyecto. Verifica tu sesión.'});
     }
-    this.cerrarForm();
   }
 
   confirmarEliminar(id: string): void {
-    this.deleteConfirmId = id;
+    this.deleteConfirmId.set(id);
   }
 
   async ejecutarEliminar(): Promise<void> {
-    if (this.deleteConfirmId) {
-      const nombre = this.proyectoService.proyectoPorId(this.deleteConfirmId)?.nombre;
-      await this.proyectoService.eliminar(this.deleteConfirmId);
-      await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
+    const id = this.deleteConfirmId();
+    if (id) {
+      try {
+        const nombre = this.proyectoService.proyectoPorId(id)?.nombre;
+        await this.proyectoService.eliminar(id);
+        await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
+      } catch {
+        await this.notificacionService.notificar({tipo: 'error', descripcion: 'Error al eliminar el proyecto.'});
+      }
     }
-    this.deleteConfirmId = null;
+    this.deleteConfirmId.set(null);
   }
 
   cancelarEliminar(): void {
-    this.deleteConfirmId = null;
+    this.deleteConfirmId.set(null);
   }
 
   irAPlanning(proyectoId: string): void {
