@@ -402,7 +402,7 @@ const PAGINA_SIZE = 10;
         </div>
       }
 
-      @if (showForm) {
+      @if (showForm()) {
         <app-proyecto-form [editando]="editandoProyecto"
                            (guardar)="onGuardar($event)"
                            (cerrar)="cerrarForm()"/>
@@ -439,7 +439,7 @@ export class ProyectosComponent {
   protected readonly iniciales = iniciales;
   protected readonly tipoColor = tipoColor;
 
-  showForm = false;
+  showForm = signal(false);
   editandoProyecto: Proyecto | null = null;
   deleteConfirmId = signal<string | null>(null);
   clientesAbierto = false;
@@ -506,7 +506,7 @@ export class ProyectosComponent {
 
   abrirNuevo(): void {
     this.editandoProyecto = null;
-    this.showForm = true;
+    this.showForm.set(true);
   }
 
   abrirClientes(): void {
@@ -527,7 +527,7 @@ export class ProyectosComponent {
 
   abrirEditar(proyecto: Proyecto): void {
     this.editandoProyecto = proyecto;
-    this.showForm = true;
+    this.showForm.set(true);
   }
 
   abrirDetalle(proyecto: Proyecto): void {
@@ -620,7 +620,7 @@ export class ProyectosComponent {
   }
 
   cerrarForm(): void {
-    this.showForm = false;
+    this.showForm.set(false);
     this.editandoProyecto = null;
   }
 }
