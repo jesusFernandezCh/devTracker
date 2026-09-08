@@ -61,7 +61,10 @@ export class PlanningService {
       }),
     );
     const planning = aPlanning(creado);
-    this._plannings.update((list) => [...list, planning]);
+    this._plannings.update((list) => {
+      if (list.some((x) => x.id === planning.id)) return list;
+      return [...list, planning];
+    });
     return planning;
   }
 
@@ -90,7 +93,10 @@ export class PlanningService {
       this.http.post<PlanningDto>(`api/planings/${id}/clonar`, {fecha: fechaHoyLocal()}),
     );
     const planning = aPlanning(clonado);
-    this._plannings.update((list) => [...list, planning]);
+    this._plannings.update((list) => {
+      if (list.some((x) => x.id === planning.id)) return list;
+      return [...list, planning];
+    });
     return planning;
   }
 
