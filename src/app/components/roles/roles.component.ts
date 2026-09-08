@@ -223,6 +223,9 @@ import {
   `,
   styles: [`
     :host { display: block; }
+    th{
+      min-width: 150px;
+    }
 
     .permiso-cell {
       width: 1.5rem;
