@@ -1,7 +1,7 @@
 import {Component, inject, output, ChangeDetectionStrategy, signal, HostListener, viewChild, ElementRef} from '@angular/core';
 import {Router} from '@angular/router';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
+import {MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
 import {ThemeService} from '../../services/theme.service';
 import {AuthService} from '../../services/auth.service';
 import {NotificacionesPanelComponent} from '../notificaciones-panel/notificaciones-panel.component';
@@ -10,7 +10,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatIconModule, NotificacionesPanelComponent],
+  imports: [MatIconButton, MatIcon, NotificacionesPanelComponent],
   template: `
     <header style="background-color: var(--color-header); border-color: var(--color-gray-200);" class="border-b shadow-sm">
       <div class="container">

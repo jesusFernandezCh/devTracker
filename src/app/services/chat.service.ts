@@ -1,6 +1,7 @@
 import {Injectable, signal, inject, NgZone} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {io, Socket} from 'socket.io-client';
 import {Mensaje, CanalChat} from '../models/mensaje.model';
 import {UsuarioService} from './usuario.service';
 import {EquipoService} from './equipo.service';
@@ -49,7 +50,7 @@ export class ChatService {
   private readonly proyectoService = inject(ProyectoService);
   private readonly columnService = inject(ColumnService);
   private readonly planningService = inject(PlanningService);
-  private socket: any = null;
+  private socket: Socket | null = null;
 
   noLeidosTotal(yoId: string): number {
     return this._mensajes().filter((m) => m.autorId !== yoId && !m.leido).length;
@@ -89,7 +90,6 @@ export class ChatService {
     this._mensajes.set([]);
     if (!token) return;
 
-    const {io} = await import('socket.io-client');
     this.socket = io(environment.socketUrl || undefined, {auth: {token}, transports: ['websocket', 'polling']});
     this.socket.on('mensaje:nuevo', (m: MensajeSerializado) => this.ngZone.run(() => this._recibir(m)));
     this.socket.on('chat:leido', (payload: {canal: CanalChat; destinoId?: string; proyectoId?: string}) => {

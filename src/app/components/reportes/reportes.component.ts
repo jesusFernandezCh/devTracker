@@ -1,5 +1,5 @@
 import {Component, inject, ChangeDetectionStrategy, signal, computed, effect} from '@angular/core';
-import {HighchartsChartComponent, providePartialHighcharts} from 'highcharts-angular';
+import {HighchartsChartComponent} from 'highcharts-angular';
 import type {Options as HighchartsOptions, SeriesOptionsType} from 'highcharts';
 import {ReporteService} from '../../services/reporte.service';
 import {ColumnService} from '../../services/column.service';
@@ -25,7 +25,6 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HighchartsChartComponent],
-  providers: [providePartialHighcharts({modules: () => []})],
   template: `
     <div class="mb-6">
       <div class="flex items-center justify-between gap-4 flex-wrap">

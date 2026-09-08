@@ -1,11 +1,11 @@
 import {Component, output} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
-import {MatIconModule} from '@angular/material/icon';
+import {MatIcon} from '@angular/material/icon';
 
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, MatIconModule],
+  imports: [RouterLink, RouterLinkActive, MatIcon],
   template: `
     <nav class="bottom-nav" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
       <a routerLink="/" routerLinkActive="bottom-nav-active" [routerLinkActiveOptions]="{exact: true}"

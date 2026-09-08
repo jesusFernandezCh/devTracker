@@ -1,6 +1,6 @@
 import {Component, inject, input, output, computed} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
-import {MatIconModule} from '@angular/material/icon';
+import {MatIcon} from '@angular/material/icon';
 import {AuthService} from '../../services/auth.service';
 import {ThemeService} from '../../services/theme.service';
 import {PermisoService} from '../../services/permiso.service';
@@ -9,7 +9,7 @@ import {ChatService} from '../../services/chat.service';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, MatIconModule],
+  imports: [RouterLink, RouterLinkActive, MatIcon],
   template: `
     <div class="flex flex-col h-full select-none" style="background-color: var(--color-surface);">
       <!-- Logo + close (close only in mobile overlay) -->

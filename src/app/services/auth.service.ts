@@ -19,6 +19,7 @@ import {ClienteService} from './cliente.service';
 import {CanalAreaService} from './canal-area.service';
 import {DocumentoService} from './documento.service';
 import {EventoService} from './evento.service';
+import {environment} from '../../environments/environment';
 
 export interface UsuarioDto {
   id: string;
@@ -122,9 +123,7 @@ export class AuthService {
 
   /** Login social: redirige al proveedor OAuth del backend. */
   async loginSocial(proveedor: 'google' | 'github' | 'facebook'): Promise<void> {
-    const backendUrl = window.location.origin.includes('localhost')
-      ? 'http://localhost:3000'
-      : window.location.origin;
+    const backendUrl = environment.apiUrl || 'http://localhost:3000';
     window.location.href = `${backendUrl}/api/auth/oauth/${proveedor}`;
   }
 
@@ -155,10 +154,7 @@ export class AuthService {
     const usuario = aUsuario(me);
     this._currentUser.set(usuario);
     this.permisoService.hidratar({[me.rolId]: me.permisos});
-    this._sesionCargada.set(true);
     await this._hidratarDatos(usuario);
-    this.notificacionService.notificar({tipo: 'info', descripcion: `Sesión iniciada como «${usuario.usuario}»`, url: '/'});
-    this.router.navigate(['/']);
   }
 
   private async _hidratarDatos(usuario: Usuario): Promise<void> {
