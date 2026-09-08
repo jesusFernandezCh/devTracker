@@ -15,9 +15,10 @@ import {ChatService} from '../../services/chat.service';
       <!-- Logo + close (close only in mobile overlay) -->
       <div class="flex items-center justify-between gap-2 px-4 h-16 border-b shrink-0" style="border-color: var(--color-gray-200);">
         <div class="flex items-center gap-2.5 min-w-0">
-          <svg class="w-7 h-7 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <!-- <svg class="w-7 h-7 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6m-3 4v6m-3-3h6"/>
-          </svg>
+          </svg> -->
+          <img src="images/bdv.png" alt="20px">
           <span class="text-lg font-bold truncate" style="color: var(--color-gray-900);">DevTracker</span>
         </div>
         @if (isMobile()) {
