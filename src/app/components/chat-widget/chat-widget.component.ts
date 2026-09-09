@@ -59,7 +59,7 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
         <div class="chat-body">
           @if (!conversacion()) {
             <button (click)="seleccionarGeneral()" class="chat-list-item">
-              <span class="chat-avatar" style="background-color: var(--color-indigo-100); color: var(--color-indigo-700);">
+              <span class="chat-avatar" style="background-color: var(--color-indigo-100); color: var(--color-blue-500);">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
                 </svg>
@@ -276,7 +276,7 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
       font-size: 0.6875rem;
       font-weight: 700;
       color: #ffffff;
-      background-color: var(--color-indigo-600);
+      background-color: var(--color-header);
     }
     .chat-avatar {
       width: 2rem;
