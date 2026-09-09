@@ -17,7 +17,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center gap-3 min-w-0">
             <span class="md:hidden">
-              <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-gray-50);" aria-label="Abrir menú">
+              <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-white);" aria-label="Abrir menú">
                 <mat-icon>menu</mat-icon>
               </button>
             </span>
@@ -29,7 +29,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
             <app-notificaciones-panel />
 
             <button mat-icon-button (click)="themeService.toggle()"
-                    style="color: var(--color-gray-50);"
+                    style="color: var(--color-white);"
                     [attr.aria-label]="themeService.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'">
               <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
             </button>
