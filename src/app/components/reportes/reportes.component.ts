@@ -526,7 +526,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                 <thead>
                   <tr style="border-bottom: 1px solid var(--color-primary);">
                     <th class="th-cell">Usuario</th>
-                    <th class="th-cell">Rol</th>
+                    <th class="th-cell">Canal</th>
                     <th class="th-cell">Proyecto</th>
                     <th class="th-cell">Tareas</th>
                     <th class="th-cell">Completadas</th>
@@ -540,8 +540,8 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                         <tr style="border-bottom: 1px solid var(--color-gray-100);">
                           @if (i === 0) {
                             <td class="td-cell font-medium" [attr.rowspan]="u.proyectos.length" style="color: var(--color-gray-900); vertical-align: top;"><span class="text-primary">{{ u.nombre }}</span></td>
-                            <td class="td-cell" [attr.rowspan]="u.proyectos.length" style="color: var(--color-gray-700); vertical-align: top;">{{ u.rol }}</td>
                           }
+                          <td class="td-cell" style="color: var(--color-gray-700);">{{ proj.canal }}</td>
                           <td class="td-cell" style="color: var(--color-gray-700);">{{ proj.proyecto }}</td>
                           <td class="td-cell" style="color: var(--color-gray-700);">{{ proj.tareas }}</td>
                           <td class="td-cell" style="color: var(--color-gray-700);">{{ proj.completadas }}</td>
@@ -556,7 +556,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                         </tr>
                       }
                       <tr style="border-bottom: 2px solid var(--color-gray-200); background-color: var(--color-gray-50);">
-                        <td class="td-cell font-semibold" style="color: var(--color-gray-900);" colspan="3"><span class="">Total:</span></td>
+                        <td class="td-cell font-semibold" style="color: var(--color-gray-900);" colspan="2"><span class="">Total:</span></td>
                         <td class="td-cell" style="color: var(--color-gray-700);">{{ u.totalTareas }}</td>
                         <td class="td-cell" style="color: var(--color-gray-700);">{{ u.totalCompletadas }}</td>
                         <td class="td-cell">
@@ -1048,7 +1048,7 @@ export class ReportesComponent {
       for (const proj of u.proyectos) {
         filas.push({
           Usuario: u.nombre,
-          Rol: u.rol,
+          Canal: proj.canal,
           Proyecto: proj.proyecto,
           Tareas: proj.tareas,
           Completadas: proj.completadas,
@@ -1057,16 +1057,16 @@ export class ReportesComponent {
       }
     }
     this.reporteService.exportarCSV('reporte-proyectos-por-usuario', filas, [
-      'Usuario', 'Rol', 'Proyecto', 'Tareas', 'Completadas', 'Avance',
+      'Usuario', 'Canal', 'Proyecto', 'Tareas', 'Completadas', 'Avance',
     ]);
   }
 
   protected exportarProyectosUsuarioPDF(): void {
-    const columnas = ['Usuario', 'Proyecto', 'Tareas', 'Completadas', 'Avance'];
+    const columnas = ['Usuario', 'Canal', 'Proyecto', 'Tareas', 'Completadas', 'Avance'];
     const filas: string[][] = [];
     for (const u of this.reporteService.proyectosPorUsuario()) {
       for (const proj of u.proyectos) {
-        filas.push([u.nombre, u.rol, proj.proyecto, String(proj.tareas), String(proj.completadas), `${proj.porcentaje}%`]);
+        filas.push([u.nombre, proj.canal, proj.proyecto, String(proj.tareas), String(proj.completadas), `${proj.porcentaje}%`]);
       }
     }
     this.reporteService.exportarPDF('reporte-proyectos-por-usuario', 'Proyectos por Usuario', columnas, filas);

@@ -111,6 +111,7 @@ export interface ProductividadUsuarioReporte {
 }
 
 export interface ProyectoUsuarioItem {
+  canal: string;
   proyecto: string;
   tareas: number;
   completadas: number;
@@ -120,7 +121,6 @@ export interface ProyectoUsuarioItem {
 export interface ProyectoUsuarioReporte {
   usuarioId: string;
   nombre: string;
-  rol: string;
   proyectos: ProyectoUsuarioItem[];
   totalTareas: number;
   totalCompletadas: number;
@@ -488,6 +488,7 @@ export class ReporteService {
           const tareas = this.planningsDe(proyectoId).flatMap(pl => pl.tareas);
           const completadas = tareas.filter(t => t.completada).length;
           return {
+            canal: proj?.canalAreaNombre ?? '—',
             proyecto: proj?.nombre ?? proyectoId,
             tareas: tareas.length,
             completadas,
@@ -499,7 +500,6 @@ export class ReporteService {
         return {
           usuarioId: u.id,
           nombre: [u.nombres, u.apellidos].filter(Boolean).join(' ') || u.usuario,
-          rol: this.rolService.nombreDe(u.tipo),
           proyectos,
           totalTareas,
           totalCompletadas,
