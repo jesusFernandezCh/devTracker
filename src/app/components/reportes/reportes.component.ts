@@ -556,7 +556,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                         </tr>
                       }
                       <tr style="border-bottom: 2px solid var(--color-gray-200); background-color: var(--color-gray-50);">
-                        <td class="td-cell font-semibold" style="color: var(--color-gray-900);" colspan="3">Total: {{ u.nombre }}</td>
+                        <td class="td-cell font-semibold" style="color: var(--color-gray-900);" colspan="3"><span class="text-primary">Total:</span></td>
                         <td class="td-cell" style="color: var(--color-gray-700);">{{ u.totalTareas }}</td>
                         <td class="td-cell" style="color: var(--color-gray-700);">{{ u.totalCompletadas }}</td>
                         <td class="td-cell">
@@ -1062,7 +1062,7 @@ export class ReportesComponent {
   }
 
   protected exportarProyectosUsuarioPDF(): void {
-    const columnas = ['Usuario', 'Rol', 'Proyecto', 'Tareas', 'Completadas', 'Avance'];
+    const columnas = ['Usuario', 'Proyecto', 'Tareas', 'Completadas', 'Avance'];
     const filas: string[][] = [];
     for (const u of this.reporteService.proyectosPorUsuario()) {
       for (const proj of u.proyectos) {
