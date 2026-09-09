@@ -52,7 +52,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0 flex gap-2">
         <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirInvitar()"
-                class="btn btn-primary">
+                class="btn btn-secondary">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
@@ -67,7 +67,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
           <span class="d-none d-sm-inline">Gestionar</span>
         </button>
         <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirNuevo()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                class="btn btn-primary">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>

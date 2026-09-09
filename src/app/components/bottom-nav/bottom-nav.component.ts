@@ -82,10 +82,10 @@ import {MatIcon} from '@angular/material/icon';
       max-width: 100%;
     }
     .bottom-nav-item:hover {
-      color: var(--color-gray-900);
+      color: var(--color-secondary);
     }
     .bottom-nav-active {
-      color: var(--color-indigo-600);
+      color: var(--color-secondary);
     }
     .bottom-nav-active mat-icon {
       font-variation-settings: 'FILL' 1;
