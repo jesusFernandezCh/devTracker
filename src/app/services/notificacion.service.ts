@@ -61,7 +61,12 @@ export class NotificacionService {
   }
 
   async limpiar(): Promise<void> {
-    this._notificaciones.set([]);
+    try {
+      await firstValueFrom(this.http.delete('api/notificaciones'));
+      this._notificaciones.set([]);
+    } catch {
+      /* ignorar */
+    }
   }
 
   _agregarLocal(notificacion: Notificacion): void {
