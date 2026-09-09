@@ -76,10 +76,10 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
     <div class="no-print mb-6 flex flex-wrap gap-1.5">
       @for (tab of tabs; track tab.id) {
         <button (click)="tabActivo.set(tab.id)"
-                class="px-3.5 py-2 text-sm font-medium rounded-lg transition-colors"
-                [style.background-color]="tabActivo() === tab.id ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
+                class="btn btn-default"
+                [style.background-color]="tabActivo() === tab.id ? 'var(--color-secondary)' : 'var(--color-surface)'"
                 [style.color]="tabActivo() === tab.id ? '#ffffff' : 'var(--color-gray-600)'"
-                [style.border]="'1px solid ' + (tabActivo() === tab.id ? 'var(--color-indigo-600)' : 'var(--color-gray-200)')">
+                [style.border]="'1px solid ' + (tabActivo() === tab.id ? 'var(--color-secondary)' : 'var(--color-gray-200)')">
           {{ tab.label }}
         </button>
       }
@@ -152,7 +152,7 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
               </p>
               <div class="flex items-center gap-1">
                 <button (click)="anteriorProyectos()" [disabled]="paginaProyectos() <= 1"
-                        class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                        class="btn btn-default">
                   Anterior
                 </button>
                 @if (paginasProyectos() > 1) {
@@ -162,16 +162,16 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                     } @else {
                       <button (click)="irPaginaProyectos(p)"
                               class="min-w-[2rem] px-2 py-1.5 text-sm font-medium rounded-lg transition-colors"
-                              [style.background-color]="p === paginaProyectos() ? 'var(--color-indigo-600)' : 'var(--color-surface)'"
+                              [style.background-color]="p === paginaProyectos() ? 'var(--color-secondary)' : 'var(--color-surface)'"
                               [style.color]="p === paginaProyectos() ? '#ffffff' : 'var(--color-gray-600)'"
-                              [style.border]="p === paginaProyectos() ? '1px solid var(--color-indigo-600)' : '1px solid var(--color-gray-200)'">
+                              [style.border]="p === paginaProyectos() ? '1px solid var(--color-secondary)' : '1px solid var(--color-gray-200)'">
                         {{ p }}
                       </button>
                     }
                   }
                 }
                 <button (click)="siguienteProyectos()" [disabled]="paginaProyectos() >= paginasProyectos()"
-                        class="px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]">
+                        class="btn bt-ndefault">
                   Siguiente
                 </button>
               </div>
