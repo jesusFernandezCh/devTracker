@@ -32,8 +32,8 @@ h1 {
   --color-primay-hover: #164783;
   --color-secondary: #BB1B47;
   --color-secondary-hover: #660c24;
-  --color-default: #EEEEEE;
-  --color-default-hover: #eeeeeede;
+  --color-default: oklch(96.7% .003 264.542);
+  --color-default-hover: oklch(82.521% 0.00956 258.472);
   
   --color-header: var(--color-secondary);
   --color-surface: #ffffff;
@@ -101,15 +101,21 @@ h1 {
   border: none;
 }
 .btn-secondary:hover{
-  background-color: var(--color-secondary-hover);
+  background-color: var(--color-default-hover);
   border: none;
 }
 
 .btn-default{
-  background-color: var(--color-gray-300);
+  background-color: var(--color-gray-100);
   color: var(--color-gray-700);
   border: none;
 }
+
+.btn-secondary:hover{
+  background-color: var(--color-secondary-hover);
+  border: none;
+}
+
 
 
 [data-theme="dark"] {
