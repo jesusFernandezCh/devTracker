@@ -94,11 +94,11 @@ import {AuthService} from '../../services/auth.service';
 
           <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
             <button type="button" (click)="cerrar.emit()"
-                    class="btn btn-primary">
+                    class="btn btn-default">
               Cancelar
             </button>
             <button type="submit"
-                    class="btn btn-default"
+                    class="btn btn-primary"
                     [disabled]="form.invalid || (!archivoSeleccionado() && !editando())">
               {{ editando() ? 'Guardar' : 'Subir' }}
             </button>
