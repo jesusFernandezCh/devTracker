@@ -26,7 +26,7 @@ function aPlanning(p: PlanningDto): Planning {
     fecha: p.fecha,
     proyectoId: p.proyectoId,
     descripcion: p.descripcion ?? '',
-    tareas: (p.tareas ?? []).map(t => ({...t, completada: t.completada ?? false})),
+    tareas: (p.tareas ?? []).map(t => ({...t, completada: t.completada ?? false, usuarioId: t.usuarioId ?? undefined})),
     createdAt: p.createdAt,
     usuarioId: p.usuarioId ?? undefined,
   };

@@ -6,7 +6,7 @@ import {ColumnService} from '../../services/column.service';
 import {ThemeService} from '../../services/theme.service';
 import {estimacionTotal} from '../../utils/estimacion';
 
-type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'clientes' | 'usuarios' | 'graficas' | 'proyectos-usuario';
+type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'clientes' | 'usuarios' | 'graficas' | 'proyectos-usuario' | 'tareas-usuario';
 type GraficaId = 'cerradas' | 'balance' | 'puntos' | 'produccion' | 'activos';
 
 const PAGINA_SIZE = 10;
@@ -510,6 +510,55 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
           </div>
         }
 
+        @case ('tareas-usuario') {
+          @let porTareas = reporteService.tareasPorUsuario();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Tareas por usuario</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarTareasUsuarioCSV()" class="btn-accion">Exportar CSV</button>
+              <button (click)="exportarTareasUsuarioPDF()" class="btn-accion">Exportar PDF</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[700px] text-sm">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-primary);">
+                    <th class="th-cell">Usuario</th>
+                    <th class="th-cell">Tareas</th>
+                    <th class="th-cell">Completadas</th>
+                    <th class="th-cell">Pendientes</th>
+                    <th class="th-cell">Story points</th>
+                    <th class="th-cell">Avance</th>
+                  </tr>
+                </thead>
+                <tbody style="border-top: 1px solid var(--color-gray-100);">
+                  @for (u of porTareas; track u.usuarioId) {
+                    <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                      <td class="td-cell font-medium" style="color: var(--color-gray-900);">{{ u.nombre }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.tareas }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.completadas }}</td>
+                      <td class="td-cell" style="color: var(--color-gray-700);">{{ u.pendientes }}</td>
+                      <td class="td-cell font-semibold" style="color: var(--color-indigo-600);">{{ u.puntos }}</td>
+                      <td class="td-cell">
+                        <div class="flex items-center gap-2">
+                          <div class="w-20 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
+                            <div class="h-full rounded-full" [style.width.%]="u.porcentaje" [style.background-color]="colorPorcentaje(u.porcentaje)"></div>
+                          </div>
+                          <span class="font-semibold text-xs" [style.color]="colorPorcentaje(u.porcentaje)">{{ u.porcentaje }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="6" class="empty-state">No hay tareas asignadas a usuarios para los filtros aplicados.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
         @case ('proyectos-usuario') {
           @let porUsuario = proyectosUsuarioPagina();
           <div class="mb-4 flex items-center justify-between no-print">
@@ -694,6 +743,7 @@ export class ReportesComponent {
     {id: 'calidad', label: 'Calidad'},
     {id: 'clientes', label: 'Clientes'},
     {id: 'usuarios', label: 'Usuarios'},
+    {id: 'tareas-usuario', label: 'Tareas por Usuario'},
     {id: 'proyectos-usuario', label: 'Proyectos por Usuario'},
     {id: 'graficas', label: 'Gráficas'},
   ];
@@ -1070,5 +1120,27 @@ export class ReportesComponent {
       }
     }
     this.reporteService.exportarPDF('reporte-proyectos-por-usuario', 'Proyectos por Usuario', columnas, filas);
+  }
+
+  protected exportarTareasUsuarioCSV(): void {
+    const filas = this.reporteService.tareasPorUsuario().map(u => ({
+      Usuario: u.nombre,
+      Tareas: u.tareas,
+      Completadas: u.completadas,
+      Pendientes: u.pendientes,
+      'Story points': u.puntos,
+      Avance: `${u.porcentaje}%`,
+    }));
+    this.reporteService.exportarCSV('reporte-tareas-por-usuario', filas, [
+      'Usuario', 'Tareas', 'Completadas', 'Pendientes', 'Story points', 'Avance',
+    ]);
+  }
+
+  protected exportarTareasUsuarioPDF(): void {
+    const columnas = ['Usuario', 'Tareas', 'Completadas', 'Pendientes', 'Story points', 'Avance'];
+    const filas = this.reporteService.tareasPorUsuario().map(u => [
+      u.nombre, String(u.tareas), String(u.completadas), String(u.pendientes), String(u.puntos), `${u.porcentaje}%`,
+    ]);
+    this.reporteService.exportarPDF('reporte-tareas-por-usuario', 'Tareas por Usuario', columnas, filas);
   }
 }

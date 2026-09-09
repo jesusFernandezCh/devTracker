@@ -127,6 +127,16 @@ export interface ProyectoUsuarioReporte {
   porcentajeGlobal: number;
 }
 
+export interface TareaUsuarioReporte {
+  usuarioId: string;
+  nombre: string;
+  tareas: number;
+  completadas: number;
+  pendientes: number;
+  puntos: number;
+  porcentaje: number;
+}
+
 const VALORES_COMPLEJIDAD: Record<string, number> = {Simple: 1, Media: 3, Compleja: 5};
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -508,6 +518,36 @@ export class ReporteService {
       })
       .filter(u => u.proyectos.length > 0)
       .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  });
+
+  readonly tareasPorUsuario = computed<TareaUsuarioReporte[]>(() => {
+    const proyectosVisibles = this.proyectosFiltrados();
+    const tareas = this.planningService.plannings()
+      .filter(pl => proyectosVisibles.some(p => p.id === pl.proyectoId))
+      .flatMap(pl => pl.tareas);
+
+    const grupos = new Map<string, typeof tareas>();
+    for (const t of tareas) {
+      const clave = t.usuarioId ?? '';
+      grupos.set(clave, [...(grupos.get(clave) ?? []), t]);
+    }
+
+    return [...grupos.entries()]
+      .map(([usuarioId, tareasUsuario]) => {
+        const completadas = tareasUsuario.filter(t => t.completada).length;
+        const puntos = tareasUsuario.reduce((s, t) => s + (VALORES_COMPLEJIDAD[t.complejidad] ?? 0), 0);
+        const usuario = this.usuarioService.usuarioPorId(usuarioId);
+        return {
+          usuarioId,
+          nombre: usuario?.usuario ?? 'Sin asignar',
+          tareas: tareasUsuario.length,
+          completadas,
+          pendientes: tareasUsuario.length - completadas,
+          puntos,
+          porcentaje: tareasUsuario.length > 0 ? Math.round((completadas / tareasUsuario.length) * 100) : 0,
+        };
+      })
+      .sort((a, b) => b.tareas - a.tareas);
   });
 
   limpiarFiltros(): void {
