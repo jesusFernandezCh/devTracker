@@ -68,25 +68,47 @@ h1 {
 }
 
 //Botones
-.button-primary{
+.btn{
+    padding-right: 1.5rem !important;
+    padding-left: 1.5rem !important;
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / .1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / .1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    padding-block: calc(var(--spacing) * 2.5);
+    gap: calc(var(--spacing) * 2);
+    border-radius: var(--radius-lg);
+    align-items: center;
+    display: inline-flex;
+    appearance: button;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+}
+
+.btn-primary{
   background-color: var(--color-primary);
   color: white;
+  border: none;
 }
-.button-primary:hover{
+.btn-primary:hover{
   background-color: var(--color-primay-hover);
+  border: none;
 }
 
-.button-secondary{
+.btn-secondary{
   background-color: var(--color-secondary);
   color: white;
+  border: none;
 }
-.button-secondary:hover{
+.btn-secondary:hover{
   background-color: var(--color-secondary-hover);
+  border: none;
 }
 
-.button-default{
+.btn-default{
   background-color: var(--color-gray-300);
   color: var(--color-gray-700);
+  border: none;
 }
 
 
