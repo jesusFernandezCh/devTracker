@@ -159,7 +159,7 @@ import {ChatService} from '../../services/chat.service';
     }
     .sidebar-active {
       color: var(--color-gray-900);
-      border-left-color: var(--color-indigo-500);
+      border-left-color: var(--color-rose-700);
       background-color: rgba(99, 102, 241, 0.06);
     }
     .sidebar-active .sidebar-nav-icon {
