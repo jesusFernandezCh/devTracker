@@ -340,7 +340,12 @@ export class PlanningComponent {
 
   async onGuardar(data: {fecha: string; proyectoId: string; descripcion: string}): Promise<void> {
     if (this.editandoPlanning) {
-      await this.planningService.actualizar(this.editandoPlanning.id, data);
+      try {
+        await this.planningService.actualizar(this.editandoPlanning.id, data);
+      } catch (err: any) {
+        alert(err?.message || 'Error al actualizar el planning');
+        return;
+      }
     } else {
       await this.planningService.crear({...data, tareas: []});
     }
@@ -357,7 +362,11 @@ export class PlanningComponent {
 
   async ejecutarEliminar(): Promise<void> {
     if (this.deleteConfirmId) {
-      await this.planningService.eliminar(this.deleteConfirmId);
+      try {
+        await this.planningService.eliminar(this.deleteConfirmId);
+      } catch (err: any) {
+        alert(err?.message || 'Error al eliminar el planning');
+      }
     }
     this.deleteConfirmId = null;
   }

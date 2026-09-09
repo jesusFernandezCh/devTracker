@@ -69,21 +69,37 @@ export class PlanningService {
   }
 
   async actualizar(id: string, data: Partial<Omit<Planning, 'id' | 'createdAt'>>): Promise<Planning> {
-    const actualizado = await firstValueFrom(
-      this.http.patch<PlanningDto>(`api/planings/${id}`, {
-        fecha: data.fecha,
-        descripcion: data.descripcion,
-        tareas: data.tareas,
-      }),
-    );
-    const planning = aPlanning(actualizado);
-    this._plannings.update((list) => list.map((p) => (p.id === id ? planning : p)));
-    return planning;
+    try {
+      const actualizado = await firstValueFrom(
+        this.http.patch<PlanningDto>(`api/planings/${id}`, {
+          fecha: data.fecha,
+          descripcion: data.descripcion,
+          tareas: data.tareas,
+        }),
+      );
+      const planning = aPlanning(actualizado);
+      this._plannings.update((list) => list.map((p) => (p.id === id ? planning : p)));
+      return planning;
+    } catch (err: any) {
+      if (err?.status === 404) {
+        await this.cargar();
+        throw new Error('El planning ya no existe. La lista se ha actualizado.');
+      }
+      throw err;
+    }
   }
 
   async eliminar(id: string): Promise<void> {
-    await firstValueFrom(this.http.delete(`api/planings/${id}`));
-    this._plannings.update((list) => list.filter((p) => p.id !== id));
+    try {
+      await firstValueFrom(this.http.delete(`api/planings/${id}`));
+      this._plannings.update((list) => list.filter((p) => p.id !== id));
+    } catch (err: any) {
+      if (err?.status === 404) {
+        await this.cargar();
+        throw new Error('El planning ya no existe. La lista se ha actualizado.');
+      }
+      throw err;
+    }
   }
 
   async clonar(id: string): Promise<Planning | undefined> {
