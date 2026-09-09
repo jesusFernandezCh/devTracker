@@ -241,11 +241,11 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
 
               <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
                 <button type="button" (click)="cerrarInvitar()"
-                        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                        class="btn btn-default">
                   Cancelar
                 </button>
                 <button type="submit"
-                        class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                        class="btn btn-primary"
                         [disabled]="invitarForm.invalid || invitacionLoading()">
                   {{ invitacionLoading() ? 'Enviando...' : 'Enviar invitación' }}
                 </button>
@@ -375,11 +375,11 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
 
             <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
               <button type="button" (click)="cerrarForm()"
-                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="btn btn-default">
                 Cancelar
               </button>
               <button type="submit"
-                      class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                      class="btn btn-primary"
                       [disabled]="userForm.invalid">
                 {{ editandoUsuario() ? 'Guardar' : 'Crear' }}
               </button>
@@ -510,14 +510,14 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
 
             <div class="flex justify-between items-center pt-3 border-t" style="border-color: var(--color-gray-200);">
               <button (click)="cerrarGestionarInvitaciones(); abrirInvitar()"
-                      class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-teal-700)] bg-[var(--color-teal-50)] hover:bg-[var(--color-teal-100)]">
+                      class="btn btn-primary">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
                 Nueva invitación
               </button>
               <button (click)="cerrarGestionarInvitaciones()"
-                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="btn btn-default">
                 Cerrar
               </button>
             </div>

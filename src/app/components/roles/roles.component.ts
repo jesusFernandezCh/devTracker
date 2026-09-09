@@ -153,11 +153,11 @@ import {
             </div>
             <div class="flex justify-end gap-3">
               <button type="button" (click)="cerrarRolForm()"
-                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="btn btn-default">
                 Cancelar
               </button>
               <button type="submit"
-                      class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                      class="btn btn-primary"
                       [disabled]="rolForm.invalid">
                 {{ editandoRol ? 'Guardar' : 'Crear rol' }}
               </button>
@@ -209,11 +209,11 @@ import {
           </p>
           <div class="flex justify-end gap-3">
             <button (click)="cancelarRestablecer()"
-                    class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                    class="btn btn-default">
               Cancelar
             </button>
             <button (click)="ejecutarRestablecer()"
-                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-rose-600)] hover:bg-[var(--color-rose-700)]">
+                    class="btn btn-secondary">
               Restablecer
             </button>
           </div>

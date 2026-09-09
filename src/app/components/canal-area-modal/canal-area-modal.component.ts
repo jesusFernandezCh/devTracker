@@ -32,7 +32,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
           <div class="flex gap-2 mb-4">
             <input [value]="nuevoNombre()" (input)="nuevoNombre.set($any($event.target).value)" (keydown.enter)="agregar()"
                    type="text" autocomplete="off" placeholder="Nuevo canal/área…"
-                   class="w-full px-3 py-2 text-sm rounded-lg outline-none transition-colors"
+                   class="btn btn-primary"
                    style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
             <button (click)="agregar()"
                     class="shrink-0 px-4 py-2 text-sm font-medium rounded-lg transition-colors text-white bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
@@ -109,7 +109,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
             Un canal/área en uso no puede eliminarse.
           </span>
           <button (click)="cerrar.emit()"
-                  class="shrink-0 px-4 py-2 text-sm font-medium rounded-lg transition-colors text-white bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                  class="btn btn-default">
             Cerrar
           </button>
         </div>

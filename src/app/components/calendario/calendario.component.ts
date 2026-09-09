@@ -122,7 +122,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
                 <div>
                   <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Documentación</span>
                   <a [href]="p.documentacion" target="_blank" rel="noopener"
-                     class="mt-1 inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700">
+                     class="mt-1 inline-flex items-center gap-1.5 text-sm text-secondary">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                     </svg>
@@ -224,7 +224,7 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
 
             <div class="flex justify-end gap-2 pt-3">
               <button (click)="router.navigate(['/proyectos'])"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+                      class="btn btn-primary">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"/>
                 </svg>
@@ -272,14 +272,14 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
             </div>
             <div class="flex justify-between pt-3 mt-3 border-t" style="border-color: var(--color-gray-200);">
               <button (click)="eliminarEvento(ev)"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                      class="btn btn-secondary">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
                 Eliminar
               </button>
               <button (click)="cerrarEvento()"
-                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="btn btn-default">
                 Cerrar
               </button>
             </div>
@@ -366,11 +366,11 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
 
               <div class="flex justify-end gap-3 pt-2 border-t" style="border-color: var(--color-gray-200);">
                 <button type="button" (click)="cerrarModalEvento()"
-                        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                        class="btn btn-primary">
                   Cancelar
                 </button>
                 <button type="submit"
-                        class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                        class="btn btn-default"
                         [disabled]="eventoForm.invalid">
                   Guardar
                 </button>

@@ -94,11 +94,11 @@ import {AuthService} from '../../services/auth.service';
 
           <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
             <button type="button" (click)="cerrar.emit()"
-                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                    class="btn btn-primary">
               Cancelar
             </button>
             <button type="submit"
-                    class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                    class="btn btn-default"
                     [disabled]="form.invalid || (!archivoSeleccionado() && !editando())">
               {{ editando() ? 'Guardar' : 'Subir' }}
             </button>

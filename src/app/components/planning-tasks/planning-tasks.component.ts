@@ -50,7 +50,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
           </div>
 
           <button *appPermiso="'crear'; recurso: 'tareas'" (click)="agregarTarea()"
-                  class="w-full px-3 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-indigo-600)] hover:bg-[var(--color-indigo-700)]"
+                  class="btn btn-primary"
                   [disabled]="tareaForm.invalid">
             Agregar tarea
           </button>
@@ -127,8 +127,8 @@ import {PermisoDirective} from '../../directives/permiso.directive';
           @if (planning().tareas.length > 0) {
             <div class="flex items-center justify-between px-3 py-2.5 rounded-lg"
                  style="background: var(--estimation-bg);">
-              <span class="text-sm font-semibold" style="color: var(--estimation-text);">Estimación:</span>
-              <span class="text-sm font-bold" style="color: var(--estimation-text);">
+              <span class="text-sm font-semibold" style="color: var(--color-primary);">Estimación:</span>
+              <span class="text-sm font-bold" style="color: var(--color-primary);">
                 {{ estimacionTotal(planning().tareas) }} día{{ estimacionTotal(planning().tareas) !== 1 ? 's' : '' }}
               </span>
             </div>
