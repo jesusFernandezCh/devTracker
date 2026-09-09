@@ -21,8 +21,8 @@ export function tipoColor(tipo: string): {text: string; bg: string} {
     case 'super-administrador': return {text: '#ffffff', bg: 'var(--color-header)'};
     case 'administrador': return {text: '#ffffff', bg: 'var(--color-header)'};
     case 'supervisor': return {text: '#ffffff', bg: 'var(--color-header)'};
-    case 'qa': return {text: 'var(--color-gray-900)', bg: 'var(--color-blue-500)'};
-    case 'usuario': return {text: 'var(--color-gray-700)', bg: 'var(--color-blue-500)'};
-    default: return {text: 'var(--color-gray-900)', bg: 'var(--color-teal-200)'};
+    case 'qa': return {text: '#ffffff', bg: 'var(--color-blue-500)'};
+    case 'usuario': return {text: '#ffffff', bg: 'var(--color-blue-500)'};
+    default: return {text: '#ffffff', bg: 'var(--color-teal-200)'};
   }
 }
