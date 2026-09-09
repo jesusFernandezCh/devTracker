@@ -366,11 +366,11 @@ function getWeekdaySegments(startStr: string, endStr: string): Array<{start: str
 
               <div class="flex justify-end gap-3 pt-2 border-t" style="border-color: var(--color-gray-200);">
                 <button type="button" (click)="cerrarModalEvento()"
-                        class="btn btn-primary">
+                        class="btn btn-default">
                   Cancelar
                 </button>
                 <button type="submit"
-                        class="btn btn-default"
+                        class="btn btn-primary"
                         [disabled]="eventoForm.invalid">
                   Guardar
                 </button>

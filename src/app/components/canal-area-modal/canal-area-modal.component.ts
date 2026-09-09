@@ -35,7 +35,7 @@ import {PermisoDirective} from '../../directives/permiso.directive';
                    class="btn btn-primary"
                    style="background-color: var(--color-surface); color: var(--color-gray-900); border: 1px solid var(--color-gray-300);">
             <button (click)="agregar()"
-                    class="shrink-0 px-4 py-2 text-sm font-medium rounded-lg transition-colors text-white bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                    class="btn btn-primary">
               Agregar
             </button>
           </div>
