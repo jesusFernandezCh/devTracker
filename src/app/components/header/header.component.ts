@@ -29,7 +29,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
             <app-notificaciones-panel />
 
             <button mat-icon-button (click)="themeService.toggle()"
-                    style="color: var(--color-white);"
+                    style="color: #F3F4F6;"
                     [attr.aria-label]="themeService.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'">
               <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
             </button>
