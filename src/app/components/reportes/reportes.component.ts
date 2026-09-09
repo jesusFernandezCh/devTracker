@@ -6,7 +6,7 @@ import {ColumnService} from '../../services/column.service';
 import {ThemeService} from '../../services/theme.service';
 import {estimacionTotal} from '../../utils/estimacion';
 
-type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'clientes' | 'usuarios' | 'graficas';
+type TabReporte = 'proyectos' | 'productividad' | 'estimacion' | 'vencimientos' | 'pipeline' | 'calidad' | 'clientes' | 'usuarios' | 'graficas' | 'proyectos-usuario';
 type GraficaId = 'cerradas' | 'balance' | 'puntos' | 'produccion' | 'activos';
 
 const PAGINA_SIZE = 10;
@@ -75,13 +75,15 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
     <!-- Pestañas -->
     <div class="no-print mb-6 flex flex-wrap gap-1.5">
       @for (tab of tabs; track tab.id) {
-        <button (click)="tabActivo.set(tab.id)"
-                class="btn btn-default"
-                [style.background-color]="tabActivo() === tab.id ? 'var(--color-secondary)' : 'var(--color-surface)'"
-                [style.color]="tabActivo() === tab.id ? '#ffffff' : 'var(--color-gray-600)'"
-                [style.border]="'1px solid ' + (tabActivo() === tab.id ? 'var(--color-secondary)' : 'var(--color-gray-200)')">
-          {{ tab.label }}
-        </button>
+        @if (tab.id !== 'proyectos-usuario' || reporteService.esAdmin()) {
+          <button (click)="tabActivo.set(tab.id)"
+                  class="btn btn-default"
+                  [style.background-color]="tabActivo() === tab.id ? 'var(--color-secondary)' : 'var(--color-surface)'"
+                  [style.color]="tabActivo() === tab.id ? '#ffffff' : 'var(--color-gray-600)'"
+                  [style.border]="'1px solid ' + (tabActivo() === tab.id ? 'var(--color-secondary)' : 'var(--color-gray-200)')">
+            {{ tab.label }}
+          </button>
+        }
       }
     </div>
 
@@ -508,6 +510,102 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
           </div>
         }
 
+        @case ('proyectos-usuario') {
+          @let porUsuario = proyectosUsuarioPagina();
+          <div class="mb-4 flex items-center justify-between no-print">
+            <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Proyectos por usuario</h2>
+            <div class="flex items-center gap-2">
+              <button (click)="exportarProyectosUsuarioCSV()" class="btn-accion">Exportar CSV</button>
+              <button (click)="exportarProyectosUsuarioPDF()" class="btn-accion">Exportar PDF</button>
+              <button (click)="imprimir()" class="btn-accion">Imprimir</button>
+            </div>
+          </div>
+          <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[800px] text-sm">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                    <th class="th-cell">Usuario</th>
+                    <th class="th-cell">Rol</th>
+                    <th class="th-cell">Proyecto</th>
+                    <th class="th-cell">Tareas</th>
+                    <th class="th-cell">Completadas</th>
+                    <th class="th-cell">Avance</th>
+                  </tr>
+                </thead>
+                <tbody style="border-top: 1px solid var(--color-gray-100);">
+                  @for (u of porUsuario; track u.usuarioId + '-' + $index) {
+                    @if (u.proyectos.length > 0) {
+                      @for (proj of u.proyectos; track proj.proyecto; let i = $index) {
+                        <tr style="border-bottom: 1px solid var(--color-gray-100);">
+                          @if (i === 0) {
+                            <td class="td-cell font-medium" [attr.rowspan]="u.proyectos.length" style="color: var(--color-gray-900); vertical-align: top;">{{ u.nombre }}</td>
+                            <td class="td-cell" [attr.rowspan]="u.proyectos.length" style="color: var(--color-gray-700); vertical-align: top;">{{ u.rol }}</td>
+                          }
+                          <td class="td-cell" style="color: var(--color-gray-700);">{{ proj.proyecto }}</td>
+                          <td class="td-cell" style="color: var(--color-gray-700);">{{ proj.tareas }}</td>
+                          <td class="td-cell" style="color: var(--color-gray-700);">{{ proj.completadas }}</td>
+                          <td class="td-cell">
+                            <div class="flex items-center gap-2">
+                              <div class="w-20 h-1.5 rounded-full overflow-hidden" style="background-color: var(--color-gray-100);">
+                                <div class="h-full rounded-full" [style.width.%]="proj.porcentaje" [style.background-color]="colorPorcentaje(proj.porcentaje)"></div>
+                              </div>
+                              <span class="font-semibold text-xs" [style.color]="colorPorcentaje(proj.porcentaje)">{{ proj.porcentaje }}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                      <tr style="border-bottom: 2px solid var(--color-gray-200); background-color: var(--color-gray-50);">
+                        <td class="td-cell font-semibold" style="color: var(--color-gray-900);" colspan="3">Total: {{ u.nombre }}</td>
+                        <td class="td-cell" style="color: var(--color-gray-700);">{{ u.totalTareas }}</td>
+                        <td class="td-cell" style="color: var(--color-gray-700);">{{ u.totalCompletadas }}</td>
+                        <td class="td-cell">
+                          <span class="font-semibold" [style.color]="colorPorcentaje(u.porcentajeGlobal)">{{ u.porcentajeGlobal }}%</span>
+                        </td>
+                      </tr>
+                    }
+                  } @empty {
+                    <tr><td colspan="6" class="empty-state">No hay usuarios con proyectos asignados para los filtros aplicados.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          @if (totalProyectosUsuario() > 0) {
+            <div class="mt-4 flex items-center justify-between gap-4 flex-wrap no-print">
+              <p class="text-sm" style="color: var(--color-gray-500);">
+                Mostrando {{ inicioProyectosUsuario() }}–{{ finProyectosUsuario() }} de {{ totalProyectosUsuario() }} usuario{{ totalProyectosUsuario() !== 1 ? 's' : '' }}
+              </p>
+              <div class="flex items-center gap-1">
+                <button (click)="anteriorProyectosUsuario()" [disabled]="paginaProyectosUsuario() <= 1"
+                        class="btn btn-default">
+                  Anterior
+                </button>
+                @if (paginasProyectosUsuario() > 1) {
+                  @for (p of rangoProyectosUsuario(); track $index) {
+                    @if (p === null) {
+                      <span class="px-1 text-sm" style="color: var(--color-gray-400);">…</span>
+                    } @else {
+                      <button (click)="irPaginaProyectosUsuario(p)"
+                              class="min-w-[2rem] px-2 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                              [style.background-color]="p === paginaProyectosUsuario() ? 'var(--color-secondary)' : 'var(--color-surface)'"
+                              [style.color]="p === paginaProyectosUsuario() ? '#ffffff' : 'var(--color-gray-600)'"
+                              [style.border]="p === paginaProyectosUsuario() ? '1px solid var(--color-secondary)' : '1px solid var(--color-gray-200)'">
+                        {{ p }}
+                      </button>
+                    }
+                  }
+                }
+                <button (click)="siguienteProyectosUsuario()" [disabled]="paginaProyectosUsuario() >= paginasProyectosUsuario()"
+                        class="btn btn-default">
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          }
+        }
+
         @case ('graficas') {
           <div class="mb-4 flex items-center justify-between no-print">
             <h2 class="text-lg font-semibold" style="color: var(--color-gray-900);">Gráficas</h2>
@@ -596,6 +694,7 @@ export class ReportesComponent {
     {id: 'calidad', label: 'Calidad'},
     {id: 'clientes', label: 'Clientes'},
     {id: 'usuarios', label: 'Usuarios'},
+    {id: 'proyectos-usuario', label: 'Proyectos por Usuario'},
     {id: 'graficas', label: 'Gráficas'},
   ];
 
@@ -629,11 +728,44 @@ export class ReportesComponent {
     return resultado;
   });
 
+  protected readonly paginaProyectosUsuario = signal(1);
+  protected readonly totalProyectosUsuario = computed(() => this.reporteService.proyectosPorUsuario().length);
+  protected readonly paginasProyectosUsuario = computed(() => Math.max(1, Math.ceil(this.totalProyectosUsuario() / PAGINA_SIZE)));
+  protected readonly inicioProyectosUsuario = computed(() => (this.paginaProyectosUsuario() - 1) * PAGINA_SIZE + 1);
+  protected readonly finProyectosUsuario = computed(() => Math.min(this.paginaProyectosUsuario() * PAGINA_SIZE, this.totalProyectosUsuario()));
+  protected readonly proyectosUsuarioPagina = computed(() =>
+    this.reporteService.proyectosPorUsuario().slice(this.inicioProyectosUsuario() - 1, this.finProyectosUsuario()),
+  );
+  protected readonly rangoProyectosUsuario = computed<(number | null)[]>(() => {
+    const total = this.paginasProyectosUsuario();
+    const actual = this.paginaProyectosUsuario();
+    if (total <= 7) {
+      return Array.from({length: total}, (_, i) => i + 1);
+    }
+    const paginas = new Set<number>([1, actual - 1, actual, actual + 1, total]);
+    const lista = [...paginas].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+    const resultado: (number | null)[] = [];
+    let anterior = 0;
+    for (const p of lista) {
+      if (p - anterior > 1) resultado.push(null);
+      resultado.push(p);
+      anterior = p;
+    }
+    return resultado;
+  });
+
   constructor() {
     effect(() => {
       const total = this.paginasProyectos();
       if (this.paginaProyectos() > total) {
         this.paginaProyectos.set(total);
+      }
+    });
+
+    effect(() => {
+      const total = this.paginasProyectosUsuario();
+      if (this.paginaProyectosUsuario() > total) {
+        this.paginaProyectosUsuario.set(total);
       }
     });
   }
@@ -650,6 +782,20 @@ export class ReportesComponent {
 
   siguienteProyectos(): void {
     this.irPaginaProyectos(this.paginaProyectos() + 1);
+  }
+
+  irPaginaProyectosUsuario(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.paginasProyectosUsuario()) {
+      this.paginaProyectosUsuario.set(pagina);
+    }
+  }
+
+  anteriorProyectosUsuario(): void {
+    this.irPaginaProyectosUsuario(this.paginaProyectosUsuario() - 1);
+  }
+
+  siguienteProyectosUsuario(): void {
+    this.irPaginaProyectosUsuario(this.paginaProyectosUsuario() + 1);
   }
 
   protected colorPorcentaje(pct: number): string {
@@ -894,5 +1040,35 @@ export class ReportesComponent {
     this.reporteService.exportarCSV('reporte-usuarios', filas, [
       'Usuario', 'Plannings', 'Tareas', 'Completadas', 'Pendientes', 'Story points', 'Porcentaje',
     ]);
+  }
+
+  protected exportarProyectosUsuarioCSV(): void {
+    const filas: Record<string, unknown>[] = [];
+    for (const u of this.reporteService.proyectosPorUsuario()) {
+      for (const proj of u.proyectos) {
+        filas.push({
+          Usuario: u.nombre,
+          Rol: u.rol,
+          Proyecto: proj.proyecto,
+          Tareas: proj.tareas,
+          Completadas: proj.completadas,
+          Avance: `${proj.porcentaje}%`,
+        });
+      }
+    }
+    this.reporteService.exportarCSV('reporte-proyectos-por-usuario', filas, [
+      'Usuario', 'Rol', 'Proyecto', 'Tareas', 'Completadas', 'Avance',
+    ]);
+  }
+
+  protected exportarProyectosUsuarioPDF(): void {
+    const columnas = ['Usuario', 'Rol', 'Proyecto', 'Tareas', 'Completadas', 'Avance'];
+    const filas: string[][] = [];
+    for (const u of this.reporteService.proyectosPorUsuario()) {
+      for (const proj of u.proyectos) {
+        filas.push([u.nombre, u.rol, proj.proyecto, String(proj.tareas), String(proj.completadas), `${proj.porcentaje}%`]);
+      }
+    }
+    this.reporteService.exportarPDF('reporte-proyectos-por-usuario', 'Proyectos por Usuario', columnas, filas);
   }
 }

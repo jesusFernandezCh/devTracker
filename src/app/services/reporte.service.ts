@@ -110,6 +110,23 @@ export interface ProductividadUsuarioReporte {
   porcentaje: number;
 }
 
+export interface ProyectoUsuarioItem {
+  proyecto: string;
+  tareas: number;
+  completadas: number;
+  porcentaje: number;
+}
+
+export interface ProyectoUsuarioReporte {
+  usuarioId: string;
+  nombre: string;
+  rol: string;
+  proyectos: ProyectoUsuarioItem[];
+  totalTareas: number;
+  totalCompletadas: number;
+  porcentajeGlobal: number;
+}
+
 const VALORES_COMPLEJIDAD: Record<string, number> = {Simple: 1, Media: 3, Compleja: 5};
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -158,7 +175,7 @@ export class ReporteService {
   private readonly equipoService = inject(EquipoService);
   private readonly authService = inject(AuthService);
 
-  private readonly esAdmin = computed(() => {
+  readonly esAdmin = computed(() => {
     const tipo = this.authService.currentUser()?.tipo;
     return tipo === ROL_SUPER_ADMIN_ID || tipo === 'administrador';
   });
@@ -458,6 +475,41 @@ export class ReporteService {
       .sort((a, b) => b.tareas - a.tareas);
   });
 
+  readonly proyectosPorUsuario = computed<ProyectoUsuarioReporte[]>(() => {
+    const proyectosVisibles = this.proyectosFiltrados();
+    const idProyectosVisibles = new Set(proyectosVisibles.map(p => p.id));
+    const todos = this.usuarioService.usuarios();
+
+    return todos
+      .map(u => {
+        const misProyectos = this.equipoService.proyectosDe(u.id).filter(id => idProyectosVisibles.has(id));
+        const proyectos: ProyectoUsuarioItem[] = misProyectos.map(proyectoId => {
+          const proj = proyectosVisibles.find(p => p.id === proyectoId);
+          const tareas = this.planningsDe(proyectoId).flatMap(pl => pl.tareas);
+          const completadas = tareas.filter(t => t.completada).length;
+          return {
+            proyecto: proj?.nombre ?? proyectoId,
+            tareas: tareas.length,
+            completadas,
+            porcentaje: tareas.length > 0 ? Math.round((completadas / tareas.length) * 100) : 0,
+          };
+        });
+        const totalTareas = proyectos.reduce((s, p) => s + p.tareas, 0);
+        const totalCompletadas = proyectos.reduce((s, p) => s + p.completadas, 0);
+        return {
+          usuarioId: u.id,
+          nombre: [u.nombres, u.apellidos].filter(Boolean).join(' ') || u.usuario,
+          rol: this.rolService.nombreDe(u.tipo),
+          proyectos,
+          totalTareas,
+          totalCompletadas,
+          porcentajeGlobal: totalTareas > 0 ? Math.round((totalCompletadas / totalTareas) * 100) : 0,
+        };
+      })
+      .filter(u => u.proyectos.length > 0)
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  });
+
   limpiarFiltros(): void {
     this.fechaDesde.set('');
     this.fechaHasta.set('');
@@ -479,5 +531,23 @@ export class ReporteService {
     a.download = `${nombre}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  exportarPDF(nombre: string, titulo: string, columnas: string[], filas: string[][]): void {
+    import('jspdf').then(({default: jsPDF}) => {
+      import('jspdf-autotable').then(({default: autoTable}) => {
+        const doc = new jsPDF('l', 'mm', 'a4');
+        doc.setFontSize(16);
+        doc.text(titulo, 14, 15);
+        autoTable(doc, {
+          head: [columnas],
+          body: filas,
+          startY: 25,
+          styles: {fontSize: 8},
+          headStyles: {fillColor: [99, 102, 241]},
+        });
+        doc.save(`${nombre}.pdf`);
+      });
+    });
   }
 }
