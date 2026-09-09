@@ -276,7 +276,7 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
       font-size: 0.6875rem;
       font-weight: 700;
       color: #ffffff;
-      background-color: var(--color-header);
+      background-color: var(--color-primay);
     }
     .chat-avatar {
       width: 2rem;
@@ -324,13 +324,12 @@ type Conversacion = {canal: CanalChat; destinoId?: string; proyectoId?: string} 
       flex-direction: column;
     }
     .chat-bubble-mio {
-      background-color: var(--color-header);
+      background-color: var(--color-secondary);
       color: #ffffff;
       border-bottom-right-radius: 0.25rem;
     }
     .chat-bubble-otro {
-      background-color: var(--color-gray-100);
-      color: var(--color-gray-900);
+      background-color: var(--color-default);
       border-bottom-left-radius: 0.25rem;
     }
     .chat-bubble-autor {
