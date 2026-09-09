@@ -163,7 +163,7 @@ import {ChatService} from '../../services/chat.service';
       background-color: rgba(99, 102, 241, 0.06);
     }
     .sidebar-active .sidebar-nav-icon {
-      color: var(--color-indigo-600);
+      color: var(--color-blue-500);
     }
     .sidebar-nav-icon {
       font-size: 1.25rem;
