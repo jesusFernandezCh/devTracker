@@ -52,8 +52,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0 flex gap-2">
         <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirInvitar()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm border"
-                style="border-color: var(--color-gray-300); color: var(--color-gray-700); background-color: var(--color-surface);">
+                class="btn btn-primary">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
