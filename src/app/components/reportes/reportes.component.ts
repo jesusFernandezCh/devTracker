@@ -605,9 +605,9 @@ const URGENCIA_STYLE: Record<string, {text: string; bg: string; label: string}> 
                         </tr>
                       }
                       <tr style="border-bottom: 2px solid var(--color-gray-200); background-color: var(--color-gray-50);">
-                        <td class="td-cell font-semibold" style="color: var(--color-gray-900);" colspan="2"><span class="">Total:</span></td>
-                        <td class="td-cell" style="color: var(--color-gray-700);">{{u.proyectos.length}} </td>
-                        <td class="td-cell" style="color: var(--color-gray-700);">{{ u.totalTareas }}</td>
+                        <td class="td-cell font-semibold" style="color: var(--color-gray-900); font-weight: bold;" colspan="2"><span class="">Total:</span></td>
+                        <td class="td-cell" style="color: var(--color-gray-700); font-weight: bold;">{{u.proyectos.length}} </td>
+                        <td class="td-cell" style="color: var(--color-gray-700); font-weight: bold;">{{ u.totalTareas }}</td>
                         <td class="td-cell">
                           <span class="font-semibold" [style.color]="colorPorcentaje(u.porcentajeGlobal)">{{ u.totalCompletadas }} - {{ u.totalTareas }} ({{ u.porcentajeGlobal }}%)</span>
                         </td>
