@@ -339,12 +339,15 @@ export class PlanningComponent {
   }
 
   async onGuardar(data: {fecha: string; proyectoId: string; descripcion: string}): Promise<void> {
-    if (this.editandoPlanning) {
-      await this.planningService.actualizar(this.editandoPlanning.id, data);
-    } else {
-      await this.planningService.crear({...data, tareas: []});
+    try {
+      if (this.editandoPlanning) {
+        await this.planningService.actualizar(this.editandoPlanning.id, data);
+      } else {
+        await this.planningService.crear({...data, tareas: []});
+      }
+    } finally {
+      this.cerrarForm();
     }
-    this.cerrarForm();
   }
 
   async clonarPlanning(planning: Planning): Promise<void> {
