@@ -495,7 +495,7 @@ export class ReporteService {
         const misProyectos = this.equipoService.proyectosDe(u.id).filter(id => idProyectosVisibles.has(id));
         const proyectos: ProyectoUsuarioItem[] = misProyectos.map(proyectoId => {
           const proj = proyectosVisibles.find(p => p.id === proyectoId);
-          const tareas = this.planningsDe(proyectoId).flatMap(pl => pl.tareas);
+          const tareas = this.planningsDe(proyectoId).filter(pl => pl.usuarioId === u.id).flatMap(pl => pl.tareas);
           const completadas = tareas.filter(t => t.completada).length;
           return {
             canal: proj?.canalAreaNombre ?? '—',
