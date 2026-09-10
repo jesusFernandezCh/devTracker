@@ -93,8 +93,7 @@ import {AuthService} from '../../services/auth.service';
             </div>
 
             <button type="submit" [disabled]="loginForm.invalid || loading()"
-                    class="w-full py-2.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                    style="background-color: var(--color-teal-600);"
+                    class="btn btn-primary w-full flex items-center justify-center gap-2.5"
                     [class.hover:bg-teal-700]="!loginForm.invalid && !loading()">
               @if (loading()) {
                 <span class="flex items-center justify-center gap-2">
