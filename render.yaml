@@ -2,8 +2,9 @@ services:
   - type: static_site
     name: devtracker
     plan: free
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist/devTracker/browser
+    buildCommand: ""
+    staticPublishPath: .
+    branch: dist
     routes:
       - type: rewrite
         source: /*

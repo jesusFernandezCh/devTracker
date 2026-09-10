@@ -34,7 +34,7 @@ const PAGINA_SIZE = 10;
         </div>
         <div class="col-12 col-md-auto mt-3 mt-md-0">
           <button *appPermiso="'crear'; recurso: 'planning'" (click)="abrirNuevo()"
-                  class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                  class="btn btn-primary">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
             </svg>
@@ -339,14 +339,15 @@ export class PlanningComponent {
   }
 
   async onGuardar(data: {fecha: string; proyectoId: string; descripcion: string}): Promise<void> {
-    try {
-      if (this.editandoPlanning) {
+    if (this.editandoPlanning) {
+      try {
         await this.planningService.actualizar(this.editandoPlanning.id, data);
-      } else {
-        await this.planningService.crear({...data, tareas: []});
+      } catch (err: any) {
+        alert(err?.message || 'Error al actualizar el planning');
+        return;
       }
-    } finally {
-      this.cerrarForm();
+    } else {
+      await this.planningService.crear({...data, tareas: []});
     }
   }
 
@@ -360,7 +361,11 @@ export class PlanningComponent {
 
   async ejecutarEliminar(): Promise<void> {
     if (this.deleteConfirmId) {
-      await this.planningService.eliminar(this.deleteConfirmId);
+      try {
+        await this.planningService.eliminar(this.deleteConfirmId);
+      } catch (err: any) {
+        alert(err?.message || 'Error al eliminar el planning');
+      }
     }
     this.deleteConfirmId = null;
   }

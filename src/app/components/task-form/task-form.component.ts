@@ -4,6 +4,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {PlanningService} from '../../services/planning.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {NotificacionService} from '../../services/notificacion.service';
+import {ToastService} from '../../services/toast.service';
 import {PlanningTask} from '../../models/planning.model';
 import {CommonModule} from '@angular/common';
 
@@ -107,6 +108,7 @@ export class TaskFormComponent {
   protected readonly planningService = inject(PlanningService);
   protected readonly proyectoService = inject(ProyectoService);
   private readonly notificacionService = inject(NotificacionService);
+  private readonly toast = inject(ToastService);
 
   protected editTaskId = this.route.snapshot.paramMap.get('id') ?? null;
 
@@ -171,6 +173,7 @@ export class TaskFormComponent {
         ),
       });
       await this.notificacionService.notificar({tipo: 'info', descripcion: `Tarea «${values.nombre}» actualizada`, url: '/'});
+      this.toast.info('Tarea actualizada');
     } else {
       const nuevaTarea: PlanningTask = {
         id: crypto.randomUUID(),
@@ -180,6 +183,7 @@ export class TaskFormComponent {
       };
       await this.planningService.agregarTarea(values.planningId, nuevaTarea);
       await this.notificacionService.notificar({tipo: 'exito', descripcion: `Tarea «${values.nombre}» creada`, url: '/'});
+      this.toast.success('Tarea creada');
     }
 
     this.router.navigate(['/']);

@@ -1,11 +1,11 @@
 import {Component, output} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
-import {MatIconModule} from '@angular/material/icon';
+import {MatIcon} from '@angular/material/icon';
 
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, MatIconModule],
+  imports: [RouterLink, RouterLinkActive, MatIcon],
   template: `
     <nav class="bottom-nav" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
       <a routerLink="/" routerLinkActive="bottom-nav-active" [routerLinkActiveOptions]="{exact: true}"
@@ -82,10 +82,10 @@ import {MatIconModule} from '@angular/material/icon';
       max-width: 100%;
     }
     .bottom-nav-item:hover {
-      color: var(--color-gray-900);
+      color: var(--color-secondary);
     }
     .bottom-nav-active {
-      color: var(--color-indigo-600);
+      color: var(--color-secondary);
     }
     .bottom-nav-active mat-icon {
       font-variation-settings: 'FILL' 1;

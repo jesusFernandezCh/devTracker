@@ -3,6 +3,8 @@ export interface PlanningTask {
   tarea: string;
   complejidad: 'Simple' | 'Media' | 'Compleja';
   completada: boolean;
+  /** Id del usuario que creó la tarea. */
+  usuarioId?: string;
 }
 
 export interface Planning {

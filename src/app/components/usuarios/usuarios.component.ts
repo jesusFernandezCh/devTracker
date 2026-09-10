@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
+import {ToastService} from '../../services/toast.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {RolService} from '../../services/rol.service';
 import {PermisoDirective} from '../../directives/permiso.directive';
@@ -51,8 +52,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0 flex gap-2">
         <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirInvitar()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm border"
-                style="border-color: var(--color-gray-300); color: var(--color-gray-700); background-color: var(--color-surface);">
+                class="btn btn-secondary">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
@@ -67,7 +67,7 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
           <span class="d-none d-sm-inline">Gestionar</span>
         </button>
         <button *appPermiso="'crear'; recurso: 'usuarios'" (click)="abrirNuevo()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                class="btn btn-primary">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -207,28 +207,14 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
             </button>
           </div>
 
-          @if (invitacionExito()) {
+          @if (invitarExitoso()) {
             <div class="p-4">
-              <div class="px-4 py-3 rounded-lg text-sm flex items-center gap-2 mb-4"
-                   style="background-color: var(--color-emerald-50); color: var(--color-emerald-700); border: 1px solid var(--color-emerald-200);">
-                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                {{ invitacionExito() }}
-              </div>
               <button (click)="cerrarInvitar()"
                       class="w-full px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
                 Cerrar
               </button>
             </div>
           } @else {
-            @if (invitacionError()) {
-              <div class="px-4 py-3 mx-4 mt-4 rounded-lg text-sm flex items-center gap-2"
-                   style="background-color: var(--color-rose-50); color: var(--color-rose-700); border: 1px solid var(--color-rose-200);">
-                {{ invitacionError() }}
-              </div>
-            }
-
             <form [formGroup]="invitarForm" (ngSubmit)="onInvitar()" class="p-4 space-y-3">
               <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--color-gray-700);">Correo electrónico</label>
@@ -255,11 +241,11 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
 
               <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
                 <button type="button" (click)="cerrarInvitar()"
-                        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                        class="btn btn-default">
                   Cancelar
                 </button>
                 <button type="submit"
-                        class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                        class="btn btn-primary"
                         [disabled]="invitarForm.invalid || invitacionLoading()">
                   {{ invitacionLoading() ? 'Enviando...' : 'Enviar invitación' }}
                 </button>
@@ -389,11 +375,11 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
 
             <div class="flex justify-end gap-3 pt-1.5 border-t" style="border-color: var(--color-gray-200);">
               <button type="button" (click)="cerrarForm()"
-                      class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="btn btn-default">
                 Cancelar
               </button>
               <button type="submit"
-                      class="px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                      class="btn btn-primary"
                       [disabled]="userForm.invalid">
                 {{ editandoUsuario() ? 'Guardar' : 'Crear' }}
               </button>
@@ -524,14 +510,14 @@ function estatusColor(estatus: string): {text: string; bg: string; label: string
 
             <div class="flex justify-between items-center pt-3 border-t" style="border-color: var(--color-gray-200);">
               <button (click)="cerrarGestionarInvitaciones(); abrirInvitar()"
-                      class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-[var(--color-teal-700)] bg-[var(--color-teal-50)] hover:bg-[var(--color-teal-100)]">
+                      class="btn btn-primary">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
                 Nueva invitación
               </button>
               <button (click)="cerrarGestionarInvitaciones()"
-                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="btn btn-default">
                 Cerrar
               </button>
             </div>
@@ -568,6 +554,7 @@ export class UsuariosComponent {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly toast = inject(ToastService);
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly rolService = inject(RolService);
 
@@ -583,8 +570,7 @@ export class UsuariosComponent {
 
   protected showInvitar = false;
   protected readonly invitacionLoading = signal(false);
-  protected readonly invitacionExito = signal<string | null>(null);
-  protected readonly invitacionError = signal<string | null>(null);
+  protected readonly invitarExitoso = signal(false);
 
   protected aprobarUsuario: Usuario | null = null;
 
@@ -704,8 +690,7 @@ export class UsuariosComponent {
 
   abrirInvitar(): void {
     this.invitarForm.reset({correo: '', rolId: ''});
-    this.invitacionExito.set(null);
-    this.invitacionError.set(null);
+    this.invitarExitoso.set(false);
     this.showInvitar = true;
   }
 
@@ -716,7 +701,6 @@ export class UsuariosComponent {
   async onInvitar(): Promise<void> {
     if (this.invitarForm.invalid) return;
     this.invitacionLoading.set(true);
-    this.invitacionError.set(null);
 
     const raw = this.invitarForm.getRawValue();
     try {
@@ -727,13 +711,14 @@ export class UsuariosComponent {
         }),
       );
       if (response.aviso) {
-        this.invitacionError.set(response.aviso);
+        this.toast.error(response.aviso);
       } else {
-        this.invitacionExito.set(`Invitación enviada a ${response.correo}`);
+        this.toast.success(`Invitacion enviada a ${response.correo}`);
+        this.invitarExitoso.set(true);
       }
     } catch (e: any) {
-      const msg = e?.error?.message ?? 'Error al enviar la invitación';
-      this.invitacionError.set(Array.isArray(msg) ? msg.join('. ') : msg);
+      const msg = e?.error?.message ?? 'Error al enviar la invitacion';
+      this.toast.error(Array.isArray(msg) ? msg.join('. ') : msg);
     } finally {
       this.invitacionLoading.set(false);
     }

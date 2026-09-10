@@ -1,6 +1,5 @@
 import {HttpErrorResponse, HttpInterceptorFn, HttpRequest} from '@angular/common/http';
 import {inject} from '@angular/core';
-import {Router} from '@angular/router';
 import {catchError, from, switchMap, throwError} from 'rxjs';
 import {TokenService} from './token.service';
 import {RefreshService} from './refresh.service';
@@ -17,7 +16,6 @@ function conCredenciales(req: HttpRequest<unknown>): HttpRequest<unknown> {
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenService = inject(TokenService);
   const refreshService = inject(RefreshService);
-  const router = inject(Router);
 
   const esAuthPublico =
     req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
@@ -36,9 +34,6 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
           switchMap((ok) => {
             if (!ok) {
               tokenService.setToken(null);
-              if (!req.url.includes('/auth/me')) {
-                router.navigate(['/login']);
-              }
               return throwError(() => error);
             }
             const nuevo = tokenService.token();

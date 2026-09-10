@@ -321,7 +321,7 @@ const COLORES_SERIES = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--color-gray-400);
+      color: var(--color-primary);
       margin-top: 0.25rem;
     }
 

@@ -1,7 +1,10 @@
 import {Component, inject, signal, computed, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
-import {AuthService} from '../../services/auth.service';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
+import {ToastService} from '../../services/toast.service';
+import {AuthService, MeResponse, aUsuario} from '../../services/auth.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {Usuario, Curriculum} from '../../models/usuario.model';
 import {iniciales} from '../../utils/helpers';
@@ -28,26 +31,6 @@ function formatoTamano(bytes: number): string {
           Actualiza tu foto, datos personales y curriculum vitae.
         </p>
       </div>
-
-      @if (guardado()) {
-        <div class="mb-6 px-4 py-3 rounded-lg text-sm flex items-center gap-2"
-             style="background-color: var(--color-teal-50); color: var(--color-teal-800); border: 1px solid var(--color-teal-200);">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          Perfil guardado correctamente.
-        </div>
-      }
-
-      @if (errorGuardado()) {
-        <div class="mb-6 px-4 py-3 rounded-lg text-sm flex items-center gap-2"
-             style="background-color: var(--color-rose-50); color: var(--color-rose-700); border: 1px solid var(--color-rose-200);">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-          </svg>
-          {{ errorGuardado() }}
-        </div>
-      }
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         <!-- Foto de perfil -->
@@ -228,13 +211,13 @@ function formatoTamano(bytes: number): string {
 })
 export class PerfilComponent {
   private readonly fb = inject(FormBuilder);
-  protected readonly authService = inject(AuthService);
-  protected readonly usuarioService = inject(UsuarioService);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly usuarioService = inject(UsuarioService);
+  private readonly toast = inject(ToastService);
   protected readonly formatoTamano = formatoTamano;
 
   protected readonly usuario = computed(() => this.authService.currentUser());
-  protected readonly guardado = signal(false);
-  protected readonly errorGuardado = signal<string | null>(null);
   protected readonly foto = signal<string | null>(null);
   protected readonly curriculum = signal<Curriculum | null>(null);
 
@@ -286,9 +269,8 @@ export class PerfilComponent {
     try {
       const foto = await this._redimensionarFoto(file);
       this.foto.set(foto);
-      this.errorGuardado.set(null);
     } catch {
-      this.errorGuardado.set('No se pudo procesar la imagen. Prueba con otra foto.');
+      this.toast.error('No se pudo procesar la imagen. Prueba con otra foto.');
     }
   }
 
@@ -301,9 +283,8 @@ export class PerfilComponent {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
-    this.errorGuardado.set(null);
     if (file.size > MAX_CV_BYTES) {
-      this.errorGuardado.set('El curriculum supera el tamaño máximo de 2 MB.');
+      this.toast.error('El curriculum supera el tamano maximo de 2 MB.');
       return;
     }
     const datos = await this._leerArchivo(file);
@@ -328,24 +309,24 @@ export class PerfilComponent {
     const u = this.usuario();
     if (!u) return;
     const raw = this.perfilForm.getRawValue();
-    const data: Partial<Omit<Usuario, 'id'>> = {
+    const data = {
       nombres: raw.nombres.trim() || undefined,
       apellidos: raw.apellidos.trim() || undefined,
       cedula: raw.cedula.trim() || undefined,
       telefono: raw.telefono.trim() || undefined,
       telefonoContacto: raw.telefonoContacto.trim() || undefined,
-      correo: raw.correo.trim(),
       direccion: raw.direccion.trim() || undefined,
       foto: this.foto() ?? undefined,
       curriculum: this.curriculum() ?? undefined,
     };
     try {
-      await this.usuarioService.actualizar(u.id, data);
-      this.guardado.set(true);
-      this.errorGuardado.set(null);
-      setTimeout(() => this.guardado.set(false), 2500);
+      const me = await firstValueFrom(
+        this.http.patch<MeResponse>('api/auth/me/perfil', data, {withCredentials: true}),
+      );
+      this.authService.actualizarUsuarioActual(aUsuario(me));
+      this.toast.success('Perfil guardado correctamente.');
     } catch {
-      this.errorGuardado.set('No se pudo guardar: el almacenamiento local está lleno. Reduce el tamaño de la foto o el curriculum.');
+      this.toast.error('No se pudo guardar el perfil. Intenta de nuevo.');
     }
   }
 

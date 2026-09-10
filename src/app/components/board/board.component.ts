@@ -4,6 +4,7 @@ import {ColumnService} from '../../services/column.service';
 import {ProyectoService} from '../../services/proyecto.service';
 import {PlanningService} from '../../services/planning.service';
 import {NotificacionService} from '../../services/notificacion.service';
+import {ToastService} from '../../services/toast.service';
 import {EquipoService} from '../../services/equipo.service';
 import {AuthService} from '../../services/auth.service';
 import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
@@ -29,26 +30,19 @@ import {CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop} from '@angular/cdk/dra
         <div class="col-12 col-md-auto mt-3 mt-md-0">
           <div class="d-flex gap-3">
             <button (click)="router.navigate(['/proyectos'])"
-                    class="inline-flex items-center px-2 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+                    class="btn btn-default">
               <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"/>
               </svg>
               Proyectos
             </button>
             <button (click)="openColumnManager()"
-                    class="inline-flex items-center px-2 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                    class="btn btn-default">
               <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
               Columnas
-            </button>
-            <button (click)="nuevaTarea()"
-                    class="inline-flex items-center px-2 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-              <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              Tarea
             </button>
           </div>
         </div>
@@ -151,6 +145,7 @@ export class BoardComponent {
   protected readonly proyectoService = inject(ProyectoService);
   protected readonly planningService = inject(PlanningService);
   private readonly notificacionService = inject(NotificacionService);
+  private readonly toast = inject(ToastService);
   private readonly equipoService = inject(EquipoService);
   private readonly authService = inject(AuthService);
 
@@ -298,6 +293,7 @@ export class BoardComponent {
       descripcion: `«${proyecto?.nombre ?? event.proyectoId}» movido a ${columna}`,
       url: '/',
     });
+    this.toast.info('Proyecto movido');
   }
 
   async onToggleCompletada(tareaId: string): Promise<void> {
@@ -310,6 +306,7 @@ export class BoardComponent {
           descripcion: `Tarea «${tarea.tarea}» ${tarea.completada ? 'marcada como pendiente' : 'completada'}`,
           url: '/',
         });
+        this.toast.success('Tarea actualizada');
         break;
       }
     }
@@ -328,6 +325,7 @@ export class BoardComponent {
       }
       await this.proyectoService.eliminar(id);
       await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? id}» eliminado`});
+      this.toast.warning('Proyecto eliminado');
     }
   }
 
@@ -346,6 +344,7 @@ export class BoardComponent {
     }
     await this.columnService.eliminarColumna(col.id);
     await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Columna «${col.nombre}» eliminada`});
+    this.toast.warning('Columna eliminada');
   }
 
   nuevaTarea(): void {

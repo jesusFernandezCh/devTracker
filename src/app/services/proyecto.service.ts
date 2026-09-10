@@ -11,6 +11,8 @@ export interface ProyectoDto {
   nombre: string;
   descripcion?: string | null;
   cliente?: string | null;
+  canalAreaId?: string | null;
+  canalAreaNombre?: string | null;
   status?: string | null;
   prioridad?: string | null;
   columnaId: string;
@@ -27,6 +29,8 @@ function aProyecto(p: ProyectoDto): Proyecto {
     nombre: p.nombre,
     descripcion: p.descripcion ?? '',
     cliente: p.cliente ?? '',
+    canalAreaId: p.canalAreaId ?? '',
+    canalAreaNombre: p.canalAreaNombre ?? '',
     status: p.status ?? 'Activo',
     prioridad: p.prioridad ?? 'baja',
     columnaId: p.columnaId ?? COLUMNA_POR_DEFECTO,
@@ -62,6 +66,7 @@ export class ProyectoService {
       nombre: data.nombre,
       descripcion: data.descripcion || undefined,
       cliente: data.cliente || undefined,
+      canalAreaId: data.canalAreaId || undefined,
       status: data.status || undefined,
       prioridad: data.prioridad || undefined,
       columnaId: data.columnaId || COLUMNA_POR_DEFECTO,
@@ -129,6 +134,7 @@ export class ProyectoService {
       nombre: data.nombre,
       descripcion: data.descripcion || undefined,
       cliente: data.cliente || undefined,
+      canalAreaId: data.canalAreaId || undefined,
       status: data.status || undefined,
       prioridad: data.prioridad || undefined,
       columnaId: data.columnaId || undefined,

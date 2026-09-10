@@ -1,8 +1,8 @@
-import {Component, inject, ChangeDetectionStrategy, signal} from '@angular/core';
-import {ReactiveFormsModule, FormBuilder, Validators} from '@angular/forms';
-import {AuthService} from '../../services/auth.service';
-import {PermisoService} from '../../services/permiso.service';
-import {RolService} from '../../services/rol.service';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { PermisoService } from '../../services/permiso.service';
+import { RolService } from '../../services/rol.service';
 import {
   ACCIONES,
   RECURSOS_ORDEN,
@@ -32,7 +32,7 @@ import {
         <div class="flex items-center gap-2">
           @if (puedeEditar) {
             <button (click)="abrirNuevoRol()"
-                    class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                    class="btn btn-primary">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
               </svg>
@@ -153,11 +153,11 @@ import {
             </div>
             <div class="flex justify-end gap-3">
               <button type="button" (click)="cerrarRolForm()"
-                      class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                      class="btn btn-default">
                 Cancelar
               </button>
               <button type="submit"
-                      class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]"
+                      class="btn btn-primary"
                       [disabled]="rolForm.invalid">
                 {{ editandoRol ? 'Guardar' : 'Crear rol' }}
               </button>
@@ -209,11 +209,11 @@ import {
           </p>
           <div class="flex justify-end gap-3">
             <button (click)="cancelarRestablecer()"
-                    class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-[var(--color-gray-700)] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)]">
+                    class="btn btn-default">
               Cancelar
             </button>
             <button (click)="ejecutarRestablecer()"
-                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[var(--color-rose-600)] hover:bg-[var(--color-rose-700)]">
+                    class="btn btn-secondary">
               Restablecer
             </button>
           </div>
@@ -223,6 +223,14 @@ import {
   `,
   styles: [`
     :host { display: block; }
+    th{
+      min-width: 150px;
+    }
+
+    .sticky{
+      position: sticky;
+      z-index: 1;
+    }
 
     .permiso-cell {
       width: 1.5rem;
@@ -300,14 +308,14 @@ export class RolesComponent {
   protected abrirNuevoRol(): void {
     this.editandoRol = null;
     this.errorNombre.set(null);
-    this.rolForm.reset({nombre: ''});
+    this.rolForm.reset({ nombre: '' });
     this.showRolForm = true;
   }
 
   protected abrirEditarRol(rol: Rol): void {
     this.editandoRol = rol;
     this.errorNombre.set(null);
-    this.rolForm.reset({nombre: rol.nombre});
+    this.rolForm.reset({ nombre: rol.nombre });
     this.showRolForm = true;
   }
 

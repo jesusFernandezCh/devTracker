@@ -8,6 +8,7 @@ import {EquipoService} from '../../services/equipo.service';
 import {UsuarioService} from '../../services/usuario.service';
 import {AuthService} from '../../services/auth.service';
 import {NotificacionService} from '../../services/notificacion.service';
+import {ToastService} from '../../services/toast.service';
 import {Proyecto, ProyectoConDatos} from '../../models/proyecto.model';
 import {Usuario} from '../../models/usuario.model';
 import {statusColor, prioridadColor, estimacionTotal} from '../../utils/estimacion';
@@ -16,6 +17,7 @@ import {ROL_SUPER_ADMIN_ID} from '../../models/permiso.model';
 import {ProyectoFormComponent} from '../proyecto-form/proyecto-form.component';
 import {EquipoModalComponent} from '../equipo-modal/equipo-modal.component';
 import {ClienteModalComponent} from '../cliente-modal/cliente-modal.component';
+import {CanalAreaModalComponent} from '../canal-area-modal/canal-area-modal.component';
 import {PermisoDirective} from '../../directives/permiso.directive';
 
 const PAGINA_SIZE = 10;
@@ -24,7 +26,7 @@ const PAGINA_SIZE = 10;
   selector: 'app-proyectos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, ClienteModalComponent, PermisoDirective],
+  imports: [CommonModule, ProyectoFormComponent, EquipoModalComponent, ClienteModalComponent, CanalAreaModalComponent, PermisoDirective],
   template: `
     <div class="row align-items-center mb-8">
       <div class="col-12 col-md">
@@ -37,15 +39,21 @@ const PAGINA_SIZE = 10;
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0 d-flex align-items-center gap-2">
         <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirClientes()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm bg-[var(--color-surface)] hover:bg-[var(--color-gray-100)] border"
-                style="color: var(--color-gray-700); border-color: var(--color-gray-300);">
+                class="btn btn-default">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
           </svg>
           <span class="d-none d-sm-inline">Clientes</span>
         </button>
+        <button *appPermiso="'editar'; recurso: 'proyectos'" (click)="abrirCanalArea()"
+                class="btn btn-default">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+          </svg>
+          <span class="d-none d-sm-inline">Canal/Área</span>
+        </button>
         <button *appPermiso="'crear'; recurso: 'proyectos'" (click)="abrirNuevo()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                class="btn btn-primary">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -77,12 +85,13 @@ const PAGINA_SIZE = 10;
       } @else {
         <div class="rounded-xl border shadow-sm overflow-hidden" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[1050px]">
+            <table class="w-full min-w-[1150px]">
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-gray-100);">
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Nombre</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Fecha inicio</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</th>
+                  <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Canal/Área</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Estado</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Prioridad</th>
                   <th class="text-left px-4 sm:px-6 py-2.5 text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Equipo</th>
@@ -108,6 +117,9 @@ const PAGINA_SIZE = 10;
                     </td>
                     <td class="px-4 sm:px-6 py-2.5">
                       <span class="text-sm" style="color: var(--color-gray-600);">{{ proyecto.cliente || '—' }}</span>
+                    </td>
+                    <td class="px-4 sm:px-6 py-2.5">
+                      <span class="text-sm" style="color: var(--color-gray-600);">{{ proyecto.canalAreaNombre || '—' }}</span>
                     </td>
                     <td class="px-4 sm:px-6 py-2.5">
                       @if (proyecto.status) {
@@ -297,6 +309,14 @@ const PAGINA_SIZE = 10;
                   </div>
                 </div>
                 <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Cliente</span>
+                  <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ detalle.proyecto.cliente || '—' }}</p>
+                </div>
+                <div>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Canal/Área</span>
+                  <p class="mt-1 text-sm" style="color: var(--color-gray-800);">{{ detalle.proyecto.canalAreaNombre || '—' }}</p>
+                </div>
+                <div>
                   <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-gray-400);">Ambiente</span>
                   <p class="mt-1 text-sm flex items-center gap-1.5" style="color: var(--color-gray-800);">
                     <span class="w-2 h-2 rounded-full" [style.background-color]="columnaColor(detalle.proyecto.columnaId)"></span>
@@ -360,7 +380,7 @@ const PAGINA_SIZE = 10;
         </div>
       }
 
-      @if (deleteConfirmId) {
+      @if (deleteConfirmId()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.4);">
           <div class="modal-enter rounded-xl shadow-xl p-6 w-full max-w-sm border" style="background-color: var(--color-surface); border-color: var(--color-gray-200);">
             <h3 class="text-lg font-semibold mb-2" style="color: var(--color-gray-900);">Eliminar proyecto</h3>
@@ -381,7 +401,7 @@ const PAGINA_SIZE = 10;
         </div>
       }
 
-      @if (showForm) {
+      @if (showForm()) {
         <app-proyecto-form [editando]="editandoProyecto"
                            (guardar)="onGuardar($event)"
                            (cerrar)="cerrarForm()"/>
@@ -394,6 +414,10 @@ const PAGINA_SIZE = 10;
       @if (clientesAbierto) {
         <app-cliente-modal (cerrar)="cerrarClientes()"/>
       }
+
+      @if (canalAreaAbierto) {
+        <app-canal-area-modal (cerrar)="cerrarCanalArea()"/>
+      }
   `,
   styles: [],
 })
@@ -405,6 +429,7 @@ export class ProyectosComponent {
   private usuarioService = inject(UsuarioService);
   private authService = inject(AuthService);
   private notificacionService = inject(NotificacionService);
+  private toast = inject(ToastService);
   private router = inject(Router);
 
   proyectos = this.proyectoService.proyectos;
@@ -414,10 +439,11 @@ export class ProyectosComponent {
   protected readonly iniciales = iniciales;
   protected readonly tipoColor = tipoColor;
 
-  showForm = false;
+  showForm = signal(false);
   editandoProyecto: Proyecto | null = null;
-  deleteConfirmId: string | null = null;
+  deleteConfirmId = signal<string | null>(null);
   clientesAbierto = false;
+  canalAreaAbierto = false;
 
   protected readonly equipoProyecto = signal<Proyecto | null>(null);
 
@@ -480,7 +506,7 @@ export class ProyectosComponent {
 
   abrirNuevo(): void {
     this.editandoProyecto = null;
-    this.showForm = true;
+    this.showForm.set(true);
   }
 
   abrirClientes(): void {
@@ -491,9 +517,17 @@ export class ProyectosComponent {
     this.clientesAbierto = false;
   }
 
+  abrirCanalArea(): void {
+    this.canalAreaAbierto = true;
+  }
+
+  cerrarCanalArea(): void {
+    this.canalAreaAbierto = false;
+  }
+
   abrirEditar(proyecto: Proyecto): void {
     this.editandoProyecto = proyecto;
-    this.showForm = true;
+    this.showForm.set(true);
   }
 
   abrirDetalle(proyecto: Proyecto): void {
@@ -544,32 +578,44 @@ export class ProyectosComponent {
     this.irPagina(this.paginaActual() + 1);
   }
 
-  async onGuardar(data: {nombre: string; descripcion: string; cliente: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): Promise<void> {
-    if (this.editandoProyecto) {
-      await this.proyectoService.actualizar(this.editandoProyecto.id, data);
-      await this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
-    } else {
-      await this.proyectoService.crear(data, this.authService.currentUser()?.id);
-      await this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
+  async onGuardar(data: {nombre: string; descripcion: string; cliente: string; canalAreaId: string; status: string; prioridad: string; fechaDesde: string; fechaHasta: string; documentacion: string}): Promise<void> {
+    try {
+      if (this.editandoProyecto) {
+        await this.proyectoService.actualizar(this.editandoProyecto.id, data);
+        await this.notificacionService.notificar({tipo: 'info', descripcion: `Proyecto «${data.nombre}» actualizado`, url: '/proyectos'});
+        this.toast.info('Proyecto actualizado');
+      } else {
+        await this.proyectoService.crear(data, this.authService.currentUser()?.id);
+        await this.notificacionService.notificar({tipo: 'exito', descripcion: `Proyecto «${data.nombre}» creado`, url: '/proyectos'});
+        this.toast.success('Proyecto creado');
+      }
+      this.cerrarForm();
+    } catch {
+      this.toast.error('Error al guardar el proyecto. Verifica tu sesion.');
     }
-    this.cerrarForm();
   }
 
   confirmarEliminar(id: string): void {
-    this.deleteConfirmId = id;
+    this.deleteConfirmId.set(id);
   }
 
   async ejecutarEliminar(): Promise<void> {
-    if (this.deleteConfirmId) {
-      const nombre = this.proyectoService.proyectoPorId(this.deleteConfirmId)?.nombre;
-      await this.proyectoService.eliminar(this.deleteConfirmId);
-      await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
+    const id = this.deleteConfirmId();
+    if (id) {
+      try {
+        const nombre = this.proyectoService.proyectoPorId(id)?.nombre;
+        await this.proyectoService.eliminar(id);
+        await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Proyecto «${nombre ?? 'eliminado'}» eliminado`});
+        this.toast.warning('Proyecto eliminado');
+      } catch {
+        this.toast.error('Error al eliminar el proyecto.');
+      }
     }
-    this.deleteConfirmId = null;
+    this.deleteConfirmId.set(null);
   }
 
   cancelarEliminar(): void {
-    this.deleteConfirmId = null;
+    this.deleteConfirmId.set(null);
   }
 
   irAPlanning(proyectoId: string): void {
@@ -577,7 +623,7 @@ export class ProyectosComponent {
   }
 
   cerrarForm(): void {
-    this.showForm = false;
+    this.showForm.set(false);
     this.editandoProyecto = null;
   }
 }

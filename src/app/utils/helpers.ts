@@ -18,11 +18,11 @@ export function iniciales(nombre: string): string {
 
 export function tipoColor(tipo: string): {text: string; bg: string} {
   switch (tipo) {
-    case 'super-administrador': return {text: '#ffffff', bg: 'var(--color-purple-600)'};
-    case 'administrador': return {text: '#ffffff', bg: 'var(--color-indigo-600)'};
-    case 'supervisor': return {text: '#ffffff', bg: 'var(--color-blue-500)'};
-    case 'qa': return {text: 'var(--color-gray-900)', bg: 'var(--color-amber-400)'};
-    case 'usuario': return {text: 'var(--color-gray-700)', bg: 'var(--color-gray-200)'};
-    default: return {text: 'var(--color-gray-900)', bg: 'var(--color-teal-200)'};
+    case 'super-administrador': return {text: '#ffffff', bg: 'var(--color-secondary)'};
+    case 'administrador': return {text: '#ffffff', bg: 'var(--color-secondary)'};
+    case 'supervisor': return {text: '#ffffff', bg: 'var(--color-secondary)'};
+    case 'qa': return {text: '#2c2929', bg: 'var(--color-default)'};
+    case 'usuario': return {text: '#ffffff', bg: 'var(--color-primary)'};
+    default: return {text: '#ffffff', bg: 'var(--color-teal-200)'};
   }
 }

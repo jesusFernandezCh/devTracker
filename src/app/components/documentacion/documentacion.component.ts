@@ -5,6 +5,7 @@ import {ProyectoService} from '../../services/proyecto.service';
 import {AuthService} from '../../services/auth.service';
 import {EquipoService} from '../../services/equipo.service';
 import {NotificacionService} from '../../services/notificacion.service';
+import {ToastService} from '../../services/toast.service';
 import {Documento, nombreTipoMime, iconoTipoMime, colorTipoMime} from '../../models/documento.model';
 import {Proyecto} from '../../models/proyecto.model';
 import {DocumentoFormComponent} from '../documento-form/documento-form.component';
@@ -34,7 +35,7 @@ interface ProyectoAccordion {
       </div>
       <div class="col-12 col-md-auto mt-3 mt-md-0 d-flex align-items-center gap-2">
         <button *appPermiso="'crear'; recurso: 'reportes'" (click)="abrirNuevo()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors shadow-sm bg-[var(--color-teal-600)] hover:bg-[var(--color-teal-700)]">
+                class="btn btn-primary">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -230,6 +231,7 @@ export class DocumentacionComponent {
   private authService = inject(AuthService);
   private equipoService = inject(EquipoService);
   private notificacionService = inject(NotificacionService);
+  private toast = inject(ToastService);
 
   protected readonly documentos = this.documentoService.documentos;
 
@@ -308,9 +310,11 @@ export class DocumentacionComponent {
     if (this.editandoDoc) {
       await this.documentoService.actualizar(this.editandoDoc.id, data);
       await this.notificacionService.notificar({tipo: 'info', descripcion: `Documento «${data.nombre}» actualizado`, url: '/documentacion'});
+      this.toast.info('Documento actualizado');
     } else {
       await this.documentoService.crear(data);
       await this.notificacionService.notificar({tipo: 'exito', descripcion: `Documento «${data.nombre}» subido`, url: '/documentacion'});
+      this.toast.success('Documento subido');
     }
     this.cerrarForm();
   }
@@ -324,6 +328,7 @@ export class DocumentacionComponent {
     if (doc) {
       await this.documentoService.eliminar(doc.id);
       await this.notificacionService.notificar({tipo: 'alerta', descripcion: `Documento «${doc.nombre}» eliminado`});
+      this.toast.warning('Documento eliminado');
     }
     this.deleteConfirmDoc.set(null);
   }

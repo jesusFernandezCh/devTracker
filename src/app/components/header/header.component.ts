@@ -1,7 +1,7 @@
 import {Component, inject, output, ChangeDetectionStrategy, signal, HostListener, viewChild, ElementRef} from '@angular/core';
 import {Router} from '@angular/router';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
+import {MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
 import {ThemeService} from '../../services/theme.service';
 import {AuthService} from '../../services/auth.service';
 import {NotificacionesPanelComponent} from '../notificaciones-panel/notificaciones-panel.component';
@@ -10,14 +10,14 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatIconModule, NotificacionesPanelComponent],
+  imports: [MatIconButton, MatIcon, NotificacionesPanelComponent],
   template: `
     <header style="background-color: var(--color-header); border-color: var(--color-gray-200);" class="border-b shadow-sm">
       <div class="container">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center gap-3 min-w-0">
             <span class="md:hidden">
-              <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-gray-500);" aria-label="Abrir menú">
+              <button mat-icon-button (click)="toggleMenu.emit()" style="color: var(--color-white);" aria-label="Abrir menú">
                 <mat-icon>menu</mat-icon>
               </button>
             </span>
@@ -29,7 +29,7 @@ import {NotificacionesPanelComponent} from '../notificaciones-panel/notificacion
             <app-notificaciones-panel />
 
             <button mat-icon-button (click)="themeService.toggle()"
-                    style="color: var(--color-gray-500);"
+                    style="color: #F3F4F6;"
                     [attr.aria-label]="themeService.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'">
               <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
             </button>
